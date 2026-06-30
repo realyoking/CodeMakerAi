@@ -822,7 +822,9 @@ function updatePreview() {
 }
 
 function showHistory() {
-    const p = S.projects.find(x => x.id === S.cur); if (!p) return;
+    const p = S.projects.find(x => x.id === S.cur); 
+    if (!p) return toast('No project open!');
+    
     const modalBody = document.getElementById('generic-modal-body');
     document.getElementById('generic-modal-title').innerText = 'Version History';
     
@@ -1044,7 +1046,6 @@ async function startGithubPush(owner) {
         if (!createRes.ok) { modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error creating repo.</p>`; return; }
     }
 
-    // Store GitHub connection info in project
     p.github = { owner, repo: repoName };
     saveProjects();
 
@@ -1060,7 +1061,6 @@ async function startGithubPush(owner) {
             sha = (await fileCheckRes.json()).sha;
         }
 
-        // Generate descriptive commit message
         let commitMsg = `feat: add ${filename}`;
         if (i === files.length - 1) {
             commitMsg = `feat: complete project setup with ${files.length} files via CodeMaker AI`;
@@ -1120,22 +1120,37 @@ async function startGithubPush(owner) {
 async function deployToGithubPages(owner, repoName) {
     const token = S.githubToken;
     const modalBody = document.getElementById('generic-modal-body');
-    if(!owner || !repoName) {
-        modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Fetching repos...</div>`;
+    document.getElementById('generic-modal-title').innerText = 'Deploy to GitHub Pages';
+    
+    document.getElementById('generic-modal').classList.add('show');
+    modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Checking authentication...</div>`;
+    
+    if (!token) {
+        modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">No GitHub token found. Please click the GitHub icon (Export to GitHub) to connect your account first.</p>`;
+        return;
+    }
+
+    if (!owner || !repoName) {
+        modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Fetching your repositories...</div>`;
         const headers = { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' };
-        const userRes = await fetch('https://api.github.com/user', { headers });
-        owner = (await userRes.json()).login;
         
-        const reposRes = await fetch(`https://api.github.com/user/repos?per_page=100&sort=updated`, { headers });
-        const repos = reposRes.ok ? await reposRes.json() : [];
-        const repoOptions = repos.map(r => `<option value="${r.name}">${r.name}</option>`).join('');
-        
-        modalBody.innerHTML = `
-            <p class="modal-desc">Select a repository to deploy to GitHub Pages.</p>
-            <select class="modal-select" id="gh-deploy-select">${repoOptions}</select>
-            <button class="modal-btn" onclick="deployToGithubPages('${owner}', document.getElementById('gh-deploy-select').value)"><i class="fas fa-rocket"></i> Deploy Now</button>
-        `;
-        document.getElementById('generic-modal').classList.add('show');
+        try {
+            const userRes = await fetch('https://api.github.com/user', { headers });
+            if(!userRes.ok) throw new Error('Invalid GitHub Token');
+            owner = (await userRes.json()).login;
+            
+            const reposRes = await fetch(`https://api.github.com/user/repos?per_page=100&sort=updated`, { headers });
+            const repos = reposRes.ok ? await reposRes.json() : [];
+            const repoOptions = repos.map(r => `<option value="${r.name}">${r.name}</option>`).join('');
+            
+            modalBody.innerHTML = `
+                <p class="modal-desc">Select a repository to deploy to GitHub Pages.</p>
+                <select class="modal-select" id="gh-deploy-select">${repoOptions}</select>
+                <button class="modal-btn" style="background:var(--ok)" onclick="deployToGithubPages('${owner}', document.getElementById('gh-deploy-select').value)"><i class="fas fa-rocket"></i> Deploy Now</button>
+            `;
+        } catch(e) {
+            modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error fetching repos: ${e.message}</p>`;
+        }
         return;
     }
 
@@ -1174,6 +1189,18 @@ async function deployToGithubPages(owner, repoName) {
 }
 
 // ===== IMPORT FROM GITHUB =====
+async function fetchTextWithFallback(url, options = {}) {
+    try {
+        const res = await fetch(url, options);
+        if (res.ok) return await res.text();
+        throw new Error(`HTTP ${res.status}`);
+    } catch (e) {
+        const res = await fetch(PROXY + encodeURIComponent(url), options);
+        if (res.ok) return await res.text();
+        throw new Error(`Network/Proxy failed: ${res.status}`);
+    }
+}
+
 async function importFromGithub() {
     const modalBody = document.getElementById('generic-modal-body');
     document.getElementById('generic-modal-title').innerText = 'Import from GitHub';
@@ -1205,35 +1232,58 @@ async function startImportGithub() {
     const modalBody = document.getElementById('generic-modal-body');
     let owner, repo;
     
-    if (inputVal.includes('github.com/')) {
-        const parts = inputVal.split('github.com/')[1].split('/');
+    let cleanInput = inputVal.replace(/\.git$/, '').replace(/\/$/, '');
+    if (cleanInput.includes('github.com/')) {
+        const parts = cleanInput.split('github.com/')[1].split('/');
         owner = parts[0]; repo = parts[1];
     } else {
-        const parts = inputVal.split('/');
+        const parts = cleanInput.split('/');
         owner = parts[0]; repo = parts[1];
     }
     
-    if (!owner || !repo) return toast('Invalid URL or name.');
+    if (!owner || !repo) return toast('Invalid URL or name. Use owner/repo format.');
     
-    modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Fetching repository contents...</div>`;
+    document.getElementById('generic-modal').classList.add('show');
+    modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Fetching repository tree...</div>`;
     
-    const headers = { 'Authorization': `token ${S.githubToken}`, 'Accept': 'application/vnd.github+json' };
+    const headers = { 'Accept': 'application/vnd.github+json' };
+    if (S.githubToken) headers['Authorization'] = `token ${S.githubToken}`;
+    
     try {
-        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents`, { headers });
-        if (!res.ok) throw new Error('Repo not found or private.');
-        const files = await res.json();
+        const repoInfoRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`, { headers });
+        if (!repoInfoRes.ok) {
+            const errData = await repoInfoRes.json().catch(() => ({}));
+            throw new Error(errData.message || `Repo not found or rate limited (Status: ${repoInfoRes.status})`);
+        }
+        const repoInfo = await repoInfoRes.json();
+        const branch = repoInfo.default_branch;
+
+        const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`, { headers });
+        if (!treeRes.ok) throw new Error('Failed to fetch file tree.');
+        const treeData = await treeRes.json();
+        
+        const ignoreExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.ico', '.pdf', '.zip', '.tar', '.gz', '.mp4', '.mp3', '.ttf', '.woff', '.woff2', '.eot', '.lock'];
+        const filesToFetch = treeData.tree.filter(item => 
+            item.type === 'blob' && 
+            !ignoreExtensions.some(ext => item.path.toLowerCase().endsWith(ext))
+        );
+        
+        if (filesToFetch.length === 0) throw new Error('No text files found in repository.');
         
         const proj = createProj(`Imported: ${repo}`, S.model);
         proj.files = {};
         proj.github = { owner, repo };
         
-        for (const file of files) {
-            if (file.type === 'file') {
-                modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Importing ${file.name}...</div>`;
-                const fileRes = await fetch(file.url, { headers });
-                const fileData = await fileRes.json();
-                const content = atob(fileData.content);
-                proj.files[file.name] = content;
+        for (let i = 0; i < filesToFetch.length; i++) {
+            const item = filesToFetch[i];
+            modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Importing ${i+1}/${filesToFetch.length}<br><span style="font-size:12px;color:var(--mt);">${item.path}</span></div>`;
+            
+            try {
+                const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}`;
+                const content = await fetchTextWithFallback(rawUrl);
+                proj.files[item.path] = content;
+            } catch (e) {
+                console.warn(`Skipped file ${item.path}: ${e.message}`);
             }
         }
         
@@ -1247,7 +1297,7 @@ async function startImportGithub() {
         openEditor(proj.id);
         toast('Repository imported successfully!');
     } catch(e) {
-        modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error: ${e.message}</p>`;
+        modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error: ${e.message}<br><br>If this is a public repo, GitHub might be rate-limiting your IP. Try adding a GitHub token.</p>`;
     }
 }
 
@@ -1396,7 +1446,6 @@ function selectMention(filename) {
     mentionActive = false;
     hideMentionDropdown();
     input.focus();
-    // Re-enable send button
     document.getElementById('chat-send').disabled = !input.value.trim();
 }
 
@@ -1473,20 +1522,17 @@ async function createGithubPR(title, body, headBranch, files) {
     const baseBranch = 'main';
     const branchName = headBranch || `ai-fix-${Date.now()}`;
     
-    // Get the SHA of the base branch
     const refRes = await fetch(`https://api.github.com/repos/${p.github.owner}/${p.github.repo}/git/refs/heads/${baseBranch}`, { headers });
     if (!refRes.ok) throw new Error('Failed to get base branch');
     const refData = await refRes.json();
     const baseSha = refData.object.sha;
     
-    // Create new branch
     const createBranchRes = await fetch(`https://api.github.com/repos/${p.github.owner}/${p.github.repo}/git/refs`, {
         method: 'POST', headers,
         body: JSON.stringify({ ref: `refs/heads/${branchName}`, sha: baseSha })
     });
     if (!createBranchRes.ok) throw new Error('Failed to create branch');
     
-    // Push files to the new branch
     if (files && files.length > 0) {
         for (const file of files) {
             let sha = null;
@@ -1505,7 +1551,6 @@ async function createGithubPR(title, body, headBranch, files) {
         }
     }
     
-    // Create PR
     const prRes = await fetch(`https://api.github.com/repos/${p.github.owner}/${p.github.repo}/pulls`, {
         method: 'POST', headers,
         body: JSON.stringify({ title, body, head: branchName, base: baseBranch })
@@ -1536,7 +1581,6 @@ function continueGen() {
     generate();
 }
 
-// ===== REPLACE API KEY PLACEHOLDER =====
 function replaceApiKeyPlaceholder(content) {
     if (!content) return content;
     return content.replace(/\{\{SITE_API_KEY\}\}/g, PROJECT_KEY);
@@ -1562,13 +1606,11 @@ async function generate() {
     if (p.history.length > 10) p.history.shift();
     saveProjects();
     
-    // Always include write_file and generate_asset tools
     const tools = [
         { type: "function", function: { name: "write_file", description: "Write file content.", parameters: { type: "object", properties: { filename: { type: "string" }, content: { type: "string" } }, required: ["filename", "content"] } } },
         { type: "function", function: { name: "generate_asset", description: "Generate an image or video asset. Use this when the user asks for an image, picture, photo, icon, logo, or video. NEVER use SVG placeholders.", parameters: { type: "object", properties: { type: { type: "string", enum: ["image", "video"] }, prompt: { type: "string" } }, required: ["type", "prompt"] } } }
     ];
     
-    // Add GitHub tools if repo is connected
     if (p.github && p.github.owner && p.github.repo && S.githubToken) {
         tools.push({ type: "function", function: { name: "create_github_issue", description: "Create a GitHub issue in the connected repository.", parameters: { type: "object", properties: { title: { type: "string" }, body: { type: "string" }, labels: { type: "array", items: { type: "string" } } }, required: ["title", "body"] } } });
         tools.push({ type: "function", function: { name: "create_github_pr", description: "Create a GitHub pull request with file changes in the connected repository.", parameters: { type: "object", properties: { title: { type: "string" }, body: { type: "string" }, headBranch: { type: "string" }, files: { type: "array", items: { type: "object", properties: { filename: { type: "string" }, content: { type: "string" } } } } }, required: ["title", "body"] } } });
@@ -1598,7 +1640,6 @@ async function generate() {
                         badge.className = 'tool-badge write';
                         badge.innerHTML = `<div class="spinner"></div> Writing ${args.filename}...`;
                         statusLog.appendChild(badge);
-                        // Replace API key placeholder before saving
                         const finalContent = replaceApiKeyPlaceholder(args.content);
                         if (!p.lockedFiles.includes(args.filename)) p.files[args.filename] = finalContent;
                         saveProjects(); updatePreview(); renderFiles();
@@ -1645,7 +1686,6 @@ async function generate() {
                         badge.innerHTML = `<div class="spinner"></div> Creating PR: ${args.title}...`;
                         statusLog.appendChild(badge);
                         try {
-                            // Replace API key placeholders in PR files
                             const prFiles = (args.files || []).map(f => ({ filename: f.filename, content: replaceApiKeyPlaceholder(f.content) }));
                             const pr = await createGithubPR(args.title, args.body, args.headBranch, prFiles);
                             toolMsg.content = `PR #${pr.number} created successfully: ${pr.html_url}`;
@@ -1741,14 +1781,12 @@ function init() {
             cm = CodeMirror.fromTextArea(document.getElementById('code-editor'), { lineNumbers: true, theme: 'default', indentUnit: 2 });
         }
         
-        // Home view buttons
         document.getElementById('hero-submit').onclick = () => { const v = document.getElementById('hero-input').value.trim(); if (!v) return; openEditor(createProj(v).id); };
         document.getElementById('hero-input').addEventListener('keydown', e => { if (e.key === 'Enter') { const v = document.getElementById('hero-input').value.trim(); if (v) openEditor(createProj(v).id); } });
         document.querySelectorAll('#home-models .mp').forEach(b => b.onclick = () => { document.querySelectorAll('#home-models .mp').forEach(x => x.classList.remove('active')); b.classList.add('active'); S.model = b.dataset.model; });
         document.getElementById('new-btn').onclick = () => { document.getElementById('home-view').scrollTo({top:0, behavior:'smooth'}); document.getElementById('hero-input').focus(); };
         document.getElementById('import-gh-btn').onclick = importFromGithub;
         
-        // Editor header buttons
         document.getElementById('back-btn').onclick = closeEditor;
         document.getElementById('ms-btn').onclick = e => { e.stopPropagation(); document.getElementById('ms-menu').classList.toggle('open'); };
         document.addEventListener('click', () => document.getElementById('ms-menu').classList.remove('open'));
@@ -1764,10 +1802,8 @@ function init() {
         document.getElementById('btn-zip').onclick = async () => { if (typeof JSZip === 'undefined') return; const p = S.projects.find(x => x.id === S.cur); const zip = new JSZip(); Object.keys(p.files).forEach(f => zip.file(f, p.files[f])); const blob = await zip.generateAsync({type:'blob'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${p.name}.zip`; a.click(); };
         document.getElementById('btn-theme').onclick = () => { document.body.classList.toggle('dark'); if (cm) cm.setOption('theme', document.body.classList.contains('dark') ? 'material-darker' : 'default'); };
         
-        // Preview tabs
         document.querySelectorAll('.ptab').forEach(t => t.onclick = () => switchView(t.dataset.view));
         
-        // Mobile tabs
         document.querySelectorAll('.mtab').forEach(t => t.onclick = () => {
             document.querySelectorAll('.mtab').forEach(x => x.classList.remove('active')); t.classList.add('active');
             const body = document.getElementById('ed-body');
@@ -1775,10 +1811,8 @@ function init() {
             body.classList.toggle('mobile-prev', t.dataset.tab === 'prev');
         });
         
-        // Enhance button
         document.getElementById('btn-enhance').onclick = enhancePrompt;
         
-        // Chat Input - FIXED: proper event handling
         const chatInput = document.getElementById('chat-input');
         chatInput.addEventListener('input', function() {
             if(!S.gen) document.getElementById('chat-send').disabled = !this.value.trim();
@@ -1796,10 +1830,8 @@ function init() {
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if(!S.gen && this.value.trim()) { updateSendButton(); document.getElementById('chat-send').click(); } }
         });
         
-        // Apply button
         document.getElementById('apply-btn').onclick = () => { const p = S.projects.find(x => x.id === S.cur); if (p) { p.files[S.activeFile] = cm ? cm.getValue() : ''; saveProjects(); updatePreview(); toast('Applied!'); } };
         
-        // Zoom buttons
         document.getElementById('zoom-in').onclick = () => { S.zoom = Math.min(2, S.zoom + 0.1); applyZoom(); };
         document.getElementById('zoom-out').onclick = () => { S.zoom = Math.max(0.5, S.zoom - 0.1); applyZoom(); };
         document.getElementById('auto-refresh').onclick = (e) => {
