@@ -37,6 +37,8 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
 @keyframes shine { 0% { left: -100px; } 60% { left: 100%; } to { left: 100%; } }
+@keyframes progressAnim { 0% { left: -30%; } 100% { left: 100%; } }
+@keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
 
 /* HOME */
 #home-view { position: absolute; inset: 0; overflow-y: auto; z-index: 10; background: var(--bg); }
@@ -53,7 +55,6 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .mp.active { background: var(--ac); border-color: var(--ac); }
 .input-box { background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 6px; display: flex; gap: 6px; align-items: center; box-shadow: 0 20px 50px rgba(0,0,0,0.2); position: relative; width: 100%; max-width: 680px; margin: 0 auto; height: 52px; }
 .input-box input { flex: 1; border: none; outline: none; padding: 0 20px; background: transparent; color: var(--tx); font-size: 15px; height: 100%; min-width: 0; }
-.input-box input::placeholder { color: var(--mt); }
 .typing-overlay { position: absolute; left: 26px; top: 50%; transform: translateY(-50%); color: var(--mt); pointer-events: none; font-size: 15px; display: flex; align-items: center; max-width: 60%; overflow: hidden; white-space: nowrap; }
 .typing-overlay .cursor { width: 2px; height: 16px; background: var(--ac); margin-left: 2px; animation: blink 1s step-end infinite; }
 .chips { display: flex; justify-content: center; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
@@ -108,18 +109,28 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .chat-welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; color: var(--mt); }
 .chat-welcome i { font-size: 28px; margin-bottom: 12px; color: var(--ac); }
 .chat-welcome h3 { color: var(--tx); margin-bottom: 6px; }
-.chat-acts { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px; }
-.chat-act { padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 11px; cursor: pointer; background: var(--bg2); text-align: left; }
 
-.msg { display: flex; gap: 10px; animation: fadeIn 0.3s; }
+.msg { display: flex; gap: 10px; animation: fadeIn 0.3s; position: relative; }
 .msg.user { flex-direction: row-reverse; }
 .msg-av { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; flex-shrink: 0; }
 .msg.ai .msg-av { background: var(--ac); }
 .msg.user .msg-av { background: var(--tx2); }
 .msg.tool .msg-av { background: var(--warn); }
-.msg-bubble { max-width: 85%; padding: 10px 14px; border-radius: 10px; font-size: 14px; line-height: 1.5; color: var(--tx); }
+.msg-bubble { max-width: 85%; padding: 10px 14px; border-radius: 10px; font-size: 14px; line-height: 1.5; color: var(--tx); position: relative; overflow: hidden; }
 .msg.ai .msg-bubble { background: var(--bg2); border: 1px solid var(--border); border-top-left-radius: 2px; }
 .msg.user .msg-bubble { background: var(--ac); color: #fff; border-top-right-radius: 2px; }
+
+/* Progress Bar & Skeleton */
+.msg-progress-bar { position: absolute; bottom: 0; left: 0; width: 30%; height: 2px; background: var(--ac); animation: progressAnim 1.5s ease-in-out infinite; display: none; }
+.msg.thinking .msg-progress-bar { display: block; }
+.skeleton-line { height: 10px; background: var(--bg3); border-radius: 4px; margin-bottom: 8px; animation: pulse 1.5s infinite; }
+.skeleton-line:last-child { width: 60%; margin-bottom: 0; }
+
+/* Message Actions (Copy/Retry) */
+.msg-actions { display: flex; gap: 4px; margin-top: 8px; opacity: 0; transition: opacity 0.2s; }
+.msg.ai:hover .msg-actions { opacity: 1; }
+.msg-action-btn { background: none; border: 1px solid var(--border); color: var(--mt); padding: 3px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+.msg-action-btn:hover { color: var(--ac); border-color: var(--ac); }
 
 .tool-badge { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; margin-top: 6px; background: var(--bg3); color: var(--tx2); }
 .tool-badge.write { background: rgba(16,185,129,0.1); color: var(--ok); }
@@ -132,7 +143,8 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .chat-icons { display: flex; gap: 2px; }
 .chat-icon { width: 30px; height: 30px; border: none; background: transparent; color: var(--mt); cursor: pointer; border-radius: 6px; display:flex; align-items:center; justify-content:center; }
 .chat-icon:hover { color: var(--ac); background: var(--bg3); }
-.chat-send { width: 34px; height: 34px; border: none; background: var(--ac); color: #fff; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.chat-send { width: 34px; height: 34px; border: none; background: var(--ac); color: #fff; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.3s; }
+.chat-send.stop { background: var(--dn); }
 .chat-send:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* PREVIEW */
@@ -140,21 +152,30 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .prev-tabs { display: flex; align-items: center; padding: 0 12px; background: var(--panel); border-bottom: 1px solid var(--border); height: 40px; gap: 4px; }
 .ptab { padding: 8px 14px; border: none; background: none; color: var(--mt); font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; }
 .ptab.active { color: var(--ac); border-bottom-color: var(--ac); }
-.prev-actions { margin-left: auto; display: flex; gap: 4px; }
-.pa-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: var(--panel); color: var(--mt); cursor: pointer; font-size: 11px; }
+.prev-actions { margin-left: auto; display: flex; gap: 4px; align-items: center; }
+.pa-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: var(--panel); color: var(--mt); cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; }
 .pa-btn.active { color: var(--ac); border-color: var(--ac); }
+.zoom-text { font-size: 11px; color: var(--mt); width: 35px; text-align: center; }
 
 .files-bar { display: flex; gap: 4px; padding: 6px 12px; background: var(--panel); border-bottom: 1px solid var(--border); overflow-x: auto; }
 .file-tab { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; color: var(--tx2); white-space: nowrap; }
 .file-tab.active { background: var(--bg2); color: var(--tx); font-weight: 500; }
+.file-tab i { font-size: 12px; color: var(--mt); }
+.file-tab.active i { color: var(--ac); }
 .file-lock { font-size: 10px; opacity: 0.6; cursor: pointer; }
 .file-lock.locked { color: var(--warn); opacity: 1; }
 
-.prev-main { flex: 1; display: flex; flex-direction: column; position: relative; background: #fff; min-height: 0; }
+.prev-main { flex: 1; display: flex; flex-direction: column; position: relative; background: #fff; min-height: 0; overflow: hidden; }
 .prev-frame { width: 100%; height: 100%; border: none; transition: max-width 0.3s; align-self: center; }
 .code-view { flex: 1; display: none; flex-direction: column; position: relative; min-height: 0; overflow: hidden; }
 .CodeMirror { height: 100% !important; font-size: 13px; }
 .apply-btn { position: absolute; bottom: 16px; right: 16px; padding: 8px 16px; border: none; background: var(--ac); color: #fff; border-radius: 8px; font-weight: 600; cursor: pointer; z-index: 10; }
+
+/* Tasks View */
+.tasks-view { flex: 1; display: none; flex-direction: column; overflow-y: auto; padding: 16px; background: var(--bg2); min-height: 0; }
+.task-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+.task-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 14px; color: var(--tx2); }
+.task-item i { color: var(--ac); }
 
 /* Assets View */
 .assets-view { flex: 1; display: none; flex-direction: column; overflow-y: auto; padding: 16px; background: var(--bg2); min-height: 0; }
@@ -164,27 +185,6 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .asset-info { padding: 12px; }
 .asset-type { font-size: 11px; font-weight: 700; color: var(--ac); text-transform: uppercase; margin-bottom: 4px; }
 .asset-prompt { font-size: 13px; color: var(--tx2); margin-bottom: 12px; }
-.asset-actions { display: flex; gap: 8px; }
-.asset-btn { flex: 1; padding: 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg2); color: var(--tx2); cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 4px; }
-.asset-btn.ok { background: var(--ok); color: #fff; border-color: transparent; }
-
-/* Template Modal */
-.tmpl-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 1001; display: none; align-items: center; justify-content: center; padding: 20px; }
-.tmpl-modal-overlay.show { display: flex; }
-.tmpl-modal-box { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 1100px; height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
-.tmpl-modal-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-.tmpl-modal-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-.tmpl-modal-body { flex: 1; display: flex; overflow: hidden; }
-.tmpl-chat-side { width: 320px; border-right: 1px solid var(--border); padding: 16px; overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; gap: 12px; }
-.tmpl-prev-side { flex: 1; display: flex; flex-direction: column; background: var(--bg2); }
-.tmpl-tabs { display: flex; padding: 0 12px; background: var(--panel); border-bottom: 1px solid var(--border); }
-.tmpl-tab { padding: 10px 16px; border: none; background: none; color: var(--mt); font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; }
-.tmpl-tab.active { color: var(--ac); border-bottom-color: var(--ac); }
-.tmpl-prev-main { flex: 1; display: flex; flex-direction: column; position: relative; background: #fff; min-height: 0; }
-.tmpl-prev-frame { width: 100%; height: 100%; border: none; }
-.tmpl-code-view { flex: 1; display: none; flex-direction: column; overflow: auto; padding: 16px; background: #1e1e1e; color: #d4d4d4; font-family: 'JetBrains Mono', monospace; font-size: 12px; white-space: pre-wrap; }
-.tmpl-modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
-.remix-btn { padding: 10px 24px; background: var(--ac); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
 
 /* Modals */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
@@ -210,10 +210,8 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
     .mtab { flex: 1; padding: 12px; text-align: center; border: none; background: none; color: var(--mt); font-weight: 500; border-bottom: 2px solid transparent; }
     .mtab.active { color: var(--ac); border-bottom-color: var(--ac); }
     .input-box { flex-direction: column; border-radius: 24px; height: auto; padding: 12px; gap: 12px; }
-    .input-box input { padding-right: 20px; text-align: center; }
     .typing-overlay { display: none; }
     .btn-gen { width: 100%; justify-content: center; padding: 14px; font-size: 15px; height: auto; }
-    .mp { padding: 10px 18px; font-size: 14px; }
 }
 </style>
 </head>
@@ -229,32 +227,6 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
             <button class="modal-close" onclick="document.getElementById('generic-modal').classList.remove('show')">&times;</button>
         </div>
         <div id="generic-modal-body"></div>
-    </div>
-</div>
-
-<!-- Template Modal -->
-<div class="tmpl-modal-overlay" id="tmpl-modal">
-    <div class="tmpl-modal-box">
-        <div class="tmpl-modal-header">
-            <div class="tmpl-modal-title" id="tmpl-modal-title">Template Title</div>
-            <button class="modal-close" onclick="document.getElementById('tmpl-modal').classList.remove('show')">&times;</button>
-        </div>
-        <div class="tmpl-modal-body">
-            <div class="tmpl-chat-side" id="tmpl-chat-side"></div>
-            <div class="tmpl-prev-side">
-                <div class="tmpl-tabs">
-                    <button class="tmpl-tab active" onclick="switchTmplTab('prev')">Preview</button>
-                    <button class="tmpl-tab" onclick="switchTmplTab('code')">Code</button>
-                </div>
-                <div class="tmpl-prev-main">
-                    <iframe class="tmpl-prev-frame" id="tmpl-prev-frame"></iframe>
-                    <div class="tmpl-code-view" id="tmpl-code-view"></div>
-                </div>
-            </div>
-        </div>
-        <div class="tmpl-modal-footer">
-            <button class="remix-btn" onclick="remixCurrentTemplate()"><i class="fas fa- remix"></i> Remix Template</button>
-        </div>
     </div>
 </div>
 
@@ -290,8 +262,6 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
             <button class="lib-btn active" id="tab-projects" onclick="switchLibView('projects')"><i class="fas fa-folder"></i> My Projects</button>
             <button class="lib-btn" id="tab-templates" onclick="switchLibView('templates')"><i class="fas fa-layout-template"></i> Templates</button>
         </div>
-        
-        <!-- Projects View -->
         <div id="projects-view">
             <div class="proj-header">
                 <h2>Your Projects</h2>
@@ -299,12 +269,8 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
             </div>
             <div class="proj-grid" id="proj-grid"></div>
         </div>
-
-        <!-- Templates View -->
         <div id="templates-view" style="display:none;">
-            <div class="proj-header">
-                <h2>Verified Templates</h2>
-            </div>
+            <div class="proj-header"><h2>Verified Templates</h2></div>
             <div class="proj-grid" id="tmpl-grid"></div>
         </div>
     </div>
@@ -315,7 +281,6 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
     <header class="ed-header">
         <button class="ed-btn" id="back-btn"><i class="fas fa-arrow-left"></i></button>
         <div class="ed-title" id="ed-title">Project</div>
-        
         <div class="ms-dd">
             <button class="ms-btn" id="ms-btn"><i class="fas fa-microchip"></i> <span id="ms-lbl">2.0 Flash</span> <i class="fas fa-chevron-down" style="font-size:10px"></i></button>
             <div class="ms-menu" id="ms-menu">
@@ -325,7 +290,6 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
                 <div class="ms-item" data-model="image">agnes-image-2.1-flash</div>
             </div>
         </div>
-        
         <div class="ed-actions">
             <button class="ed-btn" id="btn-github" title="Export to GitHub"><i class="fab fa-github"></i></button>
             <button class="ed-btn" id="btn-history" title="Version History"><i class="fas fa-history"></i></button>
@@ -361,11 +325,14 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
             <div class="prev-tabs">
                 <button class="ptab active" data-view="prev">Preview</button>
                 <button class="ptab" data-view="code">Code</button>
+                <button class="ptab" data-view="tasks">Tasks</button>
                 <button class="ptab" data-view="assets">Assets</button>
                 <div class="prev-actions">
-                    <button class="pa-btn" data-res="full" title="Desktop"><i class="fas fa-desktop"></i></button>
-                    <button class="pa-btn" data-res="tab" title="Tablet"><i class="fas fa-tablet-alt"></i></button>
-                    <button class="pa-btn" data-res="mob" title="Mobile"><i class="fas fa-mobile-alt"></i></button>
+                    <button class="pa-btn" id="zoom-out" title="Zoom Out"><i class="fas fa-search-minus"></i></button>
+                    <span class="zoom-text" id="zoom-text">100%</span>
+                    <button class="pa-btn" id="zoom-in" title="Zoom In"><i class="fas fa-search-plus"></i></button>
+                    <button class="pa-btn active" id="auto-refresh" title="Auto Refresh"><i class="fas fa-sync-alt"></i></button>
+                    <button class="pa-btn" id="refresh-btn" title="Refresh Now"><i class="fas fa-rotate-right"></i></button>
                 </div>
             </div>
             <div class="files-bar" id="files-bar"></div>
@@ -375,6 +342,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
                     <textarea id="code-editor" spellcheck="false"></textarea>
                     <button class="apply-btn" id="apply-btn">Apply Changes</button>
                 </div>
+                <div class="tasks-view" id="tasks-view"></div>
                 <div class="assets-view" id="assets-view"></div>
             </div>
         </div>
@@ -391,45 +359,18 @@ const MODELS = { '2.0':'agnes-2.0-flash', '1.5':'agnes-1.5-flash', 'video':'agne
 
 const DEFAULT_DESIGN_MD = `# Design System\n\n## Aesthetics\nModern, sleek, and visually striking. NEVER use default browser styles.\n\n## Colors\nUse a sophisticated palette. Prefer dark themes (e.g., #0f172a background, #f1f5f9 text) with vibrant, glowing accents (indigo, violet, fuchsia). Use CSS variables.\n\n## Typography\nUse 'Inter' for sans-serif and 'JetBrains Mono' for code. Large, bold headings (clamp up to 4rem) with tight tracking. Muted, readable body text.\n\n## Layout\nGenerous whitespace (padding: 2rem+). Centered max-width containers (1200px). Fully responsive Flexbox/Grid.\n\n## Components\nBackgrounds should be subtle (rgba). Use 1px solid borders with low opacity. Border-radius 12px-16px. Use backdrop-filter: blur() for glassmorphism.\n\n## Interactions\nSmooth transitions (0.3s ease). Hover states should scale slightly (1.02) and increase glow/shadow.`;
 
-const SP = `You are CodeMaker AI, an autonomous coding agent.\nCRITICAL RULE: You MUST output the FULL code for all files. Do NOT truncate.\nTo prevent timeouts, you MUST use the 'write_file' tool to write code. DO NOT output code in markdown blocks. \n\n# FILE SYSTEM\nYou can create ANY file type (e.g., index.html, style.css, script.js, App.tsx, main.py, db.json, design.md).\nWrite files one by one using the 'write_file' tool. Wait for confirmation after each file before writing the next.\nIf the user asks for a web app, ensure you write standard web files (index.html, style.css, script.js) for the live preview to work.\n\n# DESIGN SYSTEM (design.md)\nYou MUST strictly follow the design rules specified in the project's 'design.md' file. If the user asks for a design change, update the 'design.md' file using the 'write_file' tool.\n\n# LOCKED FILES\nIf a file is marked as "locked", you MUST NOT modify it. Output the exact same content if asked to write to it.\n\n# ASSETS & ANIMATIONS\nIf the user asks for a video or animation, use the 'generate_asset' tool with type="video". \nIf the user asks for an image, picture, or photo, use the 'generate_asset' tool with type="image". \nDo NOT use SVG placeholders. Put the returned URL directly into the img/video src.\nFor scroll animations, use IntersectionObserver in script.js.\nFor video backgrounds, make them full-screen, looping, and muted with a dark overlay.`;
+const SP = `You are CodeMaker AI, an autonomous coding agent.\nCRITICAL RULE: You MUST output the FULL code for all files. Do NOT truncate.\nTo prevent timeouts, you MUST use the 'write_file' tool to write code. DO NOT output code in markdown blocks. \n\n# TASK PLANNING\n1. First, output a brief markdown checklist of your plan using "- [ ]". The system will extract this and show it in the Tasks tab. Do not output the tasks again in the chat.\n2. Use the 'write_file' tool to write files one by one. Wait for confirmation after each file.\n\n# FILE SYSTEM\nYou can create ANY file type (e.g., index.html, style.css, script.js, App.tsx, main.py, db.json, design.md).\nIf the user asks for a web app, ensure you write standard web files (index.html, style.css, script.js) for the live preview to work.\n\n# DESIGN SYSTEM (design.md)\nYou MUST strictly follow the design rules specified in the project's 'design.md' file. If the user asks for a design change, update the 'design.md' file using the 'write_file' tool.\n\n# LOCKED FILES\nIf a file is marked as "locked", you MUST NOT modify it. Output the exact same content if asked to write to it.\n\n# ASSETS & ANIMATIONS\nIf the user asks for a video or animation, use the 'generate_asset' tool with type="video". \nIf the user asks for an image, picture, or photo, use the 'generate_asset' tool with type="image". \nDo NOT use SVG placeholders. Put the returned URL directly into the img/video src.\nFor scroll animations, use IntersectionObserver in script.js.\nFor video backgrounds, make them full-screen, looping, and muted with a dark overlay.`;
 
-// 30 Templates Definition
-// 3 are fully baked for instant remix, 27 are prompt-based for AI generation
 const TEMPLATES = [
     { id: 't1', title: 'SaaS Landing Page', color: '#6366f1', verified: true, author: 'CodeMaker AI', prompt: 'Build a high-converting SaaS landing page. Include a sticky navbar, a hero section with a gradient background, feature cards with hover effects, and a footer. Use modern glassmorphism.' },
     { id: 't2', title: 'Scroll Animation Portfolio', color: '#ec4899', verified: true, author: 'CodeMaker AI', prompt: 'Build a personal portfolio website. Use IntersectionObserver to fade in elements as the user scrolls down. Include a hero section, an about me section, and a projects grid.' },
     { id: 't3', title: 'Video Background Hero', color: '#14b8a6', verified: true, author: 'CodeMaker AI', prompt: 'Build a hero section with a generated video as a full-screen background. Overlay a dark gradient and centered white text. Make the video loop and muted.' },
-    { id: 't4', title: 'Snake Game', color: '#10b981', verified: true, author: 'CodeMaker AI', prompt: 'Create a fully playable Snake game with score tracking and modern UI.' },
-    { id: 't5', title: 'Weather Dashboard', color: '#0ea5e9', verified: true, author: 'CodeMaker AI', prompt: 'Create a weather dashboard with mock data. Show temperature, humidity, and a 5-day forecast in a grid layout.' },
-    { id: 't6', title: 'E-commerce Product Page', color: '#f59e0b', verified: true, author: 'CodeMaker AI', prompt: 'Build an e-commerce product detail page. Include an image gallery, product title, price, quantity selector, and an add to cart button. Make it look premium.' },
-    { id: 't7', title: 'Admin Dashboard', color: '#8b5cf6', verified: true, author: 'CodeMaker AI', prompt: 'Create an admin dashboard layout with a sidebar navigation, a top header, and stat cards showing user count, revenue, and active sessions. Use charts if possible.' },
-    { id: 't8', title: 'Pomodoro Timer', color: '#ef4444', verified: true, author: 'CodeMaker AI', prompt: 'Build a Pomodoro timer app with a circular countdown timer, start/pause/reset buttons, and a session counter.' },
-    { id: 't9', title: 'Expense Tracker', color: '#06b6d4', verified: true, author: 'CodeMaker AI', prompt: 'Create an expense tracker UI. Include a form to add expenses (amount, category, date) and a list showing the recent expenses with a total balance calculation.' },
-    { id: 't10', title: 'Markdown Editor', color: '#64748b', verified: true, author: 'CodeMaker AI', prompt: 'Build a live markdown editor. Split screen with text area on the left and rendered HTML preview on the right.' },
-    { id: 't11', title: 'Kanban Board', color: '#6366f1', verified: true, author: 'CodeMaker AI', prompt: 'Build a Kanban board with 3 columns: To Do, In Progress, Done. Allow adding new cards to each column.' },
-    { id: 't12', title: 'AI Image Gallery', color: '#ec4899', verified: true, author: 'CodeMaker AI', prompt: 'Generate a responsive masonry image gallery. Use CSS grid. When an image is clicked, open it in a full-screen lightbox modal.' },
-    { id: 't13', title: 'Pricing Table', color: '#10b981', verified: true, author: 'CodeMaker AI', prompt: 'Design a 3-tier pricing table (Basic, Pro, Enterprise) with a monthly/yearly toggle switch. Highlight the Pro tier. Make it look highly converting.', files: { 'index.html': '<div class="pricing-container"><div class="toggle-switch"><span>Monthly</span><input type="checkbox" id="billing-toggle"><label for="billing-toggle"></label><span>Yearly</span></div><div class="cards"><div class="card basic"><h3>Basic</h3><div class="price"><span class="amount">$9</span><span class="period">/mo</span></div><ul><li>10 Projects</li><li>Basic Support</li></ul><button>Choose</button></div><div class="card pro"><span class="badge">Popular</span><h3>Pro</h3><div class="price"><span class="amount">$29</span><span class="period">/mo</span></div><ul><li>Unlimited Projects</li><li>Priority Support</li></ul><button>Choose</button></div><div class="card enterprise"><h3>Enterprise</h3><div class="price"><span class="amount">$99</span><span class="period">/mo</span></div><ul><li>Dedicated Server</li><li>24/7 Support</li></ul><button>Choose</button></div></div></div>', 'style.css': 'body { background: #0f172a; color: #f1f5f9; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; } .pricing-container { text-align: center; } .toggle-switch { margin-bottom: 40px; display: flex; align-items: center; justify-content: center; gap: 10px; } input[type="checkbox"] { display: none; } label { width: 50px; height: 24px; background: #334155; border-radius: 12px; position: relative; cursor: pointer; transition: 0.3s; } label::after { content: ""; position: absolute; width: 18px; height: 18px; background: #fff; border-radius: 50%; top: 3px; left: 3px; transition: 0.3s; } input:checked + label { background: #6366f1; } input:checked + label::after { left: 29px; } .cards { display: flex; gap: 20px; } .card { background: #1e293b; padding: 30px; border-radius: 12px; width: 250px; position: relative; border: 1px solid #334155; } .card.pro { border-color: #6366f1; transform: scale(1.05); } .badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #6366f1; padding: 4px 12px; border-radius: 6px; font-size: 12px; } .price { margin: 20px 0; } .amount { font-size: 36px; font-weight: bold; } ul { list-style: none; padding: 0; margin: 20px 0; text-align: left; } li { margin-bottom: 10px; color: #94a3b8; } button { width: 100%; padding: 10px; background: #334155; border: none; color: #fff; border-radius: 6px; cursor: pointer; } .card.pro button { background: #6366f1; }', 'script.js': 'document.getElementById("billing-toggle").addEventListener("change", function() {\n const amounts = document.querySelectorAll(".amount");\n if(this.checked) {\n amounts[0].innerText = "$90";\n amounts[1].innerText = "$290";\n amounts[2].innerText = "$990";\n } else {\n amounts[0].innerText = "$9";\n amounts[1].innerText = "$29";\n amounts[2].innerText = "$99";\n }\n});', 'design.md': DEFAULT_DESIGN_MD } },
-    { id: 't14', title: 'Coming Soon Page', color: '#0ea5e9', verified: true, author: 'CodeMaker AI', prompt: 'Build a "Coming Soon" landing page with a countdown timer, an email capture form, and a subtle particle or animated background.', files: { 'index.html': '<div class="container"><h1>We\'re Building Something Awesome</h1><div id="countdown"></div><form><input type="email" placeholder="Enter your email" required><button type="submit">Notify Me</button></form></div>', 'style.css': 'body { margin: 0; font-family: sans-serif; background: linear-gradient(135deg, #0f172a, #1e1b4b); color: white; height: 100vh; display: flex; justify-content: center; align-items: center; text-align: center; } .container { max-width: 600px; } h1 { font-size: 3rem; margin-bottom: 20px; } #countdown { font-size: 2rem; margin-bottom: 40px; letter-spacing: 5px; } input { padding: 15px; width: 300px; border: none; border-radius: 8px; margin-right: 10px; } button { padding: 15px 30px; background: #6366f1; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }', 'script.js': 'const countDownDate = new Date("Jan 1, 2025 00:00:00").getTime();\nconst x = setInterval(function() {\n const now = new Date().getTime();\n const distance = countDownDate - now;\n const days = Math.floor(distance / (1000 * 60 * 60 * 24));\n const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));\n const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));\n const seconds = Math.floor((distance % (1000 * 60)) / 1000);\n document.getElementById("countdown").innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";\n if (distance < 0) { clearInterval(x); document.getElementById("countdown").innerHTML = "EXPIRED"; }\n}, 1000);', 'design.md': DEFAULT_DESIGN_MD } },
-    { id: 't15', title: 'Restaurant Menu', color: '#f59e0b', verified: true, author: 'CodeMaker AI', prompt: 'Design an elegant digital menu for a fine dining restaurant. Include sections for Starters, Mains, and Desserts with item names, descriptions, and prices.' },
-    { id: 't16', title: 'Crypto Tracker', color: '#8b5cf6', verified: true, author: 'CodeMaker AI', prompt: 'Build a cryptocurrency tracker UI. Show a list of top coins (Bitcoin, Ethereum, Solana) with their current price and 24h change percentage. Make it look like a pro trading app.' },
-    { id: 't17', title: 'Music Player UI', color: '#ec4899', verified: true, author: 'CodeMaker AI', prompt: 'Build a sleek music player UI. Include album art, track name, artist, a progress bar, and play/pause/next/prev controls. Use CSS for a glowing effect.' },
-    { id: 't18', title: 'Quiz App', color: '#10b981', verified: true, author: 'CodeMaker AI', prompt: 'Create a simple interactive quiz app with 3 questions about general knowledge. Track the score and show the result at the end.' },
-    { id: 't19', title: 'Recipe Finder', color: '#06b6d4', verified: true, author: 'CodeMaker AI', prompt: 'Build a recipe finder UI with a search bar and a grid of recipe cards. Use placeholder text for recipes.' },
-    { id: 't20', title: 'Job Board', color: '#64748b', verified: true, author: 'CodeMaker AI', prompt: 'Create a job board listing page. Show 5 job cards with company logo, job title, location, and a apply button.' },
-    { id: 't21', title: 'Social Media Feed', color: '#0ea5e9', verified: true, author: 'CodeMaker AI', prompt: 'Design a social media feed UI similar to Twitter or X. Include a sidebar, a main feed with posts, and a right sidebar for trends.' },
-    { id: 't22', title: 'Real Estate Listing', color: '#f59e0b', verified: true, author: 'CodeMaker AI', prompt: 'Build a real estate property listing page. Show a large house image, price, address, beds/baths, and a contact agent form.' },
-    { id: 't23', title: 'Fitness Tracker', color: '#ef4444', verified: true, author: 'CodeMaker AI', prompt: 'Create a fitness dashboard showing steps taken, calories burned, and a progress ring for daily goals.' },
-    { id: 't24', title: 'Event Booking', color: '#8b5cf6', verified: true, author: 'CodeMaker AI', prompt: 'Build an event booking page. Show an image of the event, date, venue, and a ticket selection dropdown with a book now button.' },
-    { id: 't25', title: 'Blog Homepage', color: '#14b8a6', verified: true, author: 'CodeMaker AI', prompt: 'Design a clean blog homepage. Feature one large post at the top and a grid of 4 smaller posts below. Include a newsletter signup section.' },
-    { id: 't26', title: 'Animated 404 Page', color: '#6366f1', verified: true, author: 'CodeMaker AI', prompt: 'Create a creative 404 Not Found error page. Include a funny message and a button to go back home. Make the 404 text bounce or float.', files: { 'index.html': '<div class="container"><h1>404</h1><p>Oops! The page you are looking for does not exist.</p><a href="/">Go Home</a></div>', 'style.css': 'body { margin: 0; font-family: sans-serif; background: #0f172a; color: white; height: 100vh; display: flex; justify-content: center; align-items: center; text-align: center; overflow: hidden; } .container { z-index: 2; } h1 { font-size: 10rem; margin: 0; color: #6366f1; text-shadow: 0 0 20px rgba(99, 102, 241, 0.5); animation: float 3s ease-in-out infinite; } p { font-size: 1.2rem; color: #94a3b8; margin-bottom: 30px; } a { padding: 10px 20px; background: #6366f1; color: white; text-decoration: none; border-radius: 6px; } @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }', 'script.js': '', 'design.md': DEFAULT_DESIGN_MD } },
-    { id: 't27', title: 'Contact Form', color: '#06b6d4', verified: true, author: 'CodeMaker AI', prompt: 'Design a contact form with Name, Email, Subject, and Message fields. Include front-end validation and a success message on submit.' },
-    { id: 't28', title: 'Data Visualization', color: '#ec4899', verified: true, author: 'CodeMaker AI', prompt: 'Build a data visualization dashboard using Chart.js or pure CSS bars. Show monthly revenue data.' },
-    { id: 't29', title: 'To-Do List', color: '#10b981', verified: true, author: 'CodeMaker AI', prompt: 'Create a to-do list app. Allow adding, marking as complete, and deleting tasks. Make it look modern with dark mode.' },
-    { id: 't30', title: 'Gradient Generator', color: '#8b5cf6', verified: true, author: 'CodeMaker AI', prompt: 'Build a CSS gradient generator tool. Allow users to pick two colors and copy the generated CSS code.' }
+    { id: 't4', title: 'Snake Game', color: '#10b981', verified: true, author: 'CodeMaker AI', prompt: 'Create a fully playable Snake game with score tracking and modern UI.' }
 ];
 
-let S = { projects: [], cur: null, gen: false, model: '2.0', activeFile: 'index.html', view: 'prev', currentTemplateId: null, githubToken: localStorage.getItem('gh_token') || '' };
+let S = { projects: [], cur: null, gen: false, model: '2.0', activeFile: 'index.html', view: 'prev', githubToken: localStorage.getItem('gh_token') || '', autoRefresh: true, zoom: 1, tasks: [] };
 let cm;
+let abortCtrl = null;
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
 function toast(m) { const t = document.getElementById('toast'); const d = document.createElement('div'); d.style.cssText = 'padding:12px 18px;background:#fff;border:1px solid #ccc;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.1);margin-bottom:8px;font-size:13px'; d.textContent = m; t.appendChild(d); setTimeout(() => d.remove(), 3000); }
@@ -445,6 +386,9 @@ function getSystemPrompt() {
     }
     if (p && p.lockedFiles && p.lockedFiles.length > 0) {
         prompt += `\n\n# LOCKED FILES\nThe following files are locked and MUST NOT be modified:\n${p.lockedFiles.join(', ')}\n`;
+    }
+    if (S.tasks.length > 0) {
+        prompt += `\n\n# CURRENT TASKS\nHere is the current task list. Please complete these:\n${S.tasks.map(t => '- [ ] ' + t).join('\n')}\n`;
     }
     return prompt;
 }
@@ -472,12 +416,18 @@ function renderGrid() {
 function renderTemplates() {
     const g = document.getElementById('tmpl-grid');
     g.innerHTML = TEMPLATES.map(t => `
-        <div class="proj-card" onclick="openTemplateModal('${t.id}')">
+        <div class="proj-card" onclick="useTemplate('${t.id}')">
             <div class="proj-card-thumb" style="background:linear-gradient(135deg, ${t.color}, #1e1b4b);"><i class="fas fa-rocket"></i></div>
             <div class="proj-name">${t.title} <i class="fas fa-check-circle verified-badge" title="Verified by CodeMaker AI"></i></div>
             <div class="proj-meta">by ${t.author}</div>
         </div>
     `).join('');
+}
+
+function useTemplate(id) {
+    const t = TEMPLATES.find(x => x.id === id);
+    if (!t) return;
+    openEditor(createProj(t.prompt, S.model).id);
 }
 
 function switchLibView(view) {
@@ -494,121 +444,68 @@ function switchLibView(view) {
     }
 }
 
+function getFileIcon(f) {
+    if (f.endsWith('.html')) return 'fa-html5';
+    if (f.endsWith('.css')) return 'fa-css3-alt';
+    if (f.endsWith('.js')) return 'fa-js';
+    if (f.endsWith('.md')) return 'fa-markdown';
+    return 'fa-file-code';
+}
+
 function fmtAI(content) {
     if (!content) return '';
     let html = '';
     const lines = content.split('\n');
     let inTaskList = false;
+    let tasksFound = false;
+
     lines.forEach(line => {
         if (line.startsWith('- [ ] ')) {
-            if (!inTaskList) { html += '<div class="task-list">'; inTaskList = true; }
-            html += `<div class="task-item"><i class="far fa-circle"></i> ${line.substring(6).trim()}</div>`;
+            tasksFound = true;
+            S.tasks.push(line.substring(6).trim());
+            if (!inTaskList) { inTaskList = true; }
         } else if (line.trim() === '') {
-            if (inTaskList) { html += '</div>'; inTaskList = false; }
+            if (inTaskList) { inTaskList = false; }
         } else {
-            if (inTaskList) { html += '</div>'; inTaskList = false; }
+            if (inTaskList) { inTaskList = false; }
             let h = line.replace(/</g, '&lt;').replace(/>/g, '&gt;');
             h = h.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             html += `<p>${h}</p>`;
         }
     });
-    if (inTaskList) html += '</div>';
+    
+    if (tasksFound) {
+        renderTasks();
+    }
     return html;
 }
 
-function openTemplateModal(id) {
-    const t = TEMPLATES.find(x => x.id === id);
-    if (!t) return;
-    S.currentTemplateId = id;
-    
-    document.getElementById('tmpl-modal-title').innerHTML = `${t.title} <i class="fas fa-check-circle verified-badge"></i>`;
-    
-    const chatSide = document.getElementById('tmpl-chat-side');
-    chatSide.innerHTML = '';
-    if (t.messages) {
-        t.messages.forEach(m => {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `msg ${m.role === 'user' ? 'user' : 'ai'}`;
-            msgDiv.style.animation = 'none';
-            let bubbleContent = m.content ? fmtAI(m.content) : '';
-            if (m.tool_calls) {
-                m.tool_calls.forEach(tc => {
-                    const args = JSON.parse(tc.function.arguments);
-                    if (tc.function.name === 'write_file') {
-                        bubbleContent += `<div class="tool-badge write"><i class="fas fa-check-circle"></i> Wrote ${args.filename}</div>`;
-                    } else if (tc.function.name === 'generate_asset') {
-                        bubbleContent += `<div class="tool-badge asset"><i class="fas fa-image"></i> Generated ${args.type}: ${args.prompt}</div>`;
-                    }
-                });
-            }
-            msgDiv.innerHTML = `<div class="msg-av"><i class="fas ${m.role === 'user' ? 'fa-user' : 'fa-robot'}"></i></div><div class="msg-bubble">${bubbleContent}</div>`;
-            chatSide.appendChild(msgDiv);
-        });
-    } else {
-        chatSide.innerHTML = `<div class="msg user" style="margin-bottom: 10px;"><div class="msg-av" style="background:#475569;"><i class="fas fa-user"></i></div><div class="msg-bubble" style="background:var(--bg2); color:var(--tx);">${t.prompt}</div></div>`;
+function renderTasks() {
+    const view = document.getElementById('tasks-view');
+    if (S.tasks.length === 0) {
+        view.innerHTML = '<div style="color:var(--mt);text-align:center;padding:40px;">No tasks yet. The AI will plan its work here.</div>';
+        return;
     }
-
-    const codeView = document.getElementById('tmpl-code-view');
-    if (t.files) {
-        const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${t.files['style.css']||''}</style></head><body>${t.files['index.html']||''}<script>${t.files['script.js']||''}<\/script></body></html>`;
-        document.getElementById('tmpl-prev-frame').srcdoc = html;
-        let codeStr = '';
-        Object.keys(t.files).forEach(f => {
-            codeStr += `<strong>${f}</strong>\n${(t.files[f]||'').replace(/</g, '&lt;').replace(/>/g, '&gt;')}\n\n`;
-        });
-        codeView.innerHTML = codeStr;
-    } else {
-        document.getElementById('tmpl-prev-frame').srcdoc = `<div style="display:flex;height:100vh;align-items:center;justify-content:center;font-family:sans-serif;background:#1e293b;color:#94a3b8;text-align:center;padding:20px;"><div><i class="fas fa-wand-magic-sparkles" style="font-size:32px;margin-bottom:16px;color:#6366f1;"></i><br>Click "Remix Template" to generate this with AI.</div></div>`;
-        codeView.innerHTML = `This template uses AI generation. Click "Remix" to start.`;
-    }
-    
-    document.getElementById('tmpl-modal').classList.add('show');
-}
-
-function switchTmplTab(tab) {
-    document.querySelectorAll('.tmpl-tab').forEach(t => t.classList.toggle('active', t.textContent.toLowerCase().includes(tab)));
-    document.getElementById('tmpl-prev-frame').style.display = tab === 'prev' ? 'block' : 'none';
-    document.getElementById('tmpl-code-view').style.display = tab === 'code' ? 'block' : 'none';
-}
-
-function remixCurrentTemplate() {
-    const t = TEMPLATES.find(x => x.id === S.currentTemplateId);
-    if (!t) return;
-    document.getElementById('tmpl-modal').classList.remove('show');
-    
-    const prompt = t.messages ? t.messages[0].content : t.prompt;
-    const p = createProj(prompt, S.model);
-    
-    if (t.files && t.messages) {
-        p.files = JSON.parse(JSON.stringify(t.files));
-        p.messages = JSON.parse(JSON.stringify(t.messages));
-        saveProjects();
-        openEditor(p.id);
-    } else {
-        openEditor(p.id);
-    }
+    view.innerHTML = `<div class="task-card">${S.tasks.map(t => `<div class="task-item"><i class="far fa-circle"></i> ${t}</div>`).join('')}</div>`;
 }
 
 function openEditor(id) {
     const p = S.projects.find(x => x.id === id); if (!p) return;
-    S.cur = id; S.model = p.model; S.activeFile = p.activeFile || 'index.html';
+    S.cur = id; S.model = p.model; S.activeFile = p.activeFile || 'index.html'; S.tasks = [];
     document.getElementById('home-view').style.display = 'none';
     document.getElementById('editor-view').classList.add('active');
     document.getElementById('ed-title').textContent = p.name;
     document.getElementById('ms-lbl').textContent = p.model;
-    renderChat(); renderFiles();
+    renderChat(); renderFiles(); renderTasks(); renderAssets();
     
     if (cm) {
         cm.setValue('');
         cm.setOption('mode', 'htmlmixed');
         cm.refresh();
     }
-    document.getElementById('prev-frame').srcdoc = '';
     
     loadFileToEditor();
     updatePreview();
-    renderAssets();
-    
     switchView('prev');
     
     if (p.messages.length === 1 && p.messages[0].role === 'user' && (!p.files['index.html'] || p.files['index.html'] === '')) {
@@ -623,6 +520,7 @@ function switchView(v) {
     document.querySelectorAll('.ptab').forEach(t => t.classList.toggle('active', t.dataset.view === v));
     document.getElementById('prev-frame').style.display = v === 'prev' ? 'block' : 'none';
     document.getElementById('code-view').style.display = v === 'code' ? 'flex' : 'none';
+    document.getElementById('tasks-view').style.display = v === 'tasks' ? 'flex' : 'none';
     document.getElementById('assets-view').style.display = v === 'assets' ? 'flex' : 'none';
     if (v === 'code') {
         loadFileToEditor();
@@ -638,11 +536,22 @@ function renderChat() {
         return;
     }
     
-    p.messages.forEach(m => {
+    p.messages.forEach((m, i) => {
         if (m.role === 'user') {
-            if (typeof m.content === 'string') addMsg('user', m.content, false);
+            if (typeof m.content === 'string') addMsg('user', m.content, false, i);
         } else if (m.role === 'assistant') {
-            if (m.content) addMsg('ai', m.content, false);
+            if (m.content) {
+                const msgDiv = addMsg('ai', fmtAI(m.content), false, i);
+                if (i === p.messages.length - 1 && !S.gen) {
+                    const actions = document.createElement('div');
+                    actions.className = 'msg-actions';
+                    actions.innerHTML = `
+                        <button class="msg-action-btn" onclick="copyMsg(${i})"><i class="fas fa-copy"></i> Copy</button>
+                        <button class="msg-action-btn" onclick="retryGen()"><i class="fas fa-redo"></i> Retry</button>
+                    `;
+                    msgDiv.querySelector('.msg-bubble').appendChild(actions);
+                }
+            }
             if (m.tool_calls) {
                 m.tool_calls.forEach(tc => {
                     const t = document.createElement('div');
@@ -665,15 +574,39 @@ function renderChat() {
     c.scrollTop = c.scrollHeight;
 }
 
-function addMsg(role, content, animate=true) {
+function addMsg(role, content, animate=true, msgIndex=-1) {
     const c = document.getElementById('chat-msgs');
     const w = c.querySelector('.chat-welcome'); if (w) w.remove();
     const row = document.createElement('div');
     row.className = `msg ${role}`;
     if (!animate) row.style.animation = 'none';
-    row.innerHTML = `<div class="msg-av"><i class="fas ${role === 'ai' ? 'fa-robot' : 'fa-user'}"></i></div><div class="msg-bubble">${content}</div>`;
+    row.innerHTML = `<div class="msg-av"><i class="fas ${role === 'ai' ? 'fa-robot' : 'fa-user'}"></i></div><div class="msg-bubble">${content}<div class="msg-progress-bar"></div></div>`;
+    if(msgIndex >= 0) row.dataset.msgIndex = msgIndex;
     c.appendChild(row); c.scrollTop = c.scrollHeight; return row;
 }
+
+window.copyMsg = function(index) {
+    const p = S.projects.find(x => x.id === S.cur);
+    const msg = p.messages[index];
+    if (msg && msg.content) {
+        navigator.clipboard.writeText(msg.content);
+        toast('Message copied!');
+    }
+};
+
+window.retryGen = function() {
+    const p = S.projects.find(x => x.id === S.cur);
+    if (!p || S.gen) return;
+    // Remove last assistant message
+    if (p.messages.length > 0 && p.messages[p.messages.length-1].role === 'assistant') {
+        p.messages.pop();
+    }
+    S.tasks = []; // Clear tasks
+    saveProjects();
+    renderChat();
+    renderTasks();
+    generate();
+};
 
 function renderFiles() {
     const p = S.projects.find(x => x.id === S.cur); if (!p) return;
@@ -682,7 +615,7 @@ function renderFiles() {
         const t = document.createElement('div');
         const isLocked = p.lockedFiles.includes(f);
         t.className = `file-tab ${f === S.activeFile ? 'active' : ''}`;
-        t.innerHTML = `${f} <span class="file-lock ${isLocked ? 'locked' : ''}" onclick="event.stopPropagation(); toggleLock('${f}')"><i class="fas ${isLocked ? 'fa-lock' : 'fa-lock-open'}"></i></span>`;
+        t.innerHTML = `<i class="fab ${getFileIcon(f)}"></i> ${f} <span class="file-lock ${isLocked ? 'locked' : ''}" onclick="event.stopPropagation(); toggleLock('${f}')"><i class="fas ${isLocked ? 'fa-lock' : 'fa-lock-open'}"></i></span>`;
         t.onclick = () => selectFile(f);
         bar.appendChild(t);
     });
@@ -720,6 +653,7 @@ function loadFileToEditor() {
 }
 
 function updatePreview() {
+    if (!S.autoRefresh) return;
     const p = S.projects.find(x => x.id === S.cur); if (!p) return;
     const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>${p.files['style.css']||''}</style></head><body>${p.files['index.html']||''}<script>${p.files['script.js']||''}<\/script></body></html>`;
     document.getElementById('prev-frame').srcdoc = html;
@@ -763,7 +697,10 @@ function renderAssets() {
         card.className = 'asset-card';
         card.innerHTML = `
             <div class="asset-preview">${asset.type === 'image' ? `<img src="${asset.url}" alt="${asset.prompt}">` : `<video src="${asset.url}" muted loop autoplay></video>`}</div>
-            <div class="asset-info"><div class="asset-type">${asset.type.toUpperCase()}</div><div class="asset-prompt">${asset.prompt}</div></div>
+            <div class="asset-info">
+                <div class="asset-type">${asset.type.toUpperCase()}</div>
+                <div class="asset-prompt">${asset.prompt}</div>
+            </div>
         `;
         view.appendChild(card);
     });
@@ -773,7 +710,6 @@ function renderAssets() {
 async function exportToGithub() {
     const p = S.projects.find(x => x.id === S.cur);
     if (!p) return;
-
     const modalBody = document.getElementById('generic-modal-body');
     document.getElementById('generic-modal-title').innerText = 'Export to GitHub';
     
@@ -814,7 +750,6 @@ async function startGithubPush() {
     
     modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> AI is writing README.md...</div>`;
 
-    // 1. Generate README
     let readmeContent = `# ${p.name}\n\nGenerated by CodeMaker AI.`;
     try {
         const filesConcat = Object.keys(p.files).map(f => 'File: ' + f + '\n\`\`\`\n' + p.files[f] + '\n\`\`\`\n').join('\n').substring(0, 3000);
@@ -839,7 +774,6 @@ async function startGithubPush() {
 
     modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Creating GitHub Repository...</div>`;
 
-    // 2. Create Repo
     const repoName = p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + uid().substring(0,4);
     let owner;
     try {
@@ -858,7 +792,6 @@ async function startGithubPush() {
 
     modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Pushing files...</div>`;
 
-    // 3. Push Files via Git Data API
     try {
         const treeItems = [];
         for (const filename in p.files) {
@@ -873,7 +806,6 @@ async function startGithubPush() {
             treeItems.push({ path: filename, mode: '100644', type: 'blob', sha: blobData.sha });
         }
         
-        // Add README.md
         const readmeBlobRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/git/blobs`, {
             method: 'POST',
             headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' },
@@ -882,7 +814,6 @@ async function startGithubPush() {
         const readmeBlobData = await readmeBlobRes.json();
         treeItems.push({ path: 'README.md', mode: '100644', type: 'blob', sha: readmeBlobData.sha });
 
-        // B. Create Tree
         const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/git/trees`, {
             method: 'POST',
             headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' },
@@ -891,7 +822,6 @@ async function startGithubPush() {
         if (!treeRes.ok) throw new Error('Failed to create tree');
         const treeData = await treeRes.json();
 
-        // C. Create Commit
         const commitRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/git/commits`, {
             method: 'POST',
             headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' },
@@ -900,7 +830,6 @@ async function startGithubPush() {
         if (!commitRes.ok) throw new Error('Failed to create commit');
         const commitData = await commitRes.json();
 
-        // D. Update Ref (main branch)
         await fetch(`https://api.github.com/repos/${owner}/${repoName}/git/refs/heads/main`, {
             method: 'PATCH',
             headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' },
@@ -943,6 +872,7 @@ async function callAI(messages, modelKey, tools) {
     const headers = { 'Content-Type':'application/json', 'Authorization':`Bearer ${API_KEY}` };
     try {
         const ctrl = new AbortController();
+        abortCtrl = ctrl;
         const timer = setTimeout(() => ctrl.abort(), 90000);
         const res = await fetch(API_URL, { signal: ctrl.signal, method:'POST', headers, body: JSON.stringify(body) });
         clearTimeout(timer);
@@ -953,7 +883,7 @@ async function callAI(messages, modelKey, tools) {
         }
         throw new Error(`Direct HTTP ${res.status}`);
     } catch(e) {
-        if (e.name === 'AbortError') throw new Error('Request timed out');
+        if (e.name === 'AbortError') throw new Error('Request aborted');
         const res = await fetch(PROXY + encodeURIComponent(API_URL), { method:'POST', headers, body: JSON.stringify(body) });
         if (res.ok) {
             const j = await res.json();
@@ -1000,11 +930,14 @@ async function generate() {
     const p = S.projects.find(x => x.id === S.cur);
     if (!p || S.gen) return;
     S.gen = true;
-    document.getElementById('chat-send').disabled = true;
+    updateSendButton();
     hideContinueButton();
     
-    const md = addMsg('ai', '<div class="spinner"></div> Thinking...', true);
+    // Add Thinking Message with Skeleton
+    const md = addMsg('ai', '', true);
+    md.classList.add('thinking');
     const statusLog = md.querySelector('.msg-bubble');
+    statusLog.innerHTML = '<div class="skeleton-line"></div><div class="skeleton-line" style="width:80%"></div><div class="skeleton-line" style="width:60%"></div><div class="msg-progress-bar"></div>';
     
     let currentMessages = [...p.messages];
     p.history.push({ ts: Date.now(), files: JSON.parse(JSON.stringify(p.files)) });
@@ -1020,7 +953,6 @@ async function generate() {
     
     try {
         while (true) {
-            statusLog.innerHTML = '<div class="spinner"></div> Thinking...';
             const res = await callAI(currentMessages, p.model, tools);
             const choice = { role: 'assistant', content: res.content, tool_calls: res.toolCalls.length ? res.toolCalls : undefined };
             currentMessages.push(choice);
@@ -1028,7 +960,8 @@ async function generate() {
             saveProjects();
             
             if (choice.tool_calls && choice.tool_calls.length) {
-                statusLog.innerHTML = choice.content || '';
+                statusLog.innerHTML = choice.content ? fmtAI(choice.content) : '';
+                md.classList.remove('thinking');
                 for (const tc of choice.tool_calls) {
                     const toolMsg = { role: "tool", tool_call_id: tc.id, name: tc.function.name };
                     if (tc.function.name === 'write_file') {
@@ -1058,22 +991,55 @@ async function generate() {
                     saveProjects();
                 }
             } else {
+                md.classList.remove('thinking');
                 if (res.finishReason === 'length') {
                     statusLog.innerHTML += '<br><span style="color:var(--warn)">⚠️ Cut off.</span>';
                     showContinueButton();
                     break;
                 }
-                statusLog.innerHTML = choice.content || "Done.";
+                statusLog.innerHTML = choice.content ? fmtAI(choice.content) : "Done.";
+                // Add action buttons
+                const actions = document.createElement('div');
+                actions.className = 'msg-actions';
+                actions.innerHTML = `
+                    <button class="msg-action-btn" onclick="copyMsg(${p.messages.length-1})"><i class="fas fa-copy"></i> Copy</button>
+                    <button class="msg-action-btn" onclick="retryGen()"><i class="fas fa-redo"></i> Retry</button>
+                `;
+                statusLog.appendChild(actions);
                 break;
             }
         }
     } catch(e) {
-        statusLog.innerHTML += `<br><span style="color:var(--dn)">Error: ${e.message}</span>`;
-        showContinueButton();
+        md.classList.remove('thinking');
+        if (e.message.includes('aborted')) {
+            statusLog.innerHTML = '<span style="color:var(--mt)">Generation stopped.</span>';
+        } else {
+            statusLog.innerHTML += `<br><span style="color:var(--dn)">Error: ${e.message}</span>`;
+            showContinueButton();
+        }
     }
     S.gen = false;
-    document.getElementById('chat-send').disabled = false;
+    updateSendButton();
     saveProjects();
+}
+
+function updateSendButton() {
+    const btn = document.getElementById('chat-send');
+    if (S.gen) {
+        btn.classList.add('stop');
+        btn.innerHTML = '<i class="fas fa-stop"></i>';
+        btn.disabled = false;
+        btn.onclick = () => { if(abortCtrl) abortCtrl.abort(); };
+    } else {
+        btn.classList.remove('stop');
+        btn.innerHTML = '<i class="fas fa-arrow-up"></i>';
+        btn.disabled = !document.getElementById('chat-input').value.trim();
+        btn.onclick = () => {
+            const inp = document.getElementById('chat-input'); const v = inp.value.trim(); if (!v || S.gen) return;
+            const p = S.projects.find(x => x.id === S.cur); p.messages.push({role:'user', content:v}); saveProjects(); addMsg('user', v);
+            inp.value = ''; document.getElementById('chat-send').disabled = true; generate();
+        };
+    }
 }
 
 let ti = 0, ci = 0, idl = false, ttr = null;
@@ -1084,6 +1050,12 @@ function runTyping() {
     const idea = ideas[ti % ideas.length];
     if (!idl) { ci++; document.getElementById('typed-text').textContent = idea.substring(0, ci); if (ci === idea.length) { idl = true; ttr = setTimeout(runTyping, 2000); return; } ttr = setTimeout(runTyping, 45); }
     else { ci--; document.getElementById('typed-text').textContent = idea.substring(0, ci); if (ci === 0) { idl = false; ti++; ttr = setTimeout(runTyping, 300); return; } ttr = setTimeout(runTyping, 25); }
+}
+
+function applyZoom() {
+    document.getElementById('prev-frame').style.transform = `scale(${S.zoom})`;
+    document.getElementById('prev-frame').style.transformOrigin = 'top left';
+    document.getElementById('zoom-text').innerText = Math.round(S.zoom * 100) + '%';
 }
 
 function init() {
@@ -1111,23 +1083,27 @@ function init() {
             body.classList.toggle('mobile-prev', t.dataset.tab === 'prev');
         });
         
-        document.getElementById('chat-send').onclick = () => {
-            const inp = document.getElementById('chat-input'); const v = inp.value.trim(); if (!v || S.gen) return;
-            const p = S.projects.find(x => x.id === S.cur); p.messages.push({role:'user', content:v}); saveProjects(); addMsg('user', v);
-            inp.value = ''; document.getElementById('chat-send').disabled = true; generate();
-        };
         document.getElementById('btn-enhance').onclick = enhancePrompt;
-        document.getElementById('chat-input').oninput = function() { document.getElementById('chat-send').disabled = !this.value.trim(); this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 120) + 'px'; };
-        document.getElementById('chat-input').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('chat-send').click(); } };
+        document.getElementById('chat-input').oninput = function() { if(!S.gen) document.getElementById('chat-send').disabled = !this.value.trim(); this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 120) + 'px'; };
+        document.getElementById('chat-input').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); updateSendButton(); if(!S.gen) document.getElementById('chat-send').click(); } };
+        
         document.getElementById('apply-btn').onclick = () => { const p = S.projects.find(x => x.id === S.cur); if (p) { p.files[S.activeFile] = cm ? cm.getValue() : ''; saveProjects(); updatePreview(); toast('Applied!'); } };
-        document.querySelectorAll('.pa-btn[data-res]').forEach(b => b.onclick = () => {
-            document.querySelectorAll('.pa-btn[data-res]').forEach(x => x.classList.remove('active')); b.classList.add('active');
-            const f = document.getElementById('prev-frame');
-            if (b.dataset.res === 'tab') f.style.maxWidth = '768px'; else if (b.dataset.res === 'mob') f.style.maxWidth = '375px'; else f.style.maxWidth = '100%';
-        });
+        
+        // Preview Controls
+        document.getElementById('zoom-in').onclick = () => { S.zoom = Math.min(2, S.zoom + 0.1); applyZoom(); };
+        document.getElementById('zoom-out').onclick = () => { S.zoom = Math.max(0.5, S.zoom - 0.1); applyZoom(); };
+        document.getElementById('auto-refresh').onclick = (e) => {
+            S.autoRefresh = !S.autoRefresh;
+            e.currentTarget.classList.toggle('active', S.autoRefresh);
+            if (S.autoRefresh) updatePreview();
+        };
+        document.getElementById('refresh-btn').onclick = () => { const p = S.projects.find(x => x.id === S.cur); if (p) { document.getElementById('prev-frame').srcdoc = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${p.files['style.css']||''}</style></head><body>${p.files['index.html']||''}<script>${p.files['script.js']||''}<\/script></body></html>`; } };
+
         document.getElementById('btn-share').onclick = () => { const p = S.projects.find(x => x.id === S.cur); navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}#share=${btoa(JSON.stringify(p.files))}`); toast('Link copied!'); };
         document.getElementById('btn-zip').onclick = async () => { if (typeof JSZip === 'undefined') return; const p = S.projects.find(x => x.id === S.cur); const zip = new JSZip(); Object.keys(p.files).forEach(f => zip.file(f, p.files[f])); const blob = await zip.generateAsync({type:'blob'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${p.name}.zip`; a.click(); };
         document.getElementById('btn-theme').onclick = () => { document.body.classList.toggle('dark'); if (cm) cm.setOption('theme', document.body.classList.contains('dark') ? 'material-darker' : 'default'); };
+        
+        updateSendButton(); // Initialize button state
     } catch(e) { console.error(e); toast("Init error."); }
 }
 document.addEventListener('DOMContentLoaded', init);
