@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CodeMaker AI</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
@@ -14,6 +14,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
 :root {
@@ -22,6 +23,7 @@
     --tx: #0f172a; --tx2: #475569; --mt: #94a3b8;
     --ac: #6366f1; --ac2: #818cf8; --acG: rgba(99,102,241,0.1);
     --dn: #ef4444; --ok: #10b981; --warn: #f59e0b; --pink: #ec4899;
+    --gh: #24292e;
 }
 body.dark { --bg: #0f172a; --bg2: #1e293b; --bg3: #334155; --panel: #1e293b; --border: #334155; --tx: #f1f5f9; --tx2: #cbd5e1; --mt: #64748b; }
 
@@ -34,36 +36,53 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes shine { 0% { left: -100px; } 60% { left: 100%; } to { left: 100%; } }
 
 /* HOME */
 #home-view { position: absolute; inset: 0; overflow-y: auto; z-index: 10; background: var(--bg); }
 .hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
 .hero-bg { position: absolute; inset: 0; background: url('https://i.postimg.cc/rpJxTXpm/IMG-1873.jpg') center/cover no-repeat; filter: brightness(0.9); z-index: -1; }
 .hero-bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,23,42,0.6) 0%, var(--bg) 100%); }
-.hero-content { text-align: center; max-width: 720px; z-index: 1; }
+.hero-content { text-align: center; max-width: 760px; z-index: 1; width: 100%; }
 .hero-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 999px; color: #fff; font-size: 12px; margin-bottom: 24px; backdrop-filter: blur(10px); }
-.hero-title { font-size: 3rem; font-weight: 700; color: #fff; margin-bottom: 16px; text-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.hero-title { font-size: 3rem; font-weight: 800; color: #fff; margin-bottom: 16px; text-shadow: 0 4px 20px rgba(0,0,0,0.3); }
 .hero-sub { color: rgba(255,255,255,0.9); font-size: 1.1rem; margin-bottom: 32px; }
 .model-pills { display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
-.mp { padding: 6px 14px; border-radius: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 12px; cursor: pointer; }
+.mp { padding: 6px 14px; border-radius: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 12px; cursor: pointer; transition: 0.2s; }
+.mp:hover { background: rgba(255,255,255,0.2); }
 .mp.active { background: var(--ac); border-color: var(--ac); }
-.input-box { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 8px; display: flex; gap: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); position: relative; }
-.input-box input { flex: 1; border: none; outline: none; padding: 12px; background: transparent; color: var(--tx); font-size: 15px; }
-.input-box button { padding: 0 20px; border: none; background: var(--ac); color: #fff; border-radius: 8px; font-weight: 600; cursor: pointer; }
-.typing-overlay { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--mt); pointer-events: none; font-size: 15px; display: flex; align-items: center; }
-.typing-overlay .cursor { width: 2px; height: 18px; background: var(--ac); margin-left: 2px; animation: blink 1s step-end infinite; }
+.input-box { background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 6px; display: flex; gap: 6px; align-items: center; box-shadow: 0 20px 50px rgba(0,0,0,0.2); position: relative; width: 100%; max-width: 680px; margin: 0 auto; height: 52px; }
+.input-box input { flex: 1; border: none; outline: none; padding: 0 20px; background: transparent; color: var(--tx); font-size: 15px; height: 100%; min-width: 0; }
+.input-box input::placeholder { color: var(--mt); }
+.typing-overlay { position: absolute; left: 26px; top: 50%; transform: translateY(-50%); color: var(--mt); pointer-events: none; font-size: 15px; display: flex; align-items: center; max-width: 60%; overflow: hidden; white-space: nowrap; }
+.typing-overlay .cursor { width: 2px; height: 16px; background: var(--ac); margin-left: 2px; animation: blink 1s step-end infinite; }
 .chips { display: flex; justify-content: center; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
 .chip { padding: 6px 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 12px; border-radius: 999px; cursor: pointer; }
 
-.proj-section { padding: 60px 24px; max-width: 1000px; margin: 0 auto; }
+/* Generate Button */
+.btn-gen { display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 15px -5px rgba(99, 102, 241, 0.6); transition: all 0.3s; position: relative; overflow: hidden; font-size: 13px; font-weight: 600; color: #fff; background: linear-gradient(135deg, #4f46e5, #7c3aed); border: 1px solid rgba(255,255,255,0.1); border-radius: 999px; padding: 0 16px; cursor: pointer; flex-shrink: 0; height: 40px; line-height: 1; margin-right: 2px; }
+.btn-gen:hover { box-shadow: 0 6px 20px -5px rgba(99, 102, 241, 0.8); border-color: rgba(255,255,255,0.3); transform: translateY(-1px); }
+.btn-gen .shine-effect { content: ''; position: absolute; width: 60px; height: 100%; background-image: linear-gradient(120deg, rgba(255,255,255,0) 30%, rgba(255,255,255,0.6), rgba(255,255,255,0) 70%); top: 0; left: -60px; pointer-events: none; }
+.btn-gen:hover .shine-effect { animation: shine 1.5s ease-out infinite; }
+.btn-gen svg { width: 14px; height: 14px; transition: transform 0.3s ease-in-out; }
+.btn-gen:hover svg { transform: translateX(3px); }
+
+/* Library View Toggle */
+.lib-toggle { display: flex; background: var(--bg2); padding: 4px; border-radius: 12px; margin-bottom: 24px; width: fit-content; margin-left: auto; margin-right: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+.lib-btn { padding: 8px 24px; border: none; background: none; cursor: pointer; border-radius: 8px; font-weight: 600; font-size: 14px; color: var(--mt); transition: 0.2s; display: flex; align-items: center; gap: 6px; }
+.lib-btn.active { background: var(--panel); color: var(--tx); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+
+.proj-section { padding: 0px 24px 120px; max-width: 1200px; margin: 0 auto; }
 .proj-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.proj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
-.proj-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; cursor: pointer; transition: 0.2s; position: relative; }
-.proj-card:hover { border-color: var(--ac); transform: translateY(-2px); }
-.proj-name { font-weight: 600; margin-bottom: 4px; }
+.proj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.proj-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
+.proj-card:hover { border-color: var(--ac); transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+.proj-card-thumb { height: 140px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 24px; font-weight: 700; }
+.proj-name { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; font-size: 15px; }
 .proj-meta { font-size: 12px; color: var(--mt); }
-.proj-del { position: absolute; top: 12px; right: 12px; color: var(--mt); opacity: 0; transition: 0.2s; cursor: pointer; }
+.proj-del { position: absolute; top: 12px; right: 12px; color: var(--mt); opacity: 0; transition: 0.2s; cursor: pointer; background: rgba(255,255,255,0.8); padding: 6px; border-radius: 6px; }
 .proj-card:hover .proj-del { opacity: 1; }
+.verified-badge { color: var(--ac); font-size: 12px; }
 
 /* EDITOR */
 #editor-view { position: absolute; inset: 0; display: none; flex-direction: column; z-index: 20; background: var(--bg); }
@@ -71,7 +90,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .ed-header { display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--border); height: 56px; }
 .ed-btn { width: 32px; height: 32px; border-radius: 6px; background: transparent; border: 1px solid transparent; color: var(--tx2); cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .ed-btn:hover { background: var(--bg2); border-color: var(--border); }
-.ed-title { font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ed-title { font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 8px; }
 .ed-actions { display: flex; gap: 4px; align-items: center; }
 .ms-dd { position: relative; }
 .ms-btn { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg2); color: var(--tx); cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; }
@@ -81,7 +100,6 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .ms-item:hover { background: var(--bg2); }
 .ms-item.active { background: var(--acG); color: var(--ac); }
 
-/* Added min-height: 0 to fix scrolling in flexbox */
 .ed-body { flex: 1; display: flex; overflow: hidden; min-height: 0; }
 
 /* CHAT */
@@ -91,7 +109,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .chat-welcome i { font-size: 28px; margin-bottom: 12px; color: var(--ac); }
 .chat-welcome h3 { color: var(--tx); margin-bottom: 6px; }
 .chat-acts { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 16px; }
-.chat-act { padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 11px; cursor: pointer; background: var(--bg2); }
+.chat-act { padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 11px; cursor: pointer; background: var(--bg2); text-align: left; }
 
 .msg { display: flex; gap: 10px; animation: fadeIn 0.3s; }
 .msg.user { flex-direction: row-reverse; }
@@ -103,27 +121,18 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .msg.ai .msg-bubble { background: var(--bg2); border: 1px solid var(--border); border-top-left-radius: 2px; }
 .msg.user .msg-bubble { background: var(--ac); color: #fff; border-top-right-radius: 2px; }
 
-/* Live Stream Text & Task List */
-.thinking-text { color: var(--mt); font-style: italic; }
-.cursor-blink { display: inline-block; width: 8px; height: 14px; background: var(--ac); margin-left: 2px; animation: blink 1s step-end infinite; vertical-align: text-bottom; }
-.task-list { margin: 8px 0; padding: 8px; background: rgba(99,102,241,0.05); border: 1px solid var(--border); border-radius: 8px; }
-.task-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 13px; color: var(--tx2); }
-.task-item i { width: 16px; text-align: center; color: var(--mt); }
-.task-item.active i { color: var(--ac); }
-
 .tool-badge { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; margin-top: 6px; background: var(--bg3); color: var(--tx2); }
 .tool-badge.write { background: rgba(16,185,129,0.1); color: var(--ok); }
 .tool-badge.asset { background: rgba(236,72,153,0.1); color: var(--pink); }
-.tool-badge.loading { background: rgba(99,102,241,0.1); color: var(--ac); }
 .spinner { width: 12px; height: 12px; border: 2px solid var(--mt); border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; }
 
 .chat-input-area { padding: 12px; border-top: 1px solid var(--border); background: var(--panel); }
 .chat-input-wrap { display: flex; gap: 8px; align-items: flex-end; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 4px 4px 4px 12px; }
-.chat-input { flex: 1; border: none; outline: none; resize: none; padding: 8px 0; font-size: 14px; max-height: 120px; background: transparent; color: var(--tx); font-family: 'Inter', sans-serif; }
+.chat-input { flex: 1; border: none; outline: none; resize: none; padding: 8px 0; font-size: 14px; max-height: 120px; background: transparent; color: var(--tx); font-family: 'Inter', sans-serif; min-width: 0; }
 .chat-icons { display: flex; gap: 2px; }
-.chat-icon { width: 30px; height: 30px; border: none; background: transparent; color: var(--mt); cursor: pointer; border-radius: 6px; }
+.chat-icon { width: 30px; height: 30px; border: none; background: transparent; color: var(--mt); cursor: pointer; border-radius: 6px; display:flex; align-items:center; justify-content:center; }
 .chat-icon:hover { color: var(--ac); background: var(--bg3); }
-.chat-send { width: 34px; height: 34px; border: none; background: var(--ac); color: #fff; border-radius: 8px; cursor: pointer; }
+.chat-send { width: 34px; height: 34px; border: none; background: var(--ac); color: #fff; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .chat-send:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* PREVIEW */
@@ -135,15 +144,61 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .pa-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: var(--panel); color: var(--mt); cursor: pointer; font-size: 11px; }
 .pa-btn.active { color: var(--ac); border-color: var(--ac); }
 
-.files-bar { display: flex; gap: 4px; padding: 6px 12px; background: var(--panel); border-bottom: 1px solid var(--border); }
-.file-tab { padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; color: var(--tx2); }
+.files-bar { display: flex; gap: 4px; padding: 6px 12px; background: var(--panel); border-bottom: 1px solid var(--border); overflow-x: auto; }
+.file-tab { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; color: var(--tx2); white-space: nowrap; }
 .file-tab.active { background: var(--bg2); color: var(--tx); font-weight: 500; }
+.file-lock { font-size: 10px; opacity: 0.6; cursor: pointer; }
+.file-lock.locked { color: var(--warn); opacity: 1; }
 
 .prev-main { flex: 1; display: flex; flex-direction: column; position: relative; background: #fff; min-height: 0; }
 .prev-frame { width: 100%; height: 100%; border: none; transition: max-width 0.3s; align-self: center; }
 .code-view { flex: 1; display: none; flex-direction: column; position: relative; min-height: 0; overflow: hidden; }
 .CodeMirror { height: 100% !important; font-size: 13px; }
 .apply-btn { position: absolute; bottom: 16px; right: 16px; padding: 8px 16px; border: none; background: var(--ac); color: #fff; border-radius: 8px; font-weight: 600; cursor: pointer; z-index: 10; }
+
+/* Assets View */
+.assets-view { flex: 1; display: none; flex-direction: column; overflow-y: auto; padding: 16px; background: var(--bg2); min-height: 0; }
+.asset-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
+.asset-preview { width: 100%; height: 200px; background: #000; display: flex; align-items: center; justify-content: center; }
+.asset-preview img, .asset-preview video { max-width: 100%; max-height: 100%; object-fit: cover; }
+.asset-info { padding: 12px; }
+.asset-type { font-size: 11px; font-weight: 700; color: var(--ac); text-transform: uppercase; margin-bottom: 4px; }
+.asset-prompt { font-size: 13px; color: var(--tx2); margin-bottom: 12px; }
+.asset-actions { display: flex; gap: 8px; }
+.asset-btn { flex: 1; padding: 6px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg2); color: var(--tx2); cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+.asset-btn.ok { background: var(--ok); color: #fff; border-color: transparent; }
+
+/* Template Modal */
+.tmpl-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 1001; display: none; align-items: center; justify-content: center; padding: 20px; }
+.tmpl-modal-overlay.show { display: flex; }
+.tmpl-modal-box { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 1100px; height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
+.tmpl-modal-header { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.tmpl-modal-title { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.tmpl-modal-body { flex: 1; display: flex; overflow: hidden; }
+.tmpl-chat-side { width: 320px; border-right: 1px solid var(--border); padding: 16px; overflow-y: auto; background: var(--bg); display: flex; flex-direction: column; gap: 12px; }
+.tmpl-prev-side { flex: 1; display: flex; flex-direction: column; background: var(--bg2); }
+.tmpl-tabs { display: flex; padding: 0 12px; background: var(--panel); border-bottom: 1px solid var(--border); }
+.tmpl-tab { padding: 10px 16px; border: none; background: none; color: var(--mt); font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; }
+.tmpl-tab.active { color: var(--ac); border-bottom-color: var(--ac); }
+.tmpl-prev-main { flex: 1; display: flex; flex-direction: column; position: relative; background: #fff; min-height: 0; }
+.tmpl-prev-frame { width: 100%; height: 100%; border: none; }
+.tmpl-code-view { flex: 1; display: none; flex-direction: column; overflow: auto; padding: 16px; background: #1e1e1e; color: #d4d4d4; font-family: 'JetBrains Mono', monospace; font-size: 12px; white-space: pre-wrap; }
+.tmpl-modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
+.remix-btn { padding: 10px 24px; background: var(--ac); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+
+/* Modals */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal-overlay.show { display: flex; }
+.modal-box { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 24px; width: 100%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.modal-title { font-size: 18px; font-weight: 700; }
+.modal-close { background: none; border: none; color: var(--mt); cursor: pointer; font-size: 24px; line-height: 1; }
+.modal-desc { font-size: 13px; color: var(--mt); margin-bottom: 16px; line-height: 1.5; }
+.modal-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--tx); font-family: 'Inter', sans-serif; font-size: 14px; margin-bottom: 12px; }
+.modal-btn { padding: 10px 20px; border-radius: 8px; border: none; background: var(--ac); color: #fff; cursor: pointer; font-weight: 600; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.modal-btn.gh { background: var(--gh); }
+.history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; font-size: 13px; }
+.restore-btn { padding: 6px 12px; background: var(--ac); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; }
 
 .mobile-tabs { display: none; }
 @media (max-width: 768px) {
@@ -152,14 +207,56 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
     .ed-body.mobile-prev .chat-panel { display: none; }
     .ed-body.mobile-prev .prev-panel { display: flex; }
     .mobile-tabs { display: flex; background: var(--panel); border-bottom: 1px solid var(--border); }
-    .mtab { flex: 1; padding: 10px; text-align: center; border: none; background: none; color: var(--mt); border-bottom: 2px solid transparent; }
+    .mtab { flex: 1; padding: 12px; text-align: center; border: none; background: none; color: var(--mt); font-weight: 500; border-bottom: 2px solid transparent; }
     .mtab.active { color: var(--ac); border-bottom-color: var(--ac); }
+    .input-box { flex-direction: column; border-radius: 24px; height: auto; padding: 12px; gap: 12px; }
+    .input-box input { padding-right: 20px; text-align: center; }
+    .typing-overlay { display: none; }
+    .btn-gen { width: 100%; justify-content: center; padding: 14px; font-size: 15px; height: auto; }
+    .mp { padding: 10px 18px; font-size: 14px; }
 }
 </style>
 </head>
 <body>
 
 <div id="toast" style="position:fixed;top:20px;right:20px;z-index:9999"></div>
+
+<!-- Generic Modal -->
+<div class="modal-overlay" id="generic-modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <div class="modal-title" id="generic-modal-title">Title</div>
+            <button class="modal-close" onclick="document.getElementById('generic-modal').classList.remove('show')">&times;</button>
+        </div>
+        <div id="generic-modal-body"></div>
+    </div>
+</div>
+
+<!-- Template Modal -->
+<div class="tmpl-modal-overlay" id="tmpl-modal">
+    <div class="tmpl-modal-box">
+        <div class="tmpl-modal-header">
+            <div class="tmpl-modal-title" id="tmpl-modal-title">Template Title</div>
+            <button class="modal-close" onclick="document.getElementById('tmpl-modal').classList.remove('show')">&times;</button>
+        </div>
+        <div class="tmpl-modal-body">
+            <div class="tmpl-chat-side" id="tmpl-chat-side"></div>
+            <div class="tmpl-prev-side">
+                <div class="tmpl-tabs">
+                    <button class="tmpl-tab active" onclick="switchTmplTab('prev')">Preview</button>
+                    <button class="tmpl-tab" onclick="switchTmplTab('code')">Code</button>
+                </div>
+                <div class="tmpl-prev-main">
+                    <iframe class="tmpl-prev-frame" id="tmpl-prev-frame"></iframe>
+                    <div class="tmpl-code-view" id="tmpl-code-view"></div>
+                </div>
+            </div>
+        </div>
+        <div class="tmpl-modal-footer">
+            <button class="remix-btn" onclick="remixCurrentTemplate()"><i class="fas fa- remix"></i> Remix Template</button>
+        </div>
+    </div>
+</div>
 
 <!-- HOME -->
 <div id="home-view">
@@ -168,7 +265,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
         <div class="hero-content">
             <div class="hero-badge"><i class="fas fa-bolt"></i> Powered by Agnes AI</div>
             <h1 class="hero-title">CodeMaker AI</h1>
-            <p class="hero-sub">Lightning fast code generation with split files and live preview.</p>
+            <p class="hero-sub">Lightning fast code generation with split files, live preview, and asset management.</p>
             <div class="model-pills" id="home-models">
                 <div class="mp active" data-model="2.0">2.0 Flash</div>
                 <div class="mp" data-model="1.5">1.5 Flash</div>
@@ -178,17 +275,38 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
             <div class="input-box">
                 <div class="typing-overlay" id="typing-overlay"><span id="typed-text"></span><span class="cursor"></span></div>
                 <input type="text" id="hero-input" autocomplete="off">
-                <button id="hero-submit">Generate</button>
+                <button id="hero-submit" class="btn-gen">
+                    <div class="shine-effect"></div>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg>
+                    Generate
+                </button>
             </div>
             <div class="chips" id="hero-chips"></div>
         </div>
     </div>
+    
     <div class="proj-section">
-        <div class="proj-header">
-            <h2>Projects</h2>
-            <button style="padding:8px 16px;border:none;background:var(--ac);color:#fff;border-radius:8px;cursor:pointer" id="new-btn">New Project</button>
+        <div class="lib-toggle">
+            <button class="lib-btn active" id="tab-projects" onclick="switchLibView('projects')"><i class="fas fa-folder"></i> My Projects</button>
+            <button class="lib-btn" id="tab-templates" onclick="switchLibView('templates')"><i class="fas fa-layout-template"></i> Templates</button>
         </div>
-        <div class="proj-grid" id="proj-grid"></div>
+        
+        <!-- Projects View -->
+        <div id="projects-view">
+            <div class="proj-header">
+                <h2>Your Projects</h2>
+                <button style="padding:8px 16px;border:none;background:var(--ac);color:#fff;border-radius:8px;cursor:pointer" id="new-btn">New Project</button>
+            </div>
+            <div class="proj-grid" id="proj-grid"></div>
+        </div>
+
+        <!-- Templates View -->
+        <div id="templates-view" style="display:none;">
+            <div class="proj-header">
+                <h2>Verified Templates</h2>
+            </div>
+            <div class="proj-grid" id="tmpl-grid"></div>
+        </div>
     </div>
 </div>
 
@@ -209,7 +327,8 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
         </div>
         
         <div class="ed-actions">
-            <button class="ed-btn" id="btn-cdn" title="Dependencies"><i class="fas fa-cube"></i></button>
+            <button class="ed-btn" id="btn-github" title="Export to GitHub"><i class="fab fa-github"></i></button>
+            <button class="ed-btn" id="btn-history" title="Version History"><i class="fas fa-history"></i></button>
             <button class="ed-btn" id="btn-share" title="Share"><i class="fas fa-share"></i></button>
             <button class="ed-btn" id="btn-zip" title="Download ZIP"><i class="fas fa-download"></i></button>
             <button class="ed-btn" id="btn-theme" title="Theme"><i class="fas fa-moon"></i></button>
@@ -224,13 +343,14 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
     <div class="ed-body mobile-chat" id="ed-body">
         <div class="chat-panel">
             <div class="chat-msgs" id="chat-msgs"></div>
+            <div class="continue-wrap" id="continue-wrap" style="padding: 0 16px 12px; display: none;">
+                <button class="continue-btn" style="width: 100%; padding: 10px; background: var(--warn); color: #000; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="continueGen()"><i class="fas fa-forward"></i> Continue Generation</button>
+            </div>
             <div class="chat-input-area">
                 <div class="chat-input-wrap">
                     <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask AI to build..."></textarea>
                     <div class="chat-icons">
-                        <button class="chat-icon" id="btn-tpl" title="Templates"><i class="fas fa-magic"></i></button>
-                        <button class="chat-icon" id="btn-img" title="Image to Code"><i class="fas fa-image"></i></button>
-                        <button class="chat-icon" id="btn-voice" title="Voice Input"><i class="fas fa-microphone"></i></button>
+                        <button class="chat-icon" id="btn-enhance" title="Enhance Prompt"><i class="fas fa-wand-magic-sparkles"></i></button>
                     </div>
                     <button class="chat-send" id="chat-send" disabled><i class="fas fa-arrow-up"></i></button>
                 </div>
@@ -241,6 +361,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
             <div class="prev-tabs">
                 <button class="ptab active" data-view="prev">Preview</button>
                 <button class="ptab" data-view="code">Code</button>
+                <button class="ptab" data-view="assets">Assets</button>
                 <div class="prev-actions">
                     <button class="pa-btn" data-res="full" title="Desktop"><i class="fas fa-desktop"></i></button>
                     <button class="pa-btn" data-res="tab" title="Tablet"><i class="fas fa-tablet-alt"></i></button>
@@ -254,6 +375,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
                     <textarea id="code-editor" spellcheck="false"></textarea>
                     <button class="apply-btn" id="apply-btn">Apply Changes</button>
                 </div>
+                <div class="assets-view" id="assets-view"></div>
             </div>
         </div>
     </div>
@@ -267,53 +389,69 @@ const API_KEY = 'sk-qZB4ieEv5UdIrYK3eEHAfdAv5xXYKLsVD7bAd9Kg7EQuDYF3';
 const PROXY = 'https://corsproxy.io/?url=';
 const MODELS = { '2.0':'agnes-2.0-flash', '1.5':'agnes-1.5-flash', 'video':'agnes-video-v2.0', 'image':'agnes-image-2.1-flash' };
 
-const SP = `You are CodeMaker AI. 
-1. First, output a brief markdown checklist of your plan using "- [ ]". Explain your steps clearly.
-2. Then, output code in exactly three blocks: \`\`\`html, \`\`\`css, and \`\`\`javascript. 
-3. CRITICAL: You MUST output the FULL code for all files, even if you are only modifying one small part. FAILURE TO OUTPUT FULL CODE WILL BREAK THE APP. DO NOT TRUNCATE OR USE COMMENTS LIKE "<!-- existing code -->".
-4. HTML is body only. No external files. Minimal text.
-5. If the user asks for an image, picture, photo, or video, you MUST call the generate_asset tool. Do NOT use SVG placeholders. The tool will return a URL (which may be a very long base64 data URI). Put it directly into the img src.`;
+const DEFAULT_DESIGN_MD = `# Design System\n\n## Aesthetics\nModern, sleek, and visually striking. NEVER use default browser styles.\n\n## Colors\nUse a sophisticated palette. Prefer dark themes (e.g., #0f172a background, #f1f5f9 text) with vibrant, glowing accents (indigo, violet, fuchsia). Use CSS variables.\n\n## Typography\nUse 'Inter' for sans-serif and 'JetBrains Mono' for code. Large, bold headings (clamp up to 4rem) with tight tracking. Muted, readable body text.\n\n## Layout\nGenerous whitespace (padding: 2rem+). Centered max-width containers (1200px). Fully responsive Flexbox/Grid.\n\n## Components\nBackgrounds should be subtle (rgba). Use 1px solid borders with low opacity. Border-radius 12px-16px. Use backdrop-filter: blur() for glassmorphism.\n\n## Interactions\nSmooth transitions (0.3s ease). Hover states should scale slightly (1.02) and increase glow/shadow.`;
 
-const ASSET_TOOL = {
-    type: "function",
-    function: {
-        name: "generate_asset",
-        description: "Generates an image or video and returns a URL.",
-        parameters: {
-            type: "object",
-            properties: {
-                type: { type: "string", enum: ["image", "video"] },
-                prompt: { type: "string" }
-            },
-            required: ["type", "prompt"]
-        }
-    }
-};
+const SP = `You are CodeMaker AI, an autonomous coding agent.\nCRITICAL RULE: You MUST output the FULL code for all files. Do NOT truncate.\nTo prevent timeouts, you MUST use the 'write_file' tool to write code. DO NOT output code in markdown blocks. \n\n# FILE SYSTEM\nYou can create ANY file type (e.g., index.html, style.css, script.js, App.tsx, main.py, db.json, design.md).\nWrite files one by one using the 'write_file' tool. Wait for confirmation after each file before writing the next.\nIf the user asks for a web app, ensure you write standard web files (index.html, style.css, script.js) for the live preview to work.\n\n# DESIGN SYSTEM (design.md)\nYou MUST strictly follow the design rules specified in the project's 'design.md' file. If the user asks for a design change, update the 'design.md' file using the 'write_file' tool.\n\n# LOCKED FILES\nIf a file is marked as "locked", you MUST NOT modify it. Output the exact same content if asked to write to it.\n\n# ASSETS & ANIMATIONS\nIf the user asks for a video or animation, use the 'generate_asset' tool with type="video". \nIf the user asks for an image, picture, or photo, use the 'generate_asset' tool with type="image". \nDo NOT use SVG placeholders. Put the returned URL directly into the img/video src.\nFor scroll animations, use IntersectionObserver in script.js.\nFor video backgrounds, make them full-screen, looping, and muted with a dark overlay.`;
 
+// 30 Templates Definition
+// 3 are fully baked for instant remix, 27 are prompt-based for AI generation
 const TEMPLATES = [
-    { title: "SaaS Landing Page", prompt: "Build a modern SaaS landing page hero section with a gradient background, headline, and CTA button." },
-    { title: "Admin Dashboard", prompt: "Create an admin dashboard layout with a sidebar and a main content area for stats." },
-    { title: "Video Portfolio", prompt: "Build a portfolio website that features a stock video in the hero section." },
-    { title: "Snake Game", prompt: "Create a fully playable Snake game with score tracking." }
+    { id: 't1', title: 'SaaS Landing Page', color: '#6366f1', verified: true, author: 'CodeMaker AI', prompt: 'Build a high-converting SaaS landing page. Include a sticky navbar, a hero section with a gradient background, feature cards with hover effects, and a footer. Use modern glassmorphism.' },
+    { id: 't2', title: 'Scroll Animation Portfolio', color: '#ec4899', verified: true, author: 'CodeMaker AI', prompt: 'Build a personal portfolio website. Use IntersectionObserver to fade in elements as the user scrolls down. Include a hero section, an about me section, and a projects grid.' },
+    { id: 't3', title: 'Video Background Hero', color: '#14b8a6', verified: true, author: 'CodeMaker AI', prompt: 'Build a hero section with a generated video as a full-screen background. Overlay a dark gradient and centered white text. Make the video loop and muted.' },
+    { id: 't4', title: 'Snake Game', color: '#10b981', verified: true, author: 'CodeMaker AI', prompt: 'Create a fully playable Snake game with score tracking and modern UI.' },
+    { id: 't5', title: 'Weather Dashboard', color: '#0ea5e9', verified: true, author: 'CodeMaker AI', prompt: 'Create a weather dashboard with mock data. Show temperature, humidity, and a 5-day forecast in a grid layout.' },
+    { id: 't6', title: 'E-commerce Product Page', color: '#f59e0b', verified: true, author: 'CodeMaker AI', prompt: 'Build an e-commerce product detail page. Include an image gallery, product title, price, quantity selector, and an add to cart button. Make it look premium.' },
+    { id: 't7', title: 'Admin Dashboard', color: '#8b5cf6', verified: true, author: 'CodeMaker AI', prompt: 'Create an admin dashboard layout with a sidebar navigation, a top header, and stat cards showing user count, revenue, and active sessions. Use charts if possible.' },
+    { id: 't8', title: 'Pomodoro Timer', color: '#ef4444', verified: true, author: 'CodeMaker AI', prompt: 'Build a Pomodoro timer app with a circular countdown timer, start/pause/reset buttons, and a session counter.' },
+    { id: 't9', title: 'Expense Tracker', color: '#06b6d4', verified: true, author: 'CodeMaker AI', prompt: 'Create an expense tracker UI. Include a form to add expenses (amount, category, date) and a list showing the recent expenses with a total balance calculation.' },
+    { id: 't10', title: 'Markdown Editor', color: '#64748b', verified: true, author: 'CodeMaker AI', prompt: 'Build a live markdown editor. Split screen with text area on the left and rendered HTML preview on the right.' },
+    { id: 't11', title: 'Kanban Board', color: '#6366f1', verified: true, author: 'CodeMaker AI', prompt: 'Build a Kanban board with 3 columns: To Do, In Progress, Done. Allow adding new cards to each column.' },
+    { id: 't12', title: 'AI Image Gallery', color: '#ec4899', verified: true, author: 'CodeMaker AI', prompt: 'Generate a responsive masonry image gallery. Use CSS grid. When an image is clicked, open it in a full-screen lightbox modal.' },
+    { id: 't13', title: 'Pricing Table', color: '#10b981', verified: true, author: 'CodeMaker AI', prompt: 'Design a 3-tier pricing table (Basic, Pro, Enterprise) with a monthly/yearly toggle switch. Highlight the Pro tier. Make it look highly converting.', files: { 'index.html': '<div class="pricing-container"><div class="toggle-switch"><span>Monthly</span><input type="checkbox" id="billing-toggle"><label for="billing-toggle"></label><span>Yearly</span></div><div class="cards"><div class="card basic"><h3>Basic</h3><div class="price"><span class="amount">$9</span><span class="period">/mo</span></div><ul><li>10 Projects</li><li>Basic Support</li></ul><button>Choose</button></div><div class="card pro"><span class="badge">Popular</span><h3>Pro</h3><div class="price"><span class="amount">$29</span><span class="period">/mo</span></div><ul><li>Unlimited Projects</li><li>Priority Support</li></ul><button>Choose</button></div><div class="card enterprise"><h3>Enterprise</h3><div class="price"><span class="amount">$99</span><span class="period">/mo</span></div><ul><li>Dedicated Server</li><li>24/7 Support</li></ul><button>Choose</button></div></div></div>', 'style.css': 'body { background: #0f172a; color: #f1f5f9; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; } .pricing-container { text-align: center; } .toggle-switch { margin-bottom: 40px; display: flex; align-items: center; justify-content: center; gap: 10px; } input[type="checkbox"] { display: none; } label { width: 50px; height: 24px; background: #334155; border-radius: 12px; position: relative; cursor: pointer; transition: 0.3s; } label::after { content: ""; position: absolute; width: 18px; height: 18px; background: #fff; border-radius: 50%; top: 3px; left: 3px; transition: 0.3s; } input:checked + label { background: #6366f1; } input:checked + label::after { left: 29px; } .cards { display: flex; gap: 20px; } .card { background: #1e293b; padding: 30px; border-radius: 12px; width: 250px; position: relative; border: 1px solid #334155; } .card.pro { border-color: #6366f1; transform: scale(1.05); } .badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #6366f1; padding: 4px 12px; border-radius: 6px; font-size: 12px; } .price { margin: 20px 0; } .amount { font-size: 36px; font-weight: bold; } ul { list-style: none; padding: 0; margin: 20px 0; text-align: left; } li { margin-bottom: 10px; color: #94a3b8; } button { width: 100%; padding: 10px; background: #334155; border: none; color: #fff; border-radius: 6px; cursor: pointer; } .card.pro button { background: #6366f1; }', 'script.js': 'document.getElementById("billing-toggle").addEventListener("change", function() {\n const amounts = document.querySelectorAll(".amount");\n if(this.checked) {\n amounts[0].innerText = "$90";\n amounts[1].innerText = "$290";\n amounts[2].innerText = "$990";\n } else {\n amounts[0].innerText = "$9";\n amounts[1].innerText = "$29";\n amounts[2].innerText = "$99";\n }\n});', 'design.md': DEFAULT_DESIGN_MD } },
+    { id: 't14', title: 'Coming Soon Page', color: '#0ea5e9', verified: true, author: 'CodeMaker AI', prompt: 'Build a "Coming Soon" landing page with a countdown timer, an email capture form, and a subtle particle or animated background.', files: { 'index.html': '<div class="container"><h1>We\'re Building Something Awesome</h1><div id="countdown"></div><form><input type="email" placeholder="Enter your email" required><button type="submit">Notify Me</button></form></div>', 'style.css': 'body { margin: 0; font-family: sans-serif; background: linear-gradient(135deg, #0f172a, #1e1b4b); color: white; height: 100vh; display: flex; justify-content: center; align-items: center; text-align: center; } .container { max-width: 600px; } h1 { font-size: 3rem; margin-bottom: 20px; } #countdown { font-size: 2rem; margin-bottom: 40px; letter-spacing: 5px; } input { padding: 15px; width: 300px; border: none; border-radius: 8px; margin-right: 10px; } button { padding: 15px 30px; background: #6366f1; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }', 'script.js': 'const countDownDate = new Date("Jan 1, 2025 00:00:00").getTime();\nconst x = setInterval(function() {\n const now = new Date().getTime();\n const distance = countDownDate - now;\n const days = Math.floor(distance / (1000 * 60 * 60 * 24));\n const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));\n const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));\n const seconds = Math.floor((distance % (1000 * 60)) / 1000);\n document.getElementById("countdown").innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s ";\n if (distance < 0) { clearInterval(x); document.getElementById("countdown").innerHTML = "EXPIRED"; }\n}, 1000);', 'design.md': DEFAULT_DESIGN_MD } },
+    { id: 't15', title: 'Restaurant Menu', color: '#f59e0b', verified: true, author: 'CodeMaker AI', prompt: 'Design an elegant digital menu for a fine dining restaurant. Include sections for Starters, Mains, and Desserts with item names, descriptions, and prices.' },
+    { id: 't16', title: 'Crypto Tracker', color: '#8b5cf6', verified: true, author: 'CodeMaker AI', prompt: 'Build a cryptocurrency tracker UI. Show a list of top coins (Bitcoin, Ethereum, Solana) with their current price and 24h change percentage. Make it look like a pro trading app.' },
+    { id: 't17', title: 'Music Player UI', color: '#ec4899', verified: true, author: 'CodeMaker AI', prompt: 'Build a sleek music player UI. Include album art, track name, artist, a progress bar, and play/pause/next/prev controls. Use CSS for a glowing effect.' },
+    { id: 't18', title: 'Quiz App', color: '#10b981', verified: true, author: 'CodeMaker AI', prompt: 'Create a simple interactive quiz app with 3 questions about general knowledge. Track the score and show the result at the end.' },
+    { id: 't19', title: 'Recipe Finder', color: '#06b6d4', verified: true, author: 'CodeMaker AI', prompt: 'Build a recipe finder UI with a search bar and a grid of recipe cards. Use placeholder text for recipes.' },
+    { id: 't20', title: 'Job Board', color: '#64748b', verified: true, author: 'CodeMaker AI', prompt: 'Create a job board listing page. Show 5 job cards with company logo, job title, location, and a apply button.' },
+    { id: 't21', title: 'Social Media Feed', color: '#0ea5e9', verified: true, author: 'CodeMaker AI', prompt: 'Design a social media feed UI similar to Twitter or X. Include a sidebar, a main feed with posts, and a right sidebar for trends.' },
+    { id: 't22', title: 'Real Estate Listing', color: '#f59e0b', verified: true, author: 'CodeMaker AI', prompt: 'Build a real estate property listing page. Show a large house image, price, address, beds/baths, and a contact agent form.' },
+    { id: 't23', title: 'Fitness Tracker', color: '#ef4444', verified: true, author: 'CodeMaker AI', prompt: 'Create a fitness dashboard showing steps taken, calories burned, and a progress ring for daily goals.' },
+    { id: 't24', title: 'Event Booking', color: '#8b5cf6', verified: true, author: 'CodeMaker AI', prompt: 'Build an event booking page. Show an image of the event, date, venue, and a ticket selection dropdown with a book now button.' },
+    { id: 't25', title: 'Blog Homepage', color: '#14b8a6', verified: true, author: 'CodeMaker AI', prompt: 'Design a clean blog homepage. Feature one large post at the top and a grid of 4 smaller posts below. Include a newsletter signup section.' },
+    { id: 't26', title: 'Animated 404 Page', color: '#6366f1', verified: true, author: 'CodeMaker AI', prompt: 'Create a creative 404 Not Found error page. Include a funny message and a button to go back home. Make the 404 text bounce or float.', files: { 'index.html': '<div class="container"><h1>404</h1><p>Oops! The page you are looking for does not exist.</p><a href="/">Go Home</a></div>', 'style.css': 'body { margin: 0; font-family: sans-serif; background: #0f172a; color: white; height: 100vh; display: flex; justify-content: center; align-items: center; text-align: center; overflow: hidden; } .container { z-index: 2; } h1 { font-size: 10rem; margin: 0; color: #6366f1; text-shadow: 0 0 20px rgba(99, 102, 241, 0.5); animation: float 3s ease-in-out infinite; } p { font-size: 1.2rem; color: #94a3b8; margin-bottom: 30px; } a { padding: 10px 20px; background: #6366f1; color: white; text-decoration: none; border-radius: 6px; } @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }', 'script.js': '', 'design.md': DEFAULT_DESIGN_MD } },
+    { id: 't27', title: 'Contact Form', color: '#06b6d4', verified: true, author: 'CodeMaker AI', prompt: 'Design a contact form with Name, Email, Subject, and Message fields. Include front-end validation and a success message on submit.' },
+    { id: 't28', title: 'Data Visualization', color: '#ec4899', verified: true, author: 'CodeMaker AI', prompt: 'Build a data visualization dashboard using Chart.js or pure CSS bars. Show monthly revenue data.' },
+    { id: 't29', title: 'To-Do List', color: '#10b981', verified: true, author: 'CodeMaker AI', prompt: 'Create a to-do list app. Allow adding, marking as complete, and deleting tasks. Make it look modern with dark mode.' },
+    { id: 't30', title: 'Gradient Generator', color: '#8b5cf6', verified: true, author: 'CodeMaker AI', prompt: 'Build a CSS gradient generator tool. Allow users to pick two colors and copy the generated CSS code.' }
 ];
 
-const CDNS = [
-    { name: "Tailwind CSS", url: "https://cdn.tailwindcss.com", type: "js" },
-    { name: "FontAwesome", url: "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css", type: "css" },
-    { name: "Chart.js", url: "https://cdn.jsdelivr.net/npm/chart.js", type: "js" }
-];
-
-let S = { projects: [], cur: null, gen: false, model: '2.0', activeFile: 'index.html', view: 'prev', cdns: [] };
+let S = { projects: [], cur: null, gen: false, model: '2.0', activeFile: 'index.html', view: 'prev', currentTemplateId: null, githubToken: localStorage.getItem('gh_token') || '' };
 let cm;
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
 function toast(m) { const t = document.getElementById('toast'); const d = document.createElement('div'); d.style.cssText = 'padding:12px 18px;background:#fff;border:1px solid #ccc;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.1);margin-bottom:8px;font-size:13px'; d.textContent = m; t.appendChild(d); setTimeout(() => d.remove(), 3000); }
-function save() { try { localStorage.setItem('cm_proj', JSON.stringify(S.projects)); } catch(e){} }
-function load() { try { const d = localStorage.getItem('cm_proj'); S.projects = d ? JSON.parse(d) : []; S.projects = S.projects.map(p => { if (!p.files) p.files = { 'index.html': '', 'style.css': '', 'script.js': '' }; return p; }); } catch(e) { S.projects = []; } }
 
-function createProj(prompt) {
-    const p = { id: uid(), name: prompt.length > 40 ? prompt.substring(0,37)+'...' : prompt, model: S.model, messages: [{role:'user', content:prompt}], files: {'index.html':'', 'style.css':'', 'script.js':''}, activeFile: 'index.html', ts: Date.now(), cdns: [] };
-    S.projects.unshift(p); save(); return p;
+function saveProjects() { try { localStorage.setItem('cm_proj', JSON.stringify(S.projects)); } catch(e){} }
+function loadProjects() { try { const d = localStorage.getItem('cm_proj'); S.projects = d ? JSON.parse(d) : []; S.projects = S.projects.map(p => { if (!p.files) p.files = { 'index.html': '', 'style.css': '', 'script.js': '', 'design.md': DEFAULT_DESIGN_MD }; if (!p.assets) p.assets = []; if (!p.history) p.history = []; if (!p.lockedFiles) p.lockedFiles = []; if (!p.files['design.md']) p.files['design.md'] = DEFAULT_DESIGN_MD; return p; }); } catch(e) { S.projects = []; } }
+
+function getSystemPrompt() {
+    let prompt = SP;
+    const p = S.projects.find(x => x.id === S.cur);
+    if (p && p.files['design.md']) {
+        prompt += `\n\n# PROJECT DESIGN RULES (design.md)\nYou MUST strictly follow these design rules for this project:\n${p.files['design.md']}\n`;
+    }
+    if (p && p.lockedFiles && p.lockedFiles.length > 0) {
+        prompt += `\n\n# LOCKED FILES\nThe following files are locked and MUST NOT be modified:\n${p.lockedFiles.join(', ')}\n`;
+    }
+    return prompt;
+}
+
+function createProj(prompt, model) {
+    const p = { id: uid(), name: prompt.length > 40 ? prompt.substring(0,37)+'...' : prompt, model: model || S.model, messages: [{role:'user', content:prompt}], files: {'index.html':'', 'style.css':'', 'script.js':'', 'design.md': DEFAULT_DESIGN_MD}, assets: [], history: [], lockedFiles: [], activeFile: 'index.html', ts: Date.now() };
+    S.projects.unshift(p); saveProjects(); return p;
 }
 
 function renderGrid() {
@@ -321,18 +459,139 @@ function renderGrid() {
     if (!S.projects.length) { g.innerHTML = '<div style="color:var(--mt);text-align:center">No projects yet</div>'; return; }
     g.innerHTML = S.projects.map(p => `
         <div class="proj-card" data-id="${p.id}">
+            <div class="proj-card-thumb" style="background:linear-gradient(135deg, var(--ac), var(--ac2));"><i class="fas fa-code"></i></div>
             <div class="proj-name">${p.name}</div>
             <div class="proj-meta">${Object.keys(p.files).length} files</div>
             <div class="proj-del" data-del="${p.id}"><i class="fas fa-trash"></i></div>
         </div>
     `).join('');
     g.querySelectorAll('.proj-card').forEach(c => c.onclick = e => { if(e.target.closest('.proj-del')) return; openEditor(c.dataset.id); });
-    g.querySelectorAll('[data-del]').forEach(b => b.onclick = e => { e.stopPropagation(); S.projects = S.projects.filter(p => p.id !== b.dataset.del); save(); renderGrid(); });
+    g.querySelectorAll('[data-del]').forEach(b => b.onclick = e => { e.stopPropagation(); S.projects = S.projects.filter(p => p.id !== b.dataset.del); saveProjects(); renderGrid(); });
+}
+
+function renderTemplates() {
+    const g = document.getElementById('tmpl-grid');
+    g.innerHTML = TEMPLATES.map(t => `
+        <div class="proj-card" onclick="openTemplateModal('${t.id}')">
+            <div class="proj-card-thumb" style="background:linear-gradient(135deg, ${t.color}, #1e1b4b);"><i class="fas fa-rocket"></i></div>
+            <div class="proj-name">${t.title} <i class="fas fa-check-circle verified-badge" title="Verified by CodeMaker AI"></i></div>
+            <div class="proj-meta">by ${t.author}</div>
+        </div>
+    `).join('');
+}
+
+function switchLibView(view) {
+    if (view === 'projects') {
+        document.getElementById('projects-view').style.display = 'block';
+        document.getElementById('templates-view').style.display = 'none';
+        document.getElementById('tab-projects').classList.add('active');
+        document.getElementById('tab-templates').classList.remove('active');
+    } else {
+        document.getElementById('projects-view').style.display = 'none';
+        document.getElementById('templates-view').style.display = 'block';
+        document.getElementById('tab-projects').classList.remove('active');
+        document.getElementById('tab-templates').classList.add('active');
+    }
+}
+
+function fmtAI(content) {
+    if (!content) return '';
+    let html = '';
+    const lines = content.split('\n');
+    let inTaskList = false;
+    lines.forEach(line => {
+        if (line.startsWith('- [ ] ')) {
+            if (!inTaskList) { html += '<div class="task-list">'; inTaskList = true; }
+            html += `<div class="task-item"><i class="far fa-circle"></i> ${line.substring(6).trim()}</div>`;
+        } else if (line.trim() === '') {
+            if (inTaskList) { html += '</div>'; inTaskList = false; }
+        } else {
+            if (inTaskList) { html += '</div>'; inTaskList = false; }
+            let h = line.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            h = h.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            html += `<p>${h}</p>`;
+        }
+    });
+    if (inTaskList) html += '</div>';
+    return html;
+}
+
+function openTemplateModal(id) {
+    const t = TEMPLATES.find(x => x.id === id);
+    if (!t) return;
+    S.currentTemplateId = id;
+    
+    document.getElementById('tmpl-modal-title').innerHTML = `${t.title} <i class="fas fa-check-circle verified-badge"></i>`;
+    
+    const chatSide = document.getElementById('tmpl-chat-side');
+    chatSide.innerHTML = '';
+    if (t.messages) {
+        t.messages.forEach(m => {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `msg ${m.role === 'user' ? 'user' : 'ai'}`;
+            msgDiv.style.animation = 'none';
+            let bubbleContent = m.content ? fmtAI(m.content) : '';
+            if (m.tool_calls) {
+                m.tool_calls.forEach(tc => {
+                    const args = JSON.parse(tc.function.arguments);
+                    if (tc.function.name === 'write_file') {
+                        bubbleContent += `<div class="tool-badge write"><i class="fas fa-check-circle"></i> Wrote ${args.filename}</div>`;
+                    } else if (tc.function.name === 'generate_asset') {
+                        bubbleContent += `<div class="tool-badge asset"><i class="fas fa-image"></i> Generated ${args.type}: ${args.prompt}</div>`;
+                    }
+                });
+            }
+            msgDiv.innerHTML = `<div class="msg-av"><i class="fas ${m.role === 'user' ? 'fa-user' : 'fa-robot'}"></i></div><div class="msg-bubble">${bubbleContent}</div>`;
+            chatSide.appendChild(msgDiv);
+        });
+    } else {
+        chatSide.innerHTML = `<div class="msg user" style="margin-bottom: 10px;"><div class="msg-av" style="background:#475569;"><i class="fas fa-user"></i></div><div class="msg-bubble" style="background:var(--bg2); color:var(--tx);">${t.prompt}</div></div>`;
+    }
+
+    const codeView = document.getElementById('tmpl-code-view');
+    if (t.files) {
+        const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${t.files['style.css']||''}</style></head><body>${t.files['index.html']||''}<script>${t.files['script.js']||''}<\/script></body></html>`;
+        document.getElementById('tmpl-prev-frame').srcdoc = html;
+        let codeStr = '';
+        Object.keys(t.files).forEach(f => {
+            codeStr += `<strong>${f}</strong>\n${(t.files[f]||'').replace(/</g, '&lt;').replace(/>/g, '&gt;')}\n\n`;
+        });
+        codeView.innerHTML = codeStr;
+    } else {
+        document.getElementById('tmpl-prev-frame').srcdoc = `<div style="display:flex;height:100vh;align-items:center;justify-content:center;font-family:sans-serif;background:#1e293b;color:#94a3b8;text-align:center;padding:20px;"><div><i class="fas fa-wand-magic-sparkles" style="font-size:32px;margin-bottom:16px;color:#6366f1;"></i><br>Click "Remix Template" to generate this with AI.</div></div>`;
+        codeView.innerHTML = `This template uses AI generation. Click "Remix" to start.`;
+    }
+    
+    document.getElementById('tmpl-modal').classList.add('show');
+}
+
+function switchTmplTab(tab) {
+    document.querySelectorAll('.tmpl-tab').forEach(t => t.classList.toggle('active', t.textContent.toLowerCase().includes(tab)));
+    document.getElementById('tmpl-prev-frame').style.display = tab === 'prev' ? 'block' : 'none';
+    document.getElementById('tmpl-code-view').style.display = tab === 'code' ? 'block' : 'none';
+}
+
+function remixCurrentTemplate() {
+    const t = TEMPLATES.find(x => x.id === S.currentTemplateId);
+    if (!t) return;
+    document.getElementById('tmpl-modal').classList.remove('show');
+    
+    const prompt = t.messages ? t.messages[0].content : t.prompt;
+    const p = createProj(prompt, S.model);
+    
+    if (t.files && t.messages) {
+        p.files = JSON.parse(JSON.stringify(t.files));
+        p.messages = JSON.parse(JSON.stringify(t.messages));
+        saveProjects();
+        openEditor(p.id);
+    } else {
+        openEditor(p.id);
+    }
 }
 
 function openEditor(id) {
     const p = S.projects.find(x => x.id === id); if (!p) return;
-    S.cur = id; S.model = p.model; S.activeFile = p.activeFile;
+    S.cur = id; S.model = p.model; S.activeFile = p.activeFile || 'index.html';
     document.getElementById('home-view').style.display = 'none';
     document.getElementById('editor-view').classList.add('active');
     document.getElementById('ed-title').textContent = p.name;
@@ -348,10 +607,11 @@ function openEditor(id) {
     
     loadFileToEditor();
     updatePreview();
+    renderAssets();
     
     switchView('prev');
     
-    if (p.messages.length === 1 && p.messages[0].role === 'user' && !p.files['index.html']) {
+    if (p.messages.length === 1 && p.messages[0].role === 'user' && (!p.files['index.html'] || p.files['index.html'] === '')) {
         generate();
     }
 }
@@ -363,9 +623,9 @@ function switchView(v) {
     document.querySelectorAll('.ptab').forEach(t => t.classList.toggle('active', t.dataset.view === v));
     document.getElementById('prev-frame').style.display = v === 'prev' ? 'block' : 'none';
     document.getElementById('code-view').style.display = v === 'code' ? 'flex' : 'none';
+    document.getElementById('assets-view').style.display = v === 'assets' ? 'flex' : 'none';
     if (v === 'code') {
         loadFileToEditor();
-        // Give the DOM a millisecond to update before refreshing CodeMirror
         setTimeout(() => { if (cm) cm.refresh(); }, 10);
     }
 }
@@ -374,7 +634,7 @@ function renderChat() {
     const p = S.projects.find(x => x.id === S.cur); if (!p) return;
     const c = document.getElementById('chat-msgs'); c.innerHTML = '';
     if (p.messages.length === 0) {
-        c.innerHTML = `<div class="chat-welcome"><i class="fas fa-comments"></i><h3>Start Building</h3><p>Describe what you want to build.</p><div class="chat-acts">${TEMPLATES.map(t => `<div class="chat-act" onclick="useTpl('${t.prompt}')">${t.title}</div>`).join('')}</div></div>`;
+        c.innerHTML = `<div class="chat-welcome"><i class="fas fa-comments"></i><h3>Start Building</h3><p>Describe what you want to build.</p></div>`;
         return;
     }
     
@@ -382,16 +642,17 @@ function renderChat() {
         if (m.role === 'user') {
             if (typeof m.content === 'string') addMsg('user', m.content, false);
         } else if (m.role === 'assistant') {
-            if (m.content) {
-                addMsg('ai', fmtAI(m.content), false);
-            }
+            if (m.content) addMsg('ai', m.content, false);
             if (m.tool_calls) {
                 m.tool_calls.forEach(tc => {
                     const t = document.createElement('div');
                     t.className = 'msg tool';
                     t.style.animation = 'none';
                     let badge = '';
-                    if (tc.function.name === 'generate_asset') {
+                    if (tc.function.name === 'write_file') {
+                        const args = JSON.parse(tc.function.arguments);
+                        badge = `<div class="tool-badge write"><i class="fas fa-check-circle"></i> Wrote ${args.filename}</div>`;
+                    } else if (tc.function.name === 'generate_asset') {
                         const args = JSON.parse(tc.function.arguments);
                         badge = `<div class="tool-badge asset"><i class="fas fa-image"></i> Generated ${args.type}: ${args.prompt}</div>`;
                     }
@@ -404,8 +665,6 @@ function renderChat() {
     c.scrollTop = c.scrollHeight;
 }
 
-function useTpl(p) { document.getElementById('chat-input').value = p; document.getElementById('chat-send').disabled = false; }
-
 function addMsg(role, content, animate=true) {
     const c = document.getElementById('chat-msgs');
     const w = c.querySelector('.chat-welcome'); if (w) w.remove();
@@ -416,103 +675,31 @@ function addMsg(role, content, animate=true) {
     c.appendChild(row); c.scrollTop = c.scrollHeight; return row;
 }
 
-function fmtAI(content) {
-    if (!content) return '<div class="spinner"></div> Thinking...';
-    let proc = content;
-    
-    const opens = (proc.match(/```[a-z]+/g) || []).length;
-    const closes = (proc.match(/```/g) || []).length;
-    let isCurrentlyInCodeBlock = opens > closes;
-    
-    if (isCurrentlyInCodeBlock) {
-        proc += '\n```';
-    }
-
-    const codeRegex = /```[a-z]+\n[\s\S]*?```/gi;
-    let lastIndex = 0;
-    let match;
-    let html = '';
-
-    while ((match = codeRegex.exec(proc)) !== null) {
-        const text = proc.substring(lastIndex, match.index);
-        if (text.trim()) {
-            html += parseTextAndTasks(text, false);
-        }
-
-        const codeMatch = match[0].match(/```([a-z]+)\n([\s\S]*?)```/i);
-        if (codeMatch) {
-            const lang = codeMatch[1].toLowerCase();
-            let file = lang === 'html' ? 'index.html' : lang === 'css' ? 'style.css' : 'script.js';
-            html += `<div class="tool-badge write"><i class="fas fa-check-circle"></i> Wrote ${file}</div>`;
-        }
-        lastIndex = codeRegex.lastIndex;
-    }
-
-    const remainingText = proc.substring(lastIndex);
-    if (remainingText.trim()) {
-        if (!isCurrentlyInCodeBlock) {
-            html += parseTextAndTasks(remainingText, true);
-        }
-    }
-
-    return html || '<div class="spinner"></div> Thinking...';
-}
-
-function parseTextAndTasks(text, isStreaming) {
-    let html = '';
-    const lines = text.split('\n');
-    let inTaskList = false;
-
-    lines.forEach((line, index) => {
-        const isLastLine = index === lines.length - 1;
-        if (line.startsWith('- [ ] ')) {
-            if (!inTaskList) {
-                html += '<div class="task-list">';
-                inTaskList = true;
-            }
-            const taskContent = line.substring(6).trim();
-            const cursor = isLastLine && isStreaming ? ' <span class="cursor-blink"></span>' : '';
-            html += `<div class="task-item"><i class="far fa-circle"></i> ${taskContent}${cursor}</div>`;
-        } else if (line.trim() === '') {
-            if (inTaskList) {
-                html += '</div>';
-                inTaskList = false;
-            }
-        } else {
-            if (inTaskList) {
-                html += '</div>';
-                inTaskList = false;
-            }
-            let h = line.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            h = h.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            const cursor = isLastLine && isStreaming ? ' <span class="cursor-blink"></span>' : '';
-            html += `<p>${h}${cursor}</p>`;
-        }
-    });
-
-    if (inTaskList) {
-        html += '</div>';
-    }
-
-    return html;
-}
-
 function renderFiles() {
     const p = S.projects.find(x => x.id === S.cur); if (!p) return;
     const bar = document.getElementById('files-bar'); bar.innerHTML = '';
-    ['index.html', 'style.css', 'script.js'].forEach(f => {
+    Object.keys(p.files).forEach(f => {
         const t = document.createElement('div');
+        const isLocked = p.lockedFiles.includes(f);
         t.className = `file-tab ${f === S.activeFile ? 'active' : ''}`;
-        t.textContent = f;
+        t.innerHTML = `${f} <span class="file-lock ${isLocked ? 'locked' : ''}" onclick="event.stopPropagation(); toggleLock('${f}')"><i class="fas ${isLocked ? 'fa-lock' : 'fa-lock-open'}"></i></span>`;
         t.onclick = () => selectFile(f);
         bar.appendChild(t);
     });
 }
 
+function toggleLock(f) {
+    const p = S.projects.find(x => x.id === S.cur);
+    const idx = p.lockedFiles.indexOf(f);
+    if (idx > -1) p.lockedFiles.splice(idx, 1);
+    else p.lockedFiles.push(f);
+    saveProjects(); renderFiles();
+}
+
 function selectFile(f) {
-    if (cm && S.activeFile) { const p = S.projects.find(x => x.id === S.cur); if (p) p.files[S.activeFile] = cm.getValue(); save(); }
+    if (cm && S.activeFile) { const p = S.projects.find(x => x.id === S.cur); if (p) p.files[S.activeFile] = cm.getValue(); saveProjects(); }
     S.activeFile = f;
-    const p = S.projects.find(x => x.id === S.cur); if (p) p.activeFile = f; save();
+    const p = S.projects.find(x => x.id === S.cur); if (p) p.activeFile = f; saveProjects();
     renderFiles();
     if (S.view === 'code') {
         loadFileToEditor();
@@ -523,141 +710,290 @@ function selectFile(f) {
 function loadFileToEditor() {
     const p = S.projects.find(x => x.id === S.cur); if (!p || !cm) return;
     cm.setValue(p.files[S.activeFile] || '');
-    const mode = S.activeFile.endsWith('.css') ? 'css' : S.activeFile.endsWith('.js') ? 'javascript' : 'htmlmixed';
+    let mode = 'htmlmixed';
+    if (S.activeFile.endsWith('.css')) mode = 'css';
+    else if (S.activeFile.endsWith('.js') || S.activeFile.endsWith('.jsx') || S.activeFile.endsWith('.ts') || S.activeFile.endsWith('.tsx')) mode = 'javascript';
+    else if (S.activeFile.endsWith('.json')) mode = 'application/json';
+    else if (S.activeFile.endsWith('.md')) mode = 'markdown';
+    else if (S.activeFile.endsWith('.py')) mode = 'python';
     cm.setOption('mode', mode);
 }
 
 function updatePreview() {
     const p = S.projects.find(x => x.id === S.cur); if (!p) return;
-    const cdnTags = (p.cdns || []).map(c => c.type === 'css' ? `<link rel="stylesheet" href="${c.url}">` : `<script src="${c.url}"><\/script>`).join('\n');
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">${cdnTags}<style>${p.files['style.css']||''}</style></head><body>${p.files['index.html']||''}<script>${p.files['script.js']||''}<\/script></body></html>`;
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>${p.files['style.css']||''}</style></head><body>${p.files['index.html']||''}<script>${p.files['script.js']||''}<\/script></body></html>`;
     document.getElementById('prev-frame').srcdoc = html;
 }
 
-async function callAI(messages, modelKey, useAssets, onChunk) {
-    const body = { 
-        model: MODELS[modelKey], 
-        messages: [{role:'system', content:SP}, ...messages], 
-        temperature: 0.7, 
-        stream: true
-    };
-    if (useAssets) body.tools = [ASSET_TOOL];
+function showHistory() {
+    const p = S.projects.find(x => x.id === S.cur); if (!p) return;
+    const modalBody = document.getElementById('generic-modal-body');
+    document.getElementById('generic-modal-title').innerText = 'Version History';
     
-    const headers = { 'Content-Type':'application/json', 'Authorization':`Bearer ${API_KEY}` };
+    let html = '<div style="color:var(--mt);text-align:center;padding:20px;">No history yet. History is saved when the AI makes changes.</div>';
+    if (p.history.length > 0) {
+        html = '';
+        p.history.forEach((snap, i) => {
+            html += `<div class="history-item"><span>Version ${i + 1} - ${new Date(snap.ts).toLocaleTimeString()}</span><button class="restore-btn" onclick="restoreVersion(${i})">Restore</button></div>`;
+        });
+    }
+    modalBody.innerHTML = html;
+    document.getElementById('generic-modal').classList.add('show');
+}
 
+function restoreVersion(i) {
+    const p = S.projects.find(x => x.id === S.cur); if (!p) return;
+    const snap = p.history[i];
+    p.files = JSON.parse(JSON.stringify(snap.files));
+    saveProjects(); renderFiles(); loadFileToEditor(); updatePreview();
+    document.getElementById('generic-modal').classList.remove('show');
+    toast('Version restored!');
+}
+
+function renderAssets() {
+    const p = S.projects.find(x => x.id === S.cur); if (!p) return;
+    const view = document.getElementById('assets-view');
+    view.innerHTML = '';
+    if (!p.assets || p.assets.length === 0) {
+        view.innerHTML = '<div style="color:var(--mt);text-align:center;padding:40px;">No assets generated yet.</div>';
+        return;
+    }
+    p.assets.forEach(asset => {
+        const card = document.createElement('div');
+        card.className = 'asset-card';
+        card.innerHTML = `
+            <div class="asset-preview">${asset.type === 'image' ? `<img src="${asset.url}" alt="${asset.prompt}">` : `<video src="${asset.url}" muted loop autoplay></video>`}</div>
+            <div class="asset-info"><div class="asset-type">${asset.type.toUpperCase()}</div><div class="asset-prompt">${asset.prompt}</div></div>
+        `;
+        view.appendChild(card);
+    });
+}
+
+// ===== GITHUB EXPORT =====
+async function exportToGithub() {
+    const p = S.projects.find(x => x.id === S.cur);
+    if (!p) return;
+
+    const modalBody = document.getElementById('generic-modal-body');
+    document.getElementById('generic-modal-title').innerText = 'Export to GitHub';
+    
+    if (S.githubToken) {
+        modalBody.innerHTML = `
+            <p class="modal-desc">Push "${p.name}" to a new GitHub repository. The AI will auto-generate a README.md and commit message.</p>
+            <button class="modal-btn gh" id="gh-push-btn"><i class="fab fa-github"></i> Create Repo & Push Code</button>
+            <button style="width:100%;margin-top:8px;background:transparent;color:var(--mt);border:1px solid var(--border);padding:10px;border-radius:8px;cursor:pointer;" onclick="logoutGithub()">Logout / Change Token</button>
+        `;
+        document.getElementById('gh-push-btn').onclick = startGithubPush;
+    } else {
+        modalBody.innerHTML = `
+            <p class="modal-desc">To push code directly to GitHub, you need a Personal Access Token (PAT) with 'repo' permissions. <br><br><a href="https://github.com/settings/tokens/new?scopes=repo,workflow&description=CodeMakerAI" target="_blank" style="color:var(--ac);">Click here to generate one on GitHub</a>.</p>
+            <input type="password" class="modal-input" id="gh-token-input" placeholder="Paste your GitHub token here (ghp_...)">
+            <button class="modal-btn gh" id="gh-save-btn"><i class="fab fa-github"></i> Save Token & Continue</button>
+        `;
+        document.getElementById('gh-save-btn').onclick = () => {
+            const token = document.getElementById('gh-token-input').value.trim();
+            if (!token) return toast('Token cannot be empty.');
+            S.githubToken = token;
+            localStorage.setItem('gh_token', token);
+            exportToGithub();
+        };
+    }
+    document.getElementById('generic-modal').classList.add('show');
+}
+
+function logoutGithub() {
+    localStorage.removeItem('gh_token');
+    S.githubToken = '';
+    exportToGithub();
+}
+
+async function startGithubPush() {
+    const p = S.projects.find(x => x.id === S.cur);
+    const token = S.githubToken;
+    const modalBody = document.getElementById('generic-modal-body');
+    
+    modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> AI is writing README.md...</div>`;
+
+    // 1. Generate README
+    let readmeContent = `# ${p.name}\n\nGenerated by CodeMaker AI.`;
+    try {
+        const filesConcat = Object.keys(p.files).map(f => 'File: ' + f + '\n\`\`\`\n' + p.files[f] + '\n\`\`\`\n').join('\n').substring(0, 3000);
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
+            body: JSON.stringify({
+                model: MODELS[S.model],
+                messages: [
+                    { role: 'system', content: 'Write a professional GitHub README.md in pure markdown. Include title, description, features, and how to run.' },
+                    { role: 'user', content: 'Project Name: ' + p.name + '\nInitial Prompt: ' + p.messages[0].content + '\nCode Files:\n' + filesConcat }
+                ],
+                stream: false
+            })
+        });
+        if (res.ok) {
+            const j = await res.json();
+            readmeContent = j.choices[0].message.content;
+            if (!readmeContent.startsWith('#')) readmeContent = `# ${p.name}\n\n` + readmeContent;
+        }
+    } catch(e) { /* fallback to basic readme */ }
+
+    modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Creating GitHub Repository...</div>`;
+
+    // 2. Create Repo
+    const repoName = p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + uid().substring(0,4);
+    let owner;
+    try {
+        const res = await fetch('https://api.github.com/user/repos', {
+            method: 'POST',
+            headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' },
+            body: JSON.stringify({ name: repoName, description: 'Generated by CodeMaker AI', private: false })
+        });
+        if (!res.ok) throw new Error('Failed to create repo');
+        const data = await res.json();
+        owner = data.owner.login;
+    } catch(e) {
+        modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error creating repo. Check your token permissions.</p>`;
+        return;
+    }
+
+    modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Pushing files...</div>`;
+
+    // 3. Push Files via Git Data API
+    try {
+        const treeItems = [];
+        for (const filename in p.files) {
+            const content = p.files[filename];
+            const blobRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/git/blobs`, {
+                method: 'POST',
+                headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' },
+                body: JSON.stringify({ content: content, encoding: 'utf-8' })
+            });
+            if (!blobRes.ok) throw new Error('Failed to create blob for ' + filename);
+            const blobData = await blobRes.json();
+            treeItems.push({ path: filename, mode: '100644', type: 'blob', sha: blobData.sha });
+        }
+        
+        // Add README.md
+        const readmeBlobRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/git/blobs`, {
+            method: 'POST',
+            headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' },
+            body: JSON.stringify({ content: readmeContent, encoding: 'utf-8' })
+        });
+        const readmeBlobData = await readmeBlobRes.json();
+        treeItems.push({ path: 'README.md', mode: '100644', type: 'blob', sha: readmeBlobData.sha });
+
+        // B. Create Tree
+        const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/git/trees`, {
+            method: 'POST',
+            headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' },
+            body: JSON.stringify({ tree: treeItems })
+        });
+        if (!treeRes.ok) throw new Error('Failed to create tree');
+        const treeData = await treeRes.json();
+
+        // C. Create Commit
+        const commitRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/git/commits`, {
+            method: 'POST',
+            headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' },
+            body: JSON.stringify({ message: `feat: initial commit for ${p.name} generated by CodeMaker AI`, tree: treeData.sha, parents: [] })
+        });
+        if (!commitRes.ok) throw new Error('Failed to create commit');
+        const commitData = await commitRes.json();
+
+        // D. Update Ref (main branch)
+        await fetch(`https://api.github.com/repos/${owner}/${repoName}/git/refs/heads/main`, {
+            method: 'PATCH',
+            headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' },
+            body: JSON.stringify({ sha: commitData.sha })
+        });
+
+        modalBody.innerHTML = `
+            <div style="text-align:center; padding: 20px;">
+                <i class="fas fa-check-circle" style="font-size:32px;color:var(--ok);margin-bottom:12px;"></i>
+                <h3 style="margin-bottom:8px;">Successfully Pushed!</h3>
+                <p style="color:var(--mt);margin-bottom:20px;">Your project is now live on GitHub.</p>
+                <a href="https://github.com/${owner}/${repoName}" target="_blank" class="modal-btn gh" style="text-decoration:none;display:block;"><i class="fab fa-github"></i> Open Repository</a>
+            </div>
+        `;
+    } catch(e) {
+        modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error pushing files: ${e.message}</p>`;
+    }
+}
+
+async function enhancePrompt() {
+    const inp = document.getElementById('chat-input');
+    const v = inp.value.trim();
+    if (!v) return toast('Type a prompt first.');
+    document.getElementById('chat-send').disabled = true;
+    inp.value = 'Enhancing prompt...';
+    const body = { model: MODELS[S.model], messages: [{ role: 'system', content: 'Expand the user\'s prompt into a detailed UI/UX spec. Output ONLY the prompt.' }, { role: 'user', content: v }], temperature: 0.7, stream: false };
+    try {
+        const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` }, body: JSON.stringify(body) });
+        if (!res.ok) throw new Error('Failed');
+        const j = await res.json();
+        inp.value = j.choices[0].message.content;
+    } catch (e) {
+        inp.value = v; toast('Enhance failed.');
+    }
+    document.getElementById('chat-send').disabled = false;
+}
+
+async function callAI(messages, modelKey, tools) {
+    const body = { model: MODELS[modelKey], messages: [{role:'system', content: getSystemPrompt()}, ...messages], temperature: 0.7, stream: false, tools: tools };
+    const headers = { 'Content-Type':'application/json', 'Authorization':`Bearer ${API_KEY}` };
     try {
         const ctrl = new AbortController();
-        const timer = setTimeout(() => ctrl.abort(), 60000);
+        const timer = setTimeout(() => ctrl.abort(), 90000);
         const res = await fetch(API_URL, { signal: ctrl.signal, method:'POST', headers, body: JSON.stringify(body) });
         clearTimeout(timer);
-        
         if (res.ok) {
-            const reader = res.body.getReader();
-            const dec = new TextDecoder();
-            let buf = '';
-            let toolCalls = [];
-            let content = '';
-            
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                buf += dec.decode(value, { stream: true });
-                const lines = buf.split('\n');
-                buf = lines.pop();
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        const d = line.slice(6);
-                        if (d === '[DONE]') continue;
-                        try {
-                            const j = JSON.parse(d);
-                            const delta = j.choices?.[0]?.delta;
-                            if (delta) {
-                                if (delta.content) {
-                                    content += delta.content;
-                                    if (onChunk) onChunk(content);
-                                }
-                                if (delta.tool_calls) {
-                                    delta.tool_calls.forEach(tc => {
-                                        if (!toolCalls[tc.index]) toolCalls[tc.index] = { id: tc.id, function: { name: '', arguments: '' } };
-                                        if (tc.id) toolCalls[tc.index].id = tc.id;
-                                        if (tc.function.name) toolCalls[tc.index].function.name = tc.function.name;
-                                        if (tc.function.arguments) toolCalls[tc.index].function.arguments += tc.function.arguments;
-                                    });
-                                }
-                            }
-                        } catch(e) {}
-                    }
-                }
-            }
-            return { content, toolCalls };
+            const j = await res.json();
+            const choice = j.choices[0];
+            return { content: choice.message.content || '', toolCalls: choice.message.tool_calls || [], finishReason: choice.finish_reason };
         }
         throw new Error(`Direct HTTP ${res.status}`);
     } catch(e) {
         if (e.name === 'AbortError') throw new Error('Request timed out');
-        const res = await fetch(PROXY + encodeURIComponent(API_URL), { method:'POST', headers, body: JSON.stringify({...body, stream: false}) });
+        const res = await fetch(PROXY + encodeURIComponent(API_URL), { method:'POST', headers, body: JSON.stringify(body) });
         if (res.ok) {
             const j = await res.json();
-            const choice = j.choices[0].message;
-            if (onChunk && choice.content) onChunk(choice.content);
-            return { content: choice.content || '', toolCalls: choice.tool_calls || [] };
+            const choice = j.choices[0];
+            return { content: choice.message.content || '', toolCalls: choice.message.tool_calls || [], finishReason: choice.finish_reason };
         }
         throw new Error(`Proxy HTTP ${res.status}`);
     }
 }
 
-function parseFiles(text) {
-    const htmlM = text.match(/```html\n?([\s\S]*?)```/);
-    const cssM = text.match(/```css\n?([\s\S]*?)```/);
-    const jsM = text.match(/```javascript\n?([\s\S]*?)```/);
-    return { html: htmlM ? htmlM[1].trim() : null, css: cssM ? cssM[1].trim() : null, js: jsM ? jsM[1].trim() : null };
-}
-
 async function generateAsset(type, prompt) {
+    const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` };
     if (type === 'image') {
         const body = JSON.stringify({ model: 'agnes-image-2.0-flash', prompt: prompt, n: 1, size: '1024x1024' });
-        const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` };
-        
         let res;
-        try {
-            res = await fetch(IMG_API_URL, { method: 'POST', headers, body });
-            if (!res.ok) throw new Error('Direct failed');
-        } catch (e) {
-            try {
-                res = await fetch(PROXY + encodeURIComponent(IMG_API_URL), { method: 'POST', headers, body });
-            } catch (err) {
-                throw new Error('Image API network error');
-            }
-        }
-
+        try { res = await fetch(IMG_API_URL, { method: 'POST', headers, body }); if (!res.ok) throw new Error(); } catch (e) { res = await fetch(PROXY + encodeURIComponent(IMG_API_URL), { method: 'POST', headers, body }); }
         if (!res || !res.ok) throw new Error('Image API failed');
         const data = await res.json();
-        
-        if (data.data && data.data[0]) {
-            if (data.data[0].url) return data.data[0].url;
-            if (data.data[0].b64_json) return `data:image/png;base64,${data.data[0].b64_json}`;
-        }
-        throw new Error('Image API did not return a valid URL or base64');
-    } else if (type === 'video') {
+        if (data.data && data.data[0]) return data.data[0].url || `data:image/png;base64,${data.data[0].b64_json}`;
+        throw new Error('Image API failed');
+    } else {
         const body = JSON.stringify({ model: 'agnes-video-v2.0', prompt: prompt });
-        const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` };
-        
         let res;
-        try {
-            res = await fetch(VID_API_URL, { method: 'POST', headers, body });
-            if (!res.ok) throw new Error('Direct failed');
-        } catch (e) {
-            try {
-                res = await fetch(PROXY + encodeURIComponent(VID_API_URL), { method: 'POST', headers, body });
-            } catch (err) {
-                throw new Error('Video API network error');
-            }
-        }
-
+        try { res = await fetch(VID_API_URL, { method: 'POST', headers, body }); if (!res.ok) throw new Error(); } catch (e) { res = await fetch(PROXY + encodeURIComponent(VID_API_URL), { method: 'POST', headers, body }); }
         if (!res || !res.ok) throw new Error('Video API failed');
         const data = await res.json();
         if (data.data && data.data[0] && data.data[0].url) return data.data[0].url;
-        throw new Error('Video API did not return a URL');
+        throw new Error('Video API failed');
     }
+}
+
+function showContinueButton() { document.getElementById('continue-wrap').style.display = 'block'; }
+function hideContinueButton() { document.getElementById('continue-wrap').style.display = 'none'; }
+
+function continueGen() {
+    hideContinueButton();
+    const p = S.projects.find(x => x.id === S.cur);
+    p.messages.push({ role: 'user', content: 'Please continue.' });
+    saveProjects(); addMsg('user', 'Please continue.');
+    generate();
 }
 
 async function generate() {
@@ -665,65 +1001,79 @@ async function generate() {
     if (!p || S.gen) return;
     S.gen = true;
     document.getElementById('chat-send').disabled = true;
+    hideContinueButton();
     
     const md = addMsg('ai', '<div class="spinner"></div> Thinking...', true);
     const statusLog = md.querySelector('.msg-bubble');
     
     let currentMessages = [...p.messages];
+    p.history.push({ ts: Date.now(), files: JSON.parse(JSON.stringify(p.files)) });
+    if (p.history.length > 10) p.history.shift();
+    saveProjects();
+    
+    const tools = [{ type: "function", function: { name: "write_file", description: "Write file content.", parameters: { type: "object", properties: { filename: { type: "string" }, content: { type: "string" } }, required: ["filename", "content"] } } }];
+    const lastUserMsg = currentMessages.filter(m => m.role === 'user').pop();
+    const promptText = typeof lastUserMsg.content === 'string' ? lastUserMsg.content : '';
+    if (/image|img|video|picture|photo|asset|background/i.test(promptText)) {
+        tools.push({ type: "function", function: { name: "generate_asset", description: "Gen image/video.", parameters: { type: "object", properties: { type: { type: "string", enum: ["image", "video"] }, prompt: { type: "string" } }, required: ["type", "prompt"] } } });
+    }
     
     try {
         while (true) {
-            const lastUserMsg = currentMessages.filter(m => m.role === 'user').pop();
-            const promptText = typeof lastUserMsg.content === 'string' ? lastUserMsg.content : '';
-            const useAssets = /image|img|video|picture|photo|asset|background/i.test(promptText);
-            
-            const res = await callAI(currentMessages, p.model, useAssets, (streamContent) => {
-                statusLog.innerHTML = fmtAI(streamContent);
-            });
-            
+            statusLog.innerHTML = '<div class="spinner"></div> Thinking...';
+            const res = await callAI(currentMessages, p.model, tools);
             const choice = { role: 'assistant', content: res.content, tool_calls: res.toolCalls.length ? res.toolCalls : undefined };
             currentMessages.push(choice);
+            p.messages = currentMessages;
+            saveProjects();
             
             if (choice.tool_calls && choice.tool_calls.length) {
-                statusLog.innerHTML = choice.content ? fmtAI(choice.content) : '';
-                
+                statusLog.innerHTML = choice.content || '';
                 for (const tc of choice.tool_calls) {
                     const toolMsg = { role: "tool", tool_call_id: tc.id, name: tc.function.name };
-                    
-                    if (tc.function.name === 'generate_asset') {
+                    if (tc.function.name === 'write_file') {
                         const args = JSON.parse(tc.function.arguments);
-                        statusLog.innerHTML += `<div class="tool-badge asset"><div class="spinner"></div> Generating ${args.type}: ${args.prompt}...</div>`;
+                        statusLog.innerHTML += `<div class="tool-badge write"><div class="spinner"></div> Writing ${args.filename}...</div>`;
+                        if (!p.lockedFiles.includes(args.filename)) p.files[args.filename] = args.content;
+                        saveProjects(); updatePreview(); renderFiles();
+                        if (S.view === 'code') loadFileToEditor();
+                        toolMsg.content = "File written.";
+                        statusLog.innerHTML += `<div class="tool-badge write"><i class="fas fa-check-circle"></i> Wrote ${args.filename}</div>`;
+                    } else if (tc.function.name === 'generate_asset') {
+                        const args = JSON.parse(tc.function.arguments);
+                        statusLog.innerHTML += `<div class="tool-badge asset"><div class="spinner"></div> Generating ${args.type}...</div>`;
                         try {
-                            const assetUrl = await generateAsset(args.type, args.prompt);
-                            toolMsg.content = `Asset generated successfully. Use this URL in your code: ${assetUrl}`;
-                            statusLog.innerHTML += `<div class="tool-badge asset"><i class="fas fa-check-circle"></i> Generated asset URL ready</div>`;
+                            const url = await generateAsset(args.type, args.prompt);
+                            p.assets.push({ id: uid(), type: args.type, url, prompt: args.prompt });
+                            saveProjects(); renderAssets();
+                            toolMsg.content = `Asset URL: ${url}`;
+                            statusLog.innerHTML += `<div class="tool-badge asset"><i class="fas fa-check-circle"></i> Asset ready</div>`;
                         } catch(e) {
-                            toolMsg.content = `Failed to generate asset. Please use a placeholder.`;
-                            statusLog.innerHTML += `<div class="tool-badge asset" style="color:var(--dn)"><i class="fas fa-times-circle"></i> Failed to generate asset</div>`;
+                            toolMsg.content = "Failed.";
+                            statusLog.innerHTML += `<div class="tool-badge asset" style="color:var(--dn)">Failed</div>`;
                         }
                     }
                     currentMessages.push(toolMsg);
+                    p.messages = currentMessages;
+                    saveProjects();
                 }
             } else {
-                const files = parseFiles(choice.content || '');
-                if (files.html) p.files['index.html'] = files.html;
-                if (files.css) p.files['style.css'] = files.css;
-                if (files.js) p.files['script.js'] = files.js;
-                updatePreview();
-                if (S.view === 'code') loadFileToEditor();
-                
-                p.messages = currentMessages;
-                save();
+                if (res.finishReason === 'length') {
+                    statusLog.innerHTML += '<br><span style="color:var(--warn)">⚠️ Cut off.</span>';
+                    showContinueButton();
+                    break;
+                }
+                statusLog.innerHTML = choice.content || "Done.";
                 break;
             }
         }
     } catch(e) {
         statusLog.innerHTML += `<br><span style="color:var(--dn)">Error: ${e.message}</span>`;
+        showContinueButton();
     }
-    
     S.gen = false;
     document.getElementById('chat-send').disabled = false;
-    save();
+    saveProjects();
 }
 
 let ti = 0, ci = 0, idl = false, ttr = null;
@@ -736,21 +1086,12 @@ function runTyping() {
     else { ci--; document.getElementById('typed-text').textContent = idea.substring(0, ci); if (ci === 0) { idl = false; ti++; ttr = setTimeout(runTyping, 300); return; } ttr = setTimeout(runTyping, 25); }
 }
 
-function renderChips() {
-    document.getElementById('hero-chips').innerHTML = ['SaaS Landing', 'Dashboard', 'Snake Game', 'Pricing Table'].map(i => `<div class="chip" onclick="document.getElementById('hero-input').value='${i}';document.getElementById('hero-input').focus()">${i}</div>`).join('');
-}
-
 function init() {
     try {
-        load(); renderGrid(); renderChips(); runTyping();
-        
+        loadProjects(); renderGrid(); renderTemplates(); runTyping();
         if (typeof CodeMirror !== 'undefined') {
             cm = CodeMirror.fromTextArea(document.getElementById('code-editor'), { lineNumbers: true, theme: 'default', indentUnit: 2 });
-        } else {
-            console.error("CodeMirror failed to load.");
-            document.getElementById('code-editor').style.display = 'block';
         }
-        
         document.getElementById('hero-submit').onclick = () => { const v = document.getElementById('hero-input').value.trim(); if (!v) return; openEditor(createProj(v).id); };
         document.querySelectorAll('#home-models .mp').forEach(b => b.onclick = () => { document.querySelectorAll('#home-models .mp').forEach(x => x.classList.remove('active')); b.classList.add('active'); S.model = b.dataset.model; });
         document.getElementById('new-btn').onclick = () => { document.getElementById('home-view').scrollTo({top:0, behavior:'smooth'}); document.getElementById('hero-input').focus(); };
@@ -758,8 +1099,10 @@ function init() {
         document.getElementById('back-btn').onclick = closeEditor;
         document.getElementById('ms-btn').onclick = e => { e.stopPropagation(); document.getElementById('ms-menu').classList.toggle('open'); };
         document.addEventListener('click', () => document.getElementById('ms-menu').classList.remove('open'));
-        document.querySelectorAll('.ms-item').forEach(o => o.onclick = e => { e.stopPropagation(); S.model = o.dataset.model; const p = S.projects.find(x => x.id === S.cur); if (p) { p.model = S.model; save(); } document.getElementById('ms-lbl').textContent = S.model; document.getElementById('ms-menu').classList.remove('open'); });
+        document.querySelectorAll('.ms-item').forEach(o => o.onclick = e => { e.stopPropagation(); S.model = o.dataset.model; const p = S.projects.find(x => x.id === S.cur); if (p) { p.model = S.model; saveProjects(); } document.getElementById('ms-lbl').textContent = S.model; document.getElementById('ms-menu').classList.remove('open'); });
         
+        document.getElementById('btn-github').onclick = exportToGithub;
+        document.getElementById('btn-history').onclick = showHistory;
         document.querySelectorAll('.ptab').forEach(t => t.onclick = () => switchView(t.dataset.view));
         document.querySelectorAll('.mtab').forEach(t => t.onclick = () => {
             document.querySelectorAll('.mtab').forEach(x => x.classList.remove('active')); t.classList.add('active');
@@ -770,110 +1113,23 @@ function init() {
         
         document.getElementById('chat-send').onclick = () => {
             const inp = document.getElementById('chat-input'); const v = inp.value.trim(); if (!v || S.gen) return;
-            const p = S.projects.find(x => x.id === S.cur); p.messages.push({role:'user', content:v}); save(); addMsg('user', v);
+            const p = S.projects.find(x => x.id === S.cur); p.messages.push({role:'user', content:v}); saveProjects(); addMsg('user', v);
             inp.value = ''; document.getElementById('chat-send').disabled = true; generate();
         };
+        document.getElementById('btn-enhance').onclick = enhancePrompt;
         document.getElementById('chat-input').oninput = function() { document.getElementById('chat-send').disabled = !this.value.trim(); this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 120) + 'px'; };
         document.getElementById('chat-input').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('chat-send').click(); } };
-        
-        document.getElementById('apply-btn').onclick = () => { const p = S.projects.find(x => x.id === S.cur); if (p) { p.files[S.activeFile] = cm ? cm.getValue() : document.getElementById('code-editor').value; save(); updatePreview(); toast('Applied!'); } };
-        
+        document.getElementById('apply-btn').onclick = () => { const p = S.projects.find(x => x.id === S.cur); if (p) { p.files[S.activeFile] = cm ? cm.getValue() : ''; saveProjects(); updatePreview(); toast('Applied!'); } };
         document.querySelectorAll('.pa-btn[data-res]').forEach(b => b.onclick = () => {
             document.querySelectorAll('.pa-btn[data-res]').forEach(x => x.classList.remove('active')); b.classList.add('active');
             const f = document.getElementById('prev-frame');
-            if (b.dataset.res === 'tab') f.style.maxWidth = '768px';
-            else if (b.dataset.res === 'mob') f.style.maxWidth = '375px';
-            else f.style.maxWidth = '100%';
+            if (b.dataset.res === 'tab') f.style.maxWidth = '768px'; else if (b.dataset.res === 'mob') f.style.maxWidth = '375px'; else f.style.maxWidth = '100%';
         });
-        
-        document.getElementById('btn-cdn').onclick = () => {
-            const p = S.projects.find(x => x.id === S.cur);
-            const html = `<div style="padding:10px"><h3 style="margin-bottom:10px">Dependencies</h3>${CDNS.map(c => `<div class="chat-act" style="margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;"><span>${c.name}</span><button onclick="toggleCdn('${c.url}')">${p.cdns.find(x => x.url === c.url) ? 'Remove' : 'Add'}</button></div>`).join('')}</div>`;
-            const modal = document.createElement('div');
-            modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1000';
-            modal.innerHTML = `<div style="background:var(--panel);padding:20px;border-radius:12px;width:90%;max-width:400px">${html}</div>`;
-            modal.onclick = () => modal.remove();
-            document.body.appendChild(modal);
-        };
-        window.toggleCdn = (url) => {
-            const p = S.projects.find(x => x.id === S.cur);
-            const idx = p.cdns.findIndex(c => c.url === url);
-            if (idx !== -1) p.cdns.splice(idx, 1); else p.cdns.push(CDNS.find(c => c.url === url));
-            save(); updatePreview(); document.getElementById('btn-cdn').click();
-        };
-        
-        document.getElementById('btn-share').onclick = () => {
-            const p = S.projects.find(x => x.id === S.cur);
-            const link = `${window.location.origin}${window.location.pathname}#share=${btoa(JSON.stringify(p.files))}`;
-            navigator.clipboard.writeText(link); toast('Link copied!');
-        };
-        
-        document.getElementById('btn-zip').onclick = async () => {
-            if (typeof JSZip === 'undefined') return toast('ZIP library not loaded.');
-            const p = S.projects.find(x => x.id === S.cur);
-            const zip = new JSZip();
-            Object.keys(p.files).forEach(f => zip.file(f, p.files[f]));
-            const blob = await zip.generateAsync({type:'blob'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${p.name}.zip`; a.click();
-        };
-        
-        document.getElementById('btn-theme').onclick = () => {
-            document.body.classList.toggle('dark');
-            if (cm) cm.setOption('theme', document.body.classList.contains('dark') ? 'material-darker' : 'default');
-        };
-        
-        document.getElementById('btn-tpl').onclick = () => {
-            const html = `<div style="padding:10px"><h3 style="margin-bottom:10px">Templates</h3>${TEMPLATES.map(t => `<div class="chat-act" style="margin-bottom:6px; display:block;" onclick="useTpl('${t.prompt}'); this.parentElement.parentElement.parentElement.remove();"><strong>${t.title}</strong></div>`).join('')}</div>`;
-            const modal = document.createElement('div');
-            modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1000';
-            modal.innerHTML = `<div style="background:var(--panel);padding:20px;border-radius:12px;width:90%;max-width:400px">${html}</div>`;
-            document.body.appendChild(modal);
-        };
-        
-        document.getElementById('btn-img').onclick = () => {
-            const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*';
-            inp.onchange = e => {
-                const file = e.target.files[0]; if (!file) return;
-                const reader = new FileReader();
-                reader.onload = r => {
-                    const p = S.projects.find(x => x.id === S.cur);
-                    p.messages.push({role:'user', content: [{type:'text', text:'Build this'}, {type:'image_url', image_url:{url:r.target.result}}]});
-                    save(); addMsg('user', '[Image Uploaded]'); generate();
-                };
-                reader.readAsDataURL(file);
-            };
-            inp.click();
-        };
-        
-        document.getElementById('btn-voice').onclick = () => {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                toast('Voice input not supported in this browser.');
-                return;
-            }
-            const recog = new SpeechRecognition();
-            recog.lang = 'en-US'; 
-            recog.start();
-            toast('Listening...');
-            recog.onresult = e => { 
-                document.getElementById('chat-input').value = e.results[0][0].transcript; 
-                document.getElementById('chat-send').disabled = false; 
-            };
-        };
-        
-        if (window.location.hash.startsWith('#share=')) {
-            try {
-                const data = JSON.parse(atob(window.location.hash.substring(7)));
-                const p = { id: uid(), name: 'Shared Project', model: '2.0', messages: [], files: data, activeFile: 'index.html', ts: Date.now(), cdns: [] };
-                S.projects.unshift(p); save(); openEditor(p.id);
-            } catch(e) {}
-        }
-    } catch(e) {
-        console.error("Initialization Error:", e);
-        toast("App failed to initialize. Check console (F12).");
-    }
+        document.getElementById('btn-share').onclick = () => { const p = S.projects.find(x => x.id === S.cur); navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}#share=${btoa(JSON.stringify(p.files))}`); toast('Link copied!'); };
+        document.getElementById('btn-zip').onclick = async () => { if (typeof JSZip === 'undefined') return; const p = S.projects.find(x => x.id === S.cur); const zip = new JSZip(); Object.keys(p.files).forEach(f => zip.file(f, p.files[f])); const blob = await zip.generateAsync({type:'blob'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${p.name}.zip`; a.click(); };
+        document.getElementById('btn-theme').onclick = () => { document.body.classList.toggle('dark'); if (cm) cm.setOption('theme', document.body.classList.contains('dark') ? 'material-darker' : 'default'); };
+    } catch(e) { console.error(e); toast("Init error."); }
 }
-
 document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
