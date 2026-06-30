@@ -186,6 +186,10 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .asset-type { font-size: 11px; font-weight: 700; color: var(--ac); text-transform: uppercase; margin-bottom: 4px; }
 .asset-name { font-size: 13px; color: var(--tx); margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; }
 .asset-prompt { font-size: 12px; color: var(--mt); margin-bottom: 12px; }
+.asset-actions { display: flex; gap: 8px; margin-top: 8px; }
+.asset-btn { flex: 1; padding: 8px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.asset-btn.approve { background: var(--ok); color: #fff; }
+.asset-btn.redo { background: var(--warn); color: #000; }
 .upload-btn { width: 100%; padding: 10px; border: 1px dashed var(--border); background: var(--panel); color: var(--mt); border-radius: 8px; cursor: pointer; margin-bottom: 16px; font-weight: 500; }
 .upload-btn:hover { border-color: var(--ac); color: var(--ac); }
 
@@ -381,9 +385,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 const API_URL = 'https://apihub.agnes-ai.com/v1/chat/completions';
 const IMG_API_URL = 'https://apihub.agnes-ai.com/v1/images/generations';
 const VID_API_URL = 'https://apihub.agnes-ai.com/v1/videos/generations';
-// Website builder key — used for all CodeMaker AI's own AI calls
 const SITE_KEY = 'sk-qZB4ieEv5UdIrYK3eEHAfdAv5xXYKLsVD7bAd9Kg7EQuDYF3';
-// Project key — embedded into generated apps via {{SITE_API_KEY}} placeholder
 const PROJECT_KEY = 'sk-rWvCRyEKxFrHuuVaoQB1IwFoPXMGy6XQNQvpC3AhHl5kkNCE';
 const PROXY = 'https://corsproxy.io/?url=';
 const MODELS = { '2.0':'agnes-2.0-flash', '1.5':'agnes-1.5-flash', 'video':'agnes-video-v2.0', 'image':'agnes-image-2.1-flash' };
@@ -420,19 +422,34 @@ You MUST strictly follow the design rules specified in the project's 'design.md'
 # LOCKED FILES
 If a file is marked as "locked", you MUST NOT modify it. Output the exact same content if asked to write to it.
 
-# API KEY HANDLING (CRITICAL)
-If the app you are building needs an AI API key, you MUST use the placeholder {{SITE_API_KEY}} in your code.
-NEVER write a real API key string in the code. ALWAYS use {{SITE_API_KEY}}.
-The system will automatically replace this placeholder with the real API key when the file is saved.
-Example: const API_KEY = '{{SITE_API_KEY}}';  ← This is correct.
-Do NOT use: const API_KEY = 'sk-xxx';  ← This is wrong and will be rejected.
+# AI APP GENERATION (CRITICAL - IF BUILDING AN AI APP)
+If the user asks you to build an AI app, chatbot, or tool that generates text, images, or videos, you MUST use the Agnes AI API endpoints and the placeholder API key. 
+Do NOT use OpenAI, Gemini, or other third-party endpoints. Use these exact endpoints in your fetch calls:
+
+Text/Chat API: 
+Endpoint: https://apihub.agnes-ai.com/v1/chat/completions
+Model: agnes-2.0-flash
+Headers: { "Content-Type": "application/json", "Authorization": "Bearer {{SITE_API_KEY}}" }
+Body: { "model": "agnes-2.0-flash", "messages": [{"role": "user", "content": "prompt"}] }
+
+Image API:
+Endpoint: https://apihub.agnes-ai.com/v1/images/generations
+Model: agnes-image-2.0-flash
+Body: { "model": "agnes-image-2.0-flash", "prompt": "prompt", "n": 1, "size": "1024x1024" }
+
+Video API:
+Endpoint: https://apihub.agnes-ai.com/v1/videos/generations
+Model: agnes-video-v2.0
+Body: { "model": "agnes-video-v2.0", "prompt": "prompt" }
+
+ALWAYS use the placeholder {{SITE_API_KEY}} for the Bearer token. The system will auto-replace it with a valid key. NEVER hardcode 'sk-xxx'.
 
 # IMAGE GENERATION (CRITICAL)
 When the user asks for an image, picture, photo, icon, logo, illustration, background image, or ANY visual asset, you MUST use the 'generate_asset' tool with type="image".
 NEVER use SVG placeholders, emoji, or CSS-only graphics as substitutes for images.
 NEVER create SVG icons when the user asks for an image. Use the generate_asset tool.
 The only exception is if the user explicitly asks for an SVG or a CSS-only design.
-Put the returned URL directly into the img src or video src in your code.
+Put the returned URL directly into the img src or video src in your code. The user will review, approve, or request a redo of the asset later. If they redo it, the system will automatically update the URL in your code. Do not worry about the approval process, just use the URL provided.
 
 # ASSETS & ANIMATIONS
 If the user asks for a video or animation, use the 'generate_asset' tool with type="video". 
@@ -533,7 +550,7 @@ function renderGrid() {
         </div>
     `).join('');
     g.querySelectorAll('.proj-card').forEach(c => c.onclick = e => { if(e.target.closest('.proj-del')) return; openEditor(c.dataset.id); });
-    g.querySelectorAll('[data-del]').forEach(b => b.onclick = e => { e.stopPropagation(); S.projects = S.projects.filter(p => p.id !== b.dataset.del); saveProjects(); renderGrid(); });
+    g.querySelectorAll('[data-del]').forEach(b => b.onclick = e => { e.stopPropagation(); S.projects = S.projects.filter(p => p.id !== b.dataset_del); saveProjects(); renderGrid(); });
 }
 
 function renderTemplates() {
@@ -818,12 +835,11 @@ function updatePreview() {
     document.getElementById('prev-frame').srcdoc = html;
 }
 
-// ===== SHOW HISTORY (Fixed to show modal immediately) =====
 function showHistory() {
+    document.getElementById('generic-modal').classList.add('show'); 
     const p = S.projects.find(x => x.id === S.cur); 
     if (!p) return toast('No project open!');
     
-    document.getElementById('generic-modal').classList.add('show'); // Show instantly
     const modalBody = document.getElementById('generic-modal-body');
     document.getElementById('generic-modal-title').innerText = 'Version History';
     
@@ -858,17 +874,85 @@ function renderAssets() {
     p.assets.forEach(asset => {
         const card = document.createElement('div');
         card.className = 'asset-card';
+        card.dataset.assetId = asset.id;
+        
+        let statusText = asset.isUserUpload ? '(Uploaded)' : (asset.approved ? '(Approved)' : '(Pending Approval)');
+        let actionButtons = '';
+        if (!asset.isUserUpload) {
+            if (!asset.approved) {
+                actionButtons = `
+                    <div class="asset-actions">
+                        <button class="asset-btn approve" onclick="approveAsset('${asset.id}')"><i class="fas fa-check"></i> Approve</button>
+                        <button class="asset-btn redo" onclick="redoAsset('${asset.id}')"><i class="fas fa-redo"></i> Redo</button>
+                    </div>`;
+            } else {
+                actionButtons = `
+                    <div class="asset-actions">
+                        <button class="asset-btn redo" onclick="redoAsset('${asset.id}')"><i class="fas fa-redo"></i> Redo</button>
+                    </div>`;
+            }
+        }
+
         card.innerHTML = `
             <div class="asset-preview">${asset.type === 'image' ? `<img src="${asset.url}" alt="${asset.name}">` : `<video src="${asset.url}" muted loop autoplay></video>`}</div>
             <div class="asset-info">
-                <div class="asset-type">${asset.type.toUpperCase()} ${asset.isUserUpload ? '(Uploaded)' : '(AI Generated)'}</div>
+                <div class="asset-type">${asset.type.toUpperCase()} ${statusText}</div>
                 <div class="asset-name">${asset.name}</div>
                 ${asset.prompt ? `<div class="asset-prompt">${asset.prompt}</div>` : ''}
+                ${actionButtons}
             </div>
         `;
         view.appendChild(card);
     });
 }
+
+window.approveAsset = function(id) {
+    const p = S.projects.find(x => x.id === S.cur);
+    if (!p) return;
+    const asset = p.assets.find(a => a.id === id);
+    if (!asset) return;
+    
+    asset.approved = true;
+    saveProjects();
+    renderAssets();
+    toast('Asset approved!');
+};
+
+window.redoAsset = async function(id) {
+    const p = S.projects.find(x => x.id === S.cur);
+    if (!p) return;
+    const asset = p.assets.find(a => a.id === id);
+    if (!asset) return;
+
+    const card = document.querySelector(`[data-asset-id="${id}"]`);
+    if (card) {
+        const preview = card.querySelector('.asset-preview');
+        preview.innerHTML = '<div class="spinner" style="width:24px;height:24px;margin:0 auto;"></div>';
+    }
+
+    try {
+        const newUrl = await generateAsset(asset.type, asset.prompt);
+        const oldUrl = asset.url;
+        
+        // Replace old URL with new URL in all files
+        Object.keys(p.files).forEach(fname => {
+            if (p.files[fname] && p.files[fname].includes(oldUrl)) {
+                p.files[fname] = p.files[fname].split(oldUrl).join(newUrl);
+            }
+        });
+        
+        asset.url = newUrl;
+        asset.approved = false; // Require approval again
+        saveProjects();
+        renderAssets();
+        updatePreview();
+        if (S.view === 'code') loadFileToEditor();
+        toast('Asset redone! Code updated automatically.');
+    } catch (e) {
+        toast('Failed to redo asset: ' + e.message);
+        renderAssets(); // Restore view
+    }
+};
 
 window.handleAssetUpload = function(event) {
     const file = event.target.files[0];
@@ -879,14 +963,13 @@ window.handleAssetUpload = function(event) {
         const ext = file.name.split('.').pop().toLowerCase();
         const type = file.type.startsWith('image') ? 'image' : 'video';
         const name = `Asset_${p.assets.length + 1}.${ext}`;
-        p.assets.push({ id: uid(), name, type, url: e.target.result, isUserUpload: true });
+        p.assets.push({ id: uid(), name, type, url: e.target.result, isUserUpload: true, approved: true });
         saveProjects(); renderAssets();
         toast(`${name} uploaded!`);
     };
     reader.readAsDataURL(file);
 };
 
-// ===== GITHUB ISSUES & PRs VIEW =====
 async function renderIssues() {
     const p = S.projects.find(x => x.id === S.cur); if (!p) return;
     const view = document.getElementById('issues-view');
@@ -959,12 +1042,11 @@ window.closeIssueWithAI = async function(issueNum) {
     } catch(e) { toast('Error closing issue.'); }
 };
 
-// ===== GITHUB EXPORT & DEPLOY (Fixed to show modal immediately) =====
 async function exportToGithub() {
+    document.getElementById('generic-modal').classList.add('show'); 
     const p = S.projects.find(x => x.id === S.cur);
     if (!p) return toast('Open a project first!');
     
-    document.getElementById('generic-modal').classList.add('show'); // Show instantly
     const modalBody = document.getElementById('generic-modal-body');
     document.getElementById('generic-modal-title').innerText = 'Export to GitHub';
     
@@ -1116,13 +1198,12 @@ async function startGithubPush(owner) {
     renderIssues();
 }
 
-// ===== DEPLOY TO GITHUB PAGES (Fixed to show modal immediately) =====
 async function deployToGithubPages(owner, repoName) {
+    document.getElementById('generic-modal').classList.add('show'); 
     const token = S.githubToken;
     const modalBody = document.getElementById('generic-modal-body');
     document.getElementById('generic-modal-title').innerText = 'Deploy to GitHub Pages';
     
-    document.getElementById('generic-modal').classList.add('show'); // Show instantly
     modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Checking authentication...</div>`;
     
     if (!token) {
@@ -1188,31 +1269,40 @@ async function deployToGithubPages(owner, repoName) {
     }
 }
 
-// ===== IMPORT FROM GITHUB (Reverted to working simple version) =====
 async function importFromGithub() {
-    document.getElementById('generic-modal').classList.add('show'); // Show instantly
+    document.getElementById('generic-modal').classList.add('show'); 
     const modalBody = document.getElementById('generic-modal-body');
     document.getElementById('generic-modal-title').innerText = 'Import from GitHub';
     
     if (!S.githubToken) {
-        modalBody.innerHTML = `<p class="modal-desc">You need a GitHub token to import repositories.</p>
-            <input type="password" class="modal-input" id="gh-token-input" placeholder="Paste your GitHub token here (ghp_...)">
-            <button class="modal-btn gh" id="gh-save-btn"><i class="fab fa-github"></i> Save Token & Continue</button>`;
+        modalBody.innerHTML = `<p class="modal-desc">You need a GitHub token to import private repos, but you can try importing public ones without a token.</p>
+            <input type="password" class="modal-input" id="gh-token-input" placeholder="Paste GitHub token (optional, for private repos)">
+            <button class="modal-btn gh" id="gh-save-btn"><i class="fab fa-github"></i> Save Token & Continue</button>
+            <button class="modal-btn secondary" id="gh-skip-btn">Skip & Import Public Repo</button>`;
         document.getElementById('gh-save-btn').onclick = () => {
             const token = document.getElementById('gh-token-input').value.trim();
-            if (!token) return toast('Token cannot be empty.');
-            S.githubToken = token;
-            localStorage.setItem('gh_token', token);
+            if (token) {
+                S.githubToken = token;
+                localStorage.setItem('gh_token', token);
+            }
             importFromGithub();
         };
+        document.getElementById('gh-skip-btn').onclick = () => {
+            showImportInput();
+        };
     } else {
-        modalBody.innerHTML = `
-            <p class="modal-desc">Paste the GitHub repository URL or "owner/repo" name to import.</p>
-            <input type="text" class="modal-input" id="gh-import-input" placeholder="https://github.com/owner/repo OR owner/repo">
-            <button class="modal-btn gh" id="gh-import-btn"><i class="fab fa-github"></i> Import Repository</button>
-        `;
-        document.getElementById('gh-import-btn').onclick = startImportGithub;
+        showImportInput();
     }
+}
+
+function showImportInput() {
+    const modalBody = document.getElementById('generic-modal-body');
+    modalBody.innerHTML = `
+        <p class="modal-desc">Paste the GitHub repository URL or "owner/repo" name to import.</p>
+        <input type="text" class="modal-input" id="gh-import-input" placeholder="https://github.com/owner/repo OR owner/repo">
+        <button class="modal-btn gh" id="gh-import-btn"><i class="fab fa-github"></i> Import Repository</button>
+    `;
+    document.getElementById('gh-import-btn').onclick = startImportGithub;
 }
 
 async function startImportGithub() {
@@ -1233,12 +1323,22 @@ async function startImportGithub() {
     
     modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Fetching repository contents...</div>`;
     
-    const headers = { 'Authorization': `token ${S.githubToken}`, 'Accept': 'application/vnd.github+json' };
+    const headers = { 'Accept': 'application/vnd.github+json' };
+    if (S.githubToken) headers['Authorization'] = `token ${S.githubToken}`;
+    
+    const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents`;
+    
     try {
-        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents`, { headers });
-        if (!res.ok) throw new Error('Repo not found or private.');
+        let res;
+        try {
+            res = await fetch(apiUrl, { headers });
+            if (!res.ok) throw new Error(`Direct failed: ${res.status}`);
+        } catch (directErr) {
+            res = await fetch(PROXY + encodeURIComponent(apiUrl), { headers });
+            if (!res.ok) throw new Error(`Failed to fetch repo (Status: ${res.status}). You might be rate-limited.`);
+        }
+
         const files = await res.json();
-        
         const proj = createProj(`Imported: ${repo}`, S.model);
         proj.files = {}; 
         proj.github = { owner, repo };
@@ -1246,9 +1346,18 @@ async function startImportGithub() {
         for (const file of files) {
             if (file.type === 'file') {
                 modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Importing ${file.name}...</div>`;
-                const fileRes = await fetch(file.url, { headers });
+                
+                let fileRes;
+                try {
+                    fileRes = await fetch(file.url, { headers });
+                    if (!fileRes.ok) throw new Error(`Direct failed: ${fileRes.status}`);
+                } catch (directErr) {
+                    fileRes = await fetch(PROXY + encodeURIComponent(file.url), { headers });
+                    if (!fileRes.ok) continue; 
+                }
+                
                 const fileData = await fileRes.json();
-                const content = decodeURIComponent(escape(atob(fileData.content)));
+                const content = decodeURIComponent(escape(atob(fileData.content.replace(/\n/g, ''))));
                 proj.files[file.name] = content;
             }
         }
@@ -1263,11 +1372,10 @@ async function startImportGithub() {
         openEditor(proj.id);
         toast('Repository imported successfully!');
     } catch(e) {
-        modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error: ${e.message}<br><br>If this is a public repo, GitHub might be rate-limiting your IP. Try adding a GitHub token.</p>`;
+        modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error: ${e.message}<br><br>If this is a public repo, GitHub might be rate-limiting your IP. Try again later or add a token.</p>`;
     }
 }
 
-// ===== HTTP REQUEST TESTER =====
 function openHttpTester() {
     document.getElementById('generic-modal').classList.add('show');
     const modalBody = document.getElementById('generic-modal-body');
@@ -1306,7 +1414,6 @@ async function sendHttpReq() {
     }
 }
 
-// ===== SETTINGS =====
 function openSettings() {
     document.getElementById('generic-modal').classList.add('show');
     const modalBody = document.getElementById('generic-modal-body');
@@ -1333,7 +1440,6 @@ function openSettings() {
     `;
 }
 
-// ===== SEO OPTIMIZER =====
 async function optimizeSeo() {
     const p = S.projects.find(x => x.id === S.cur);
     if (!p || !p.files['index.html']) return toast('No index.html found.');
@@ -1354,7 +1460,6 @@ async function optimizeSeo() {
     }
 }
 
-// ===== MENTION LOGIC =====
 function handleMentionInput(inputEl) {
     const text = inputEl.value;
     const cursorPos = inputEl.selectionStart;
@@ -1415,7 +1520,6 @@ function selectMention(filename) {
     document.getElementById('chat-send').disabled = !input.value.trim();
 }
 
-// ===== AI CALLS =====
 async function callAI(messages, modelKey, tools) {
     const body = { model: MODELS[modelKey], messages: [{role:'system', content: getSystemPrompt()}, ...messages], temperature: 0.7, stream: false, tools: tools };
     const headers = { 'Content-Type':'application/json', 'Authorization':`Bearer ${SITE_KEY}` };
@@ -1468,7 +1572,6 @@ async function generateAsset(type, prompt) {
     }
 }
 
-// ===== GITHUB ISSUE & PR CREATION =====
 async function createGithubIssue(title, body, labels) {
     const p = S.projects.find(x => x.id === S.cur);
     if (!p || !p.github || !S.githubToken) throw new Error('GitHub not connected');
@@ -1622,9 +1725,9 @@ async function generate() {
                         try {
                             const url = await generateAsset(args.type, args.prompt);
                             const name = `AI_${args.type === 'image' ? 'Image' : 'Video'}_${p.assets.length + 1}.${args.type === 'image' ? 'png' : 'mp4'}`;
-                            p.assets.push({ id: uid(), name, type: args.type, url, prompt: args.prompt, isUserUpload: false });
+                            p.assets.push({ id: uid(), name, type: args.type, url, prompt: args.prompt, isUserUpload: false, approved: false });
                             saveProjects(); renderAssets();
-                            toolMsg.content = `Asset ${name} generated successfully. URL: ${url}`;
+                            toolMsg.content = `Asset ${name} generated successfully. URL: ${url}. Use this exact URL in the code.`;
                             badge.innerHTML = `<i class="fas fa-check-circle"></i> Generated ${name}`;
                         } catch(e) {
                             toolMsg.content = "Failed to generate asset.";
