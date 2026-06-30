@@ -175,7 +175,9 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .tasks-view { flex: 1; display: none; flex-direction: column; overflow-y: auto; padding: 16px; background: var(--bg2); min-height: 0; }
 .task-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
 .task-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 14px; color: var(--tx2); }
-.task-item i { color: var(--ac); }
+.task-item i { color: var(--mt); transition: color 0.3s; }
+.task-item.done { text-decoration: line-through; color: var(--ok); opacity: 0.8; }
+.task-item.done i { color: var(--ok); }
 
 /* Assets View */
 .assets-view { flex: 1; display: none; flex-direction: column; overflow-y: auto; padding: 16px; background: var(--bg2); min-height: 0; }
@@ -359,7 +361,34 @@ const MODELS = { '2.0':'agnes-2.0-flash', '1.5':'agnes-1.5-flash', 'video':'agne
 
 const DEFAULT_DESIGN_MD = `# Design System\n\n## Aesthetics\nModern, sleek, and visually striking. NEVER use default browser styles.\n\n## Colors\nUse a sophisticated palette. Prefer dark themes (e.g., #0f172a background, #f1f5f9 text) with vibrant, glowing accents (indigo, violet, fuchsia). Use CSS variables.\n\n## Typography\nUse 'Inter' for sans-serif and 'JetBrains Mono' for code. Large, bold headings (clamp up to 4rem) with tight tracking. Muted, readable body text.\n\n## Layout\nGenerous whitespace (padding: 2rem+). Centered max-width containers (1200px). Fully responsive Flexbox/Grid.\n\n## Components\nBackgrounds should be subtle (rgba). Use 1px solid borders with low opacity. Border-radius 12px-16px. Use backdrop-filter: blur() for glassmorphism.\n\n## Interactions\nSmooth transitions (0.3s ease). Hover states should scale slightly (1.02) and increase glow/shadow.`;
 
-const SP = `You are CodeMaker AI, an autonomous coding agent.\nCRITICAL RULE: You MUST output the FULL code for all files. Do NOT truncate.\nTo prevent timeouts, you MUST use the 'write_file' tool to write code. DO NOT output code in markdown blocks. \n\n# TASK PLANNING\n1. First, output a brief markdown checklist of your plan using "- [ ]". The system will extract this and show it in the Tasks tab. Do not output the tasks again in the chat.\n2. Use the 'write_file' tool to write files one by one. Wait for confirmation after each file.\n\n# FILE SYSTEM\nYou can create ANY file type (e.g., index.html, style.css, script.js, App.tsx, main.py, db.json, design.md).\nIf the user asks for a web app, ensure you write standard web files (index.html, style.css, script.js) for the live preview to work.\n\n# DESIGN SYSTEM (design.md)\nYou MUST strictly follow the design rules specified in the project's 'design.md' file. If the user asks for a design change, update the 'design.md' file using the 'write_file' tool.\n\n# LOCKED FILES\nIf a file is marked as "locked", you MUST NOT modify it. Output the exact same content if asked to write to it.\n\n# ASSETS & ANIMATIONS\nIf the user asks for a video or animation, use the 'generate_asset' tool with type="video". \nIf the user asks for an image, picture, or photo, use the 'generate_asset' tool with type="image". \nDo NOT use SVG placeholders. Put the returned URL directly into the img/video src.\nFor scroll animations, use IntersectionObserver in script.js.\nFor video backgrounds, make them full-screen, looping, and muted with a dark overlay.`;
+const SP = `You are CodeMaker AI, an autonomous coding agent.
+CRITICAL RULE: You MUST output the FULL code for all files. Do NOT truncate.
+To prevent timeouts, you MUST use the 'write_file' tool to write code. DO NOT output code in markdown blocks. 
+
+# TASK PLANNING
+1. First, output a brief markdown checklist of your plan using EXACTLY "- [ ] ". For example:
+   - [ ] Create HTML structure
+   - [ ] Add CSS styles
+   - [ ] Implement JS logic
+   The system will extract this and show it in the Tasks tab. Do not output the tasks again in the chat.
+2. Use the 'write_file' tool to write files one by one. Wait for confirmation after each file.
+
+# FILE SYSTEM
+You can create ANY file type (e.g., index.html, style.css, script.js, App.tsx, main.py, db.json, design.md).
+If the user asks for a web app, ensure you write standard web files (index.html, style.css, script.js) for the live preview to work.
+
+# DESIGN SYSTEM (design.md)
+You MUST strictly follow the design rules specified in the project's 'design.md' file. If the user asks for a design change, update the 'design.md' file using the 'write_file' tool.
+
+# LOCKED FILES
+If a file is marked as "locked", you MUST NOT modify it. Output the exact same content if asked to write to it.
+
+# ASSETS & ANIMATIONS
+If the user asks for a video or animation, use the 'generate_asset' tool with type="video". 
+If the user asks for an image, picture, or photo, use the 'generate_asset' tool with type="image". 
+Do NOT use SVG placeholders. Put the returned URL directly into the img/video src.
+For scroll animations, use IntersectionObserver in script.js.
+For video backgrounds, make them full-screen, looping, and muted with a dark overlay.`;
 
 const TEMPLATES = [
     { id: 't1', title: 'SaaS Landing Page', color: '#6366f1', verified: true, author: 'CodeMaker AI', prompt: 'Build a high-converting SaaS landing page. Include a sticky navbar, a hero section with a gradient background, feature cards with hover effects, and a footer. Use modern glassmorphism.' },
@@ -388,7 +417,7 @@ function getSystemPrompt() {
         prompt += `\n\n# LOCKED FILES\nThe following files are locked and MUST NOT be modified:\n${p.lockedFiles.join(', ')}\n`;
     }
     if (S.tasks.length > 0) {
-        prompt += `\n\n# CURRENT TASKS\nHere is the current task list. Please complete these:\n${S.tasks.map(t => '- [ ] ' + t).join('\n')}\n`;
+        prompt += `\n\n# CURRENT TASKS\nHere is the current task list. Please complete these:\n${S.tasks.map(t => '- [ ] ' + t.text).join('\n')}\n`;
     }
     return prompt;
 }
@@ -458,11 +487,13 @@ function fmtAI(content) {
     const lines = content.split('\n');
     let inTaskList = false;
     let tasksFound = false;
+    let newTasks = [];
 
     lines.forEach(line => {
-        if (line.startsWith('- [ ] ')) {
+        let match = line.match(/^-\s\[\s\]\s*(.*)/i);
+        if (match) {
             tasksFound = true;
-            S.tasks.push(line.substring(6).trim());
+            newTasks.push({ text: match[1].trim(), done: false });
             if (!inTaskList) { inTaskList = true; }
         } else if (line.trim() === '') {
             if (inTaskList) { inTaskList = false; }
@@ -475,6 +506,7 @@ function fmtAI(content) {
     });
     
     if (tasksFound) {
+        S.tasks = newTasks;
         renderTasks();
     }
     return html;
@@ -486,7 +518,41 @@ function renderTasks() {
         view.innerHTML = '<div style="color:var(--mt);text-align:center;padding:40px;">No tasks yet. The AI will plan its work here.</div>';
         return;
     }
-    view.innerHTML = `<div class="task-card">${S.tasks.map(t => `<div class="task-item"><i class="far fa-circle"></i> ${t}</div>`).join('')}</div>`;
+    view.innerHTML = `<div class="task-card">${S.tasks.map(t => `
+        <div class="task-item ${t.done ? 'done' : ''}">
+            <i class="fas ${t.done ? 'fa-check-circle' : 'far fa-circle'}"></i> 
+            <span>${t.text}</span>
+        </div>`).join('')}</div>`;
+}
+
+function markTaskDone(filename) {
+    let found = false;
+    for (let i = 0; i < S.tasks.length; i++) {
+        if (!S.tasks[i].done) {
+            let taskText = S.tasks[i].text.toLowerCase();
+            let fname = filename.toLowerCase();
+            let ext = filename.split('.').pop().toLowerCase();
+            
+            if (taskText.includes(fname) || taskText.includes(ext) || 
+                (ext === 'html' && (taskText.includes('html') || taskText.includes('structure') || taskText.includes('markup'))) ||
+                (ext === 'css' && (taskText.includes('css') || taskText.includes('style'))) ||
+                (ext === 'js' && (taskText.includes('js') || taskText.includes('javascript') || taskText.includes('script') || taskText.includes('logic')))) {
+                S.tasks[i].done = true;
+                found = true;
+                break;
+            }
+        }
+    }
+    // Fallback: if no specific match, check off the first undone task
+    if (!found) {
+        for (let i = 0; i < S.tasks.length; i++) {
+            if (!S.tasks[i].done) {
+                S.tasks[i].done = true;
+                break;
+            }
+        }
+    }
+    renderTasks();
 }
 
 function openEditor(id) {
@@ -540,34 +606,29 @@ function renderChat() {
         if (m.role === 'user') {
             if (typeof m.content === 'string') addMsg('user', m.content, false, i);
         } else if (m.role === 'assistant') {
-            if (m.content) {
-                const msgDiv = addMsg('ai', fmtAI(m.content), false, i);
-                if (i === p.messages.length - 1 && !S.gen) {
-                    const actions = document.createElement('div');
-                    actions.className = 'msg-actions';
-                    actions.innerHTML = `
-                        <button class="msg-action-btn" onclick="copyMsg(${i})"><i class="fas fa-copy"></i> Copy</button>
-                        <button class="msg-action-btn" onclick="retryGen()"><i class="fas fa-redo"></i> Retry</button>
-                    `;
-                    msgDiv.querySelector('.msg-bubble').appendChild(actions);
-                }
-            }
+            let contentHtml = m.content ? fmtAI(m.content) : '';
+            let toolCallsHtml = '';
             if (m.tool_calls) {
-                m.tool_calls.forEach(tc => {
-                    const t = document.createElement('div');
-                    t.className = 'msg tool';
-                    t.style.animation = 'none';
-                    let badge = '';
-                    if (tc.function.name === 'write_file') {
+                toolCallsHtml = m.tool_calls.map(tc => {
+                    try {
                         const args = JSON.parse(tc.function.arguments);
-                        badge = `<div class="tool-badge write"><i class="fas fa-check-circle"></i> Wrote ${args.filename}</div>`;
-                    } else if (tc.function.name === 'generate_asset') {
-                        const args = JSON.parse(tc.function.arguments);
-                        badge = `<div class="tool-badge asset"><i class="fas fa-image"></i> Generated ${args.type}: ${args.prompt}</div>`;
-                    }
-                    t.innerHTML = `<div class="msg-av"><i class="fas fa-tools"></i></div><div class="msg-bubble" style="background:transparent; border:none; padding:0;">${badge}</div>`;
-                    c.appendChild(t);
-                });
+                        if (tc.function.name === 'write_file') return `<div class="tool-badge write"><i class="fas fa-check-circle"></i> Wrote ${args.filename}</div>`;
+                        if (tc.function.name === 'generate_asset') return `<div class="tool-badge asset"><i class="fas fa-check-circle"></i> Generated ${args.type}</div>`;
+                    } catch(e) {}
+                    return '';
+                }).join('');
+            }
+            
+            const msgDiv = addMsg('ai', contentHtml + toolCallsHtml, false, i);
+            
+            if (i === p.messages.length - 1 && !S.gen) {
+                const actions = document.createElement('div');
+                actions.className = 'msg-actions';
+                actions.innerHTML = `
+                    <button class="msg-action-btn" onclick="copyMsg(${i})"><i class="fas fa-copy"></i> Copy</button>
+                    <button class="msg-action-btn" onclick="retryGen()"><i class="fas fa-redo"></i> Retry</button>
+                `;
+                msgDiv.querySelector('.msg-bubble').appendChild(actions);
             }
         }
     });
@@ -597,11 +658,10 @@ window.copyMsg = function(index) {
 window.retryGen = function() {
     const p = S.projects.find(x => x.id === S.cur);
     if (!p || S.gen) return;
-    // Remove last assistant message
     if (p.messages.length > 0 && p.messages[p.messages.length-1].role === 'assistant') {
         p.messages.pop();
     }
-    S.tasks = []; // Clear tasks
+    S.tasks = [];
     saveProjects();
     renderChat();
     renderTasks();
@@ -706,7 +766,7 @@ function renderAssets() {
     });
 }
 
-// ===== GITHUB EXPORT =====
+// ===== GITHUB EXPORT (FIXED & UPGRADED) =====
 async function exportToGithub() {
     const p = S.projects.find(x => x.id === S.cur);
     if (!p) return;
@@ -714,15 +774,17 @@ async function exportToGithub() {
     document.getElementById('generic-modal-title').innerText = 'Export to GitHub';
     
     if (S.githubToken) {
+        const defaultRepoName = p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
         modalBody.innerHTML = `
-            <p class="modal-desc">Push "${p.name}" to a new GitHub repository. The AI will auto-generate a README.md and commit message.</p>
-            <button class="modal-btn gh" id="gh-push-btn"><i class="fab fa-github"></i> Create Repo & Push Code</button>
+            <p class="modal-desc">Push "${p.name}" to GitHub. If the repository doesn't exist, it will be created. If it does, files will be updated automatically.</p>
+            <input type="text" class="modal-input" id="gh-repo-input" placeholder="Repository Name" value="${defaultRepoName}">
+            <button class="modal-btn gh" id="gh-push-btn"><i class="fab fa-github"></i> Push / Update Repository</button>
             <button style="width:100%;margin-top:8px;background:transparent;color:var(--mt);border:1px solid var(--border);padding:10px;border-radius:8px;cursor:pointer;" onclick="logoutGithub()">Logout / Change Token</button>
         `;
         document.getElementById('gh-push-btn').onclick = startGithubPush;
     } else {
         modalBody.innerHTML = `
-            <p class="modal-desc">To push code directly to GitHub, you need a Personal Access Token (PAT) with 'repo' permissions. <br><br><a href="https://github.com/settings/tokens/new?scopes=repo,workflow&description=CodeMakerAI" target="_blank" style="color:var(--ac);">Click here to generate one on GitHub</a>.</p>
+            <p class="modal-desc">To push code directly to GitHub, you need a Personal Access Token (PAT). <br><br><a href="https://github.com/settings/tokens/new?scopes=repo,workflow,admin:org,admin:repo_hook,gist,user,delete_repo,write:packages&description=CodeMakerAI" target="_blank" style="color:var(--ac);">Click here to generate a token with all permissions on GitHub</a>.</p>
             <input type="password" class="modal-input" id="gh-token-input" placeholder="Paste your GitHub token here (ghp_...)">
             <button class="modal-btn gh" id="gh-save-btn"><i class="fab fa-github"></i> Save Token & Continue</button>
         `;
@@ -747,9 +809,60 @@ async function startGithubPush() {
     const p = S.projects.find(x => x.id === S.cur);
     const token = S.githubToken;
     const modalBody = document.getElementById('generic-modal-body');
-    
-    modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> AI is writing README.md...</div>`;
+    const repoName = document.getElementById('gh-repo-input').value.trim();
+    if(!repoName) return toast('Repository name is required.');
 
+    const headers = { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' };
+    
+    // 1. Get User
+    modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Fetching GitHub profile...</div>`;
+    const userRes = await fetch('https://api.github.com/user', { headers });
+    if(!userRes.ok) { modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error: Invalid GitHub Token.</p>`; return; }
+    const owner = (await userRes.json()).login;
+
+    // 2. Check if repo exists
+    modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Checking repository...</div>`;
+    const checkRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}`, { headers });
+    if (checkRes.status === 404) {
+        modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Creating repository...</div>`;
+        const createRes = await fetch('https://api.github.com/user/repos', {
+            method: 'POST', headers,
+            body: JSON.stringify({ name: repoName, description: 'Generated by CodeMaker AI', private: false })
+        });
+        if (!createRes.ok) { modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error creating repo.</p>`; return; }
+    }
+
+    // 3. Push files using Contents API (handles create/update automatically)
+    const files = Object.keys(p.files);
+    for (let i = 0; i < files.length; i++) {
+        const filename = files[i];
+        const content = p.files[filename];
+        modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Pushing files... (${i+1}/${files.length})<br>${filename}</div>`;
+        
+        // Check if file exists to get SHA (required by GitHub to update existing files)
+        let sha = null;
+        const fileCheckRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${encodeURIComponent(filename)}`, { headers });
+        if (fileCheckRes.ok) {
+            sha = (await fileCheckRes.json()).sha;
+        }
+
+        const putRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${encodeURIComponent(filename)}`, {
+            method: 'PUT', headers,
+            body: JSON.stringify({
+                message: `feat: update ${filename} via CodeMaker AI`,
+                content: btoa(unescape(encodeURIComponent(content))),
+                sha: sha,
+                branch: 'main'
+            })
+        });
+        if (!putRes.ok) { 
+            modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error pushing ${filename}. Make sure the repo is not empty or has a README.</p>`; 
+            return; 
+        }
+    }
+
+    // 4. Generate and push README.md
+    modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> AI is writing README.md...</div>`;
     let readmeContent = `# ${p.name}\n\nGenerated by CodeMaker AI.`;
     try {
         const filesConcat = Object.keys(p.files).map(f => 'File: ' + f + '\n\`\`\`\n' + p.files[f] + '\n\`\`\`\n').join('\n').substring(0, 3000);
@@ -772,81 +885,27 @@ async function startGithubPush() {
         }
     } catch(e) { /* fallback to basic readme */ }
 
-    modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Creating GitHub Repository...</div>`;
+    let sha = null;
+    const readmeCheckRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/README.md`, { headers });
+    if (readmeCheckRes.ok) { sha = (await readmeCheckRes.json()).sha; }
+    await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/README.md`, {
+        method: 'PUT', headers,
+        body: JSON.stringify({
+            message: `docs: update README.md`,
+            content: btoa(unescape(encodeURIComponent(readmeContent))),
+            sha: sha,
+            branch: 'main'
+        })
+    });
 
-    const repoName = p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + uid().substring(0,4);
-    let owner;
-    try {
-        const res = await fetch('https://api.github.com/user/repos', {
-            method: 'POST',
-            headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' },
-            body: JSON.stringify({ name: repoName, description: 'Generated by CodeMaker AI', private: false })
-        });
-        if (!res.ok) throw new Error('Failed to create repo');
-        const data = await res.json();
-        owner = data.owner.login;
-    } catch(e) {
-        modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error creating repo. Check your token permissions.</p>`;
-        return;
-    }
-
-    modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Pushing files...</div>`;
-
-    try {
-        const treeItems = [];
-        for (const filename in p.files) {
-            const content = p.files[filename];
-            const blobRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/git/blobs`, {
-                method: 'POST',
-                headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' },
-                body: JSON.stringify({ content: content, encoding: 'utf-8' })
-            });
-            if (!blobRes.ok) throw new Error('Failed to create blob for ' + filename);
-            const blobData = await blobRes.json();
-            treeItems.push({ path: filename, mode: '100644', type: 'blob', sha: blobData.sha });
-        }
-        
-        const readmeBlobRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/git/blobs`, {
-            method: 'POST',
-            headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' },
-            body: JSON.stringify({ content: readmeContent, encoding: 'utf-8' })
-        });
-        const readmeBlobData = await readmeBlobRes.json();
-        treeItems.push({ path: 'README.md', mode: '100644', type: 'blob', sha: readmeBlobData.sha });
-
-        const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/git/trees`, {
-            method: 'POST',
-            headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' },
-            body: JSON.stringify({ tree: treeItems })
-        });
-        if (!treeRes.ok) throw new Error('Failed to create tree');
-        const treeData = await treeRes.json();
-
-        const commitRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/git/commits`, {
-            method: 'POST',
-            headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' },
-            body: JSON.stringify({ message: `feat: initial commit for ${p.name} generated by CodeMaker AI`, tree: treeData.sha, parents: [] })
-        });
-        if (!commitRes.ok) throw new Error('Failed to create commit');
-        const commitData = await commitRes.json();
-
-        await fetch(`https://api.github.com/repos/${owner}/${repoName}/git/refs/heads/main`, {
-            method: 'PATCH',
-            headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' },
-            body: JSON.stringify({ sha: commitData.sha })
-        });
-
-        modalBody.innerHTML = `
-            <div style="text-align:center; padding: 20px;">
-                <i class="fas fa-check-circle" style="font-size:32px;color:var(--ok);margin-bottom:12px;"></i>
-                <h3 style="margin-bottom:8px;">Successfully Pushed!</h3>
-                <p style="color:var(--mt);margin-bottom:20px;">Your project is now live on GitHub.</p>
-                <a href="https://github.com/${owner}/${repoName}" target="_blank" class="modal-btn gh" style="text-decoration:none;display:block;"><i class="fab fa-github"></i> Open Repository</a>
-            </div>
-        `;
-    } catch(e) {
-        modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error pushing files: ${e.message}</p>`;
-    }
+    modalBody.innerHTML = `
+        <div style="text-align:center; padding: 20px;">
+            <i class="fas fa-check-circle" style="font-size:32px;color:var(--ok);margin-bottom:12px;"></i>
+            <h3 style="margin-bottom:8px;">Successfully Pushed!</h3>
+            <p style="color:var(--mt);margin-bottom:20px;">Your project is now live on GitHub.</p>
+            <a href="https://github.com/${owner}/${repoName}" target="_blank" class="modal-btn gh" style="text-decoration:none;display:block;"><i class="fab fa-github"></i> Open Repository</a>
+        </div>
+    `;
 }
 
 async function enhancePrompt() {
@@ -932,8 +991,9 @@ async function generate() {
     S.gen = true;
     updateSendButton();
     hideContinueButton();
+    S.tasks = []; // Clear tasks at the start of generation
+    renderTasks();
     
-    // Add Thinking Message with Skeleton
     const md = addMsg('ai', '', true);
     md.classList.add('thinking');
     const statusLog = md.querySelector('.msg-bubble');
@@ -960,30 +1020,42 @@ async function generate() {
             saveProjects();
             
             if (choice.tool_calls && choice.tool_calls.length) {
-                statusLog.innerHTML = choice.content ? fmtAI(choice.content) : '';
-                md.classList.remove('thinking');
+                if (md.classList.contains('thinking')) {
+                    md.classList.remove('thinking');
+                    statusLog.innerHTML = ''; 
+                }
+                if (choice.content) {
+                    statusLog.innerHTML += fmtAI(choice.content);
+                }
                 for (const tc of choice.tool_calls) {
                     const toolMsg = { role: "tool", tool_call_id: tc.id, name: tc.function.name };
                     if (tc.function.name === 'write_file') {
                         const args = JSON.parse(tc.function.arguments);
-                        statusLog.innerHTML += `<div class="tool-badge write"><div class="spinner"></div> Writing ${args.filename}...</div>`;
+                        const badge = document.createElement('div');
+                        badge.className = 'tool-badge write';
+                        badge.innerHTML = `<div class="spinner"></div> Writing ${args.filename}...`;
+                        statusLog.appendChild(badge);
                         if (!p.lockedFiles.includes(args.filename)) p.files[args.filename] = args.content;
                         saveProjects(); updatePreview(); renderFiles();
                         if (S.view === 'code') loadFileToEditor();
                         toolMsg.content = "File written.";
-                        statusLog.innerHTML += `<div class="tool-badge write"><i class="fas fa-check-circle"></i> Wrote ${args.filename}</div>`;
+                        badge.innerHTML = `<i class="fas fa-check-circle"></i> Wrote ${args.filename}`;
+                        markTaskDone(args.filename); // <--- MARK TASK AS DONE
                     } else if (tc.function.name === 'generate_asset') {
                         const args = JSON.parse(tc.function.arguments);
-                        statusLog.innerHTML += `<div class="tool-badge asset"><div class="spinner"></div> Generating ${args.type}...</div>`;
+                        const badge = document.createElement('div');
+                        badge.className = 'tool-badge asset';
+                        badge.innerHTML = `<div class="spinner"></div> Generating ${args.type}...`;
+                        statusLog.appendChild(badge);
                         try {
                             const url = await generateAsset(args.type, args.prompt);
                             p.assets.push({ id: uid(), type: args.type, url, prompt: args.prompt });
                             saveProjects(); renderAssets();
                             toolMsg.content = `Asset URL: ${url}`;
-                            statusLog.innerHTML += `<div class="tool-badge asset"><i class="fas fa-check-circle"></i> Asset ready</div>`;
+                            badge.innerHTML = `<i class="fas fa-check-circle"></i> Generated ${args.type} ready`;
                         } catch(e) {
                             toolMsg.content = "Failed.";
-                            statusLog.innerHTML += `<div class="tool-badge asset" style="color:var(--dn)">Failed</div>`;
+                            badge.innerHTML = `<i class="fas fa-times-circle"></i> Failed to generate`;
                         }
                     }
                     currentMessages.push(toolMsg);
@@ -992,13 +1064,20 @@ async function generate() {
                 }
             } else {
                 md.classList.remove('thinking');
+                if (statusLog.querySelector('.skeleton-line')) {
+                    statusLog.innerHTML = ''; 
+                }
                 if (res.finishReason === 'length') {
                     statusLog.innerHTML += '<br><span style="color:var(--warn)">⚠️ Cut off.</span>';
                     showContinueButton();
                     break;
                 }
-                statusLog.innerHTML = choice.content ? fmtAI(choice.content) : "Done.";
-                // Add action buttons
+                statusLog.innerHTML += choice.content ? fmtAI(choice.content) : "Done.";
+                
+                // Mark all remaining tasks as done just in case
+                S.tasks.forEach(t => t.done = true);
+                renderTasks();
+
                 const actions = document.createElement('div');
                 actions.className = 'msg-actions';
                 actions.innerHTML = `
@@ -1089,7 +1168,6 @@ function init() {
         
         document.getElementById('apply-btn').onclick = () => { const p = S.projects.find(x => x.id === S.cur); if (p) { p.files[S.activeFile] = cm ? cm.getValue() : ''; saveProjects(); updatePreview(); toast('Applied!'); } };
         
-        // Preview Controls
         document.getElementById('zoom-in').onclick = () => { S.zoom = Math.min(2, S.zoom + 0.1); applyZoom(); };
         document.getElementById('zoom-out').onclick = () => { S.zoom = Math.max(0.5, S.zoom - 0.1); applyZoom(); };
         document.getElementById('auto-refresh').onclick = (e) => {
@@ -1103,7 +1181,7 @@ function init() {
         document.getElementById('btn-zip').onclick = async () => { if (typeof JSZip === 'undefined') return; const p = S.projects.find(x => x.id === S.cur); const zip = new JSZip(); Object.keys(p.files).forEach(f => zip.file(f, p.files[f])); const blob = await zip.generateAsync({type:'blob'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${p.name}.zip`; a.click(); };
         document.getElementById('btn-theme').onclick = () => { document.body.classList.toggle('dark'); if (cm) cm.setOption('theme', document.body.classList.contains('dark') ? 'material-darker' : 'default'); };
         
-        updateSendButton(); // Initialize button state
+        updateSendButton(); 
     } catch(e) { console.error(e); toast("Init error."); }
 }
 document.addEventListener('DOMContentLoaded', init);
