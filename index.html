@@ -132,6 +132,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .tool-badge { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; margin-top: 6px; background: var(--bg3); color: var(--tx2); }
 .tool-badge.write { background: rgba(16,185,129,0.1); color: var(--ok); }
 .tool-badge.asset { background: rgba(236,72,153,0.1); color: var(--pink); }
+.tool-badge.network { background: rgba(59,130,246,0.1); color: #3b82f6; }
 .spinner { width: 12px; height: 12px; border: 2px solid var(--mt); border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; }
 
 .chat-input-area { padding: 12px; border-top: 1px solid var(--border); background: var(--panel); }
@@ -309,7 +310,6 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
             <button class="ed-btn" id="btn-settings" title="AI Settings"><i class="fas fa-cog"></i></button>
             <button class="ed-btn" id="btn-tools" title="HTTP Tester"><i class="fas fa-flask"></i></button>
             <button class="ed-btn" id="btn-github" title="Export to GitHub"><i class="fab fa-github"></i></button>
-            <button class="ed-btn" id="btn-deploy" title="Deploy to Pages" style="color:var(--ok)"><i class="fas fa-rocket"></i></button>
             <button class="ed-btn" id="btn-history" title="Version History"><i class="fas fa-history"></i></button>
             <button class="ed-btn" id="btn-share" title="Share"><i class="fas fa-share"></i></button>
             <button class="ed-btn" id="btn-zip" title="Download ZIP"><i class="fas fa-download"></i></button>
@@ -359,6 +359,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
                 <iframe class="prev-frame" id="prev-frame" sandbox="allow-scripts allow-modals allow-forms allow-same-origin"></iframe>
                 <div class="code-view" id="code-view">
                     <div class="editor-tools">
+                        <button class="pa-btn" id="btn-beautify" title="Beautify Code"><i class="fas fa-broom"></i></button>
                         <button class="pa-btn" id="btn-seo" title="Optimize SEO"><i class="fas fa-magnifying-glass-chart"></i></button>
                     </div>
                     <textarea id="code-editor" spellcheck="false"></textarea>
@@ -374,8 +375,8 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 <script>
 // App powered internally by this key
 const APP_API_KEY = 'sk-qZB4ieEv5UdIrYK3eEHAfdAv5xXYKLsVD7bAd9Kg7EQuDYF3';
-// Default key injected into generated projects if user doesn't provide their own
-const DEFAULT_PROJECT_KEY = 'sk-rWvCRyEKxFrHuuVaoQB1IwFoPXMGy6XQNQvpC3AhHl5kkNCE';
+// Hardcoded shared key injected into generated projects
+const PROJECT_API_KEY = 'sk-rWvCRyEKxFrHuuVaoQB1IwFoPXMGy6XQNQvpC3AhHl5kkNCE';
 
 const API_URL = 'https://apihub.agnes-ai.com/v1/chat/completions';
 const IMG_API_URL = 'https://apihub.agnes-ai.com/v1/images/generations';
@@ -414,7 +415,10 @@ If the user asks for a video or animation, use the 'generate_asset' tool with ty
 If the user asks for an image, picture, or photo, use the 'generate_asset' tool with type="image". 
 Do NOT use SVG placeholders. Put the returned URL directly into the img/video src.
 For scroll animations, use IntersectionObserver in script.js.
-For video backgrounds, make them full-screen, looping, and muted with a dark overlay.`;
+For video backgrounds, make them full-screen, looping, and muted with a dark overlay.
+
+# API KEY FOR PROJECTS
+If the user asks you to build an app that requires an AI API key (e.g., a chatbot), you MUST use the following key in the generated code: ${PROJECT_API_KEY}. Do not ask the user for a key.`;
 
 const TEMPLATES = [
     { id: 't1', title: 'SaaS Landing Page', color: '#6366f1', verified: true, author: 'CodeMaker AI', prompt: 'Build a high-converting SaaS landing page. Include a sticky navbar, a hero section with a gradient background, feature cards with hover effects, and a footer. Use modern glassmorphism.' },
@@ -447,10 +451,6 @@ function getSystemPrompt() {
     }
     if (p && p.assets && p.assets.length > 0) {
         prompt += `\n\n# AVAILABLE ASSETS\nThe following assets are available in the project. Use their exact names in the code:\n${p.assets.map(a => `- ${a.name} (${a.type})`).join('\n')}\n`;
-    }
-    const projectKey = localStorage.getItem('cm_project_key') || DEFAULT_PROJECT_KEY;
-    if (projectKey) {
-        prompt += `\n\n# PROJECT API KEY\nThe user has provided an API key for their generated project: ${projectKey}. If the app requires an AI API key, use this one in the generated code.`;
     }
     if (S.tasks.length > 0) {
         prompt += `\n\n# CURRENT TASKS\nHere is the current task list. Please complete these:\n${S.tasks.map(t => '- [ ] ' + t.text).join('\n')}\n`;
@@ -649,6 +649,7 @@ function renderChat() {
                         const args = JSON.parse(tc.function.arguments);
                         if (tc.function.name === 'write_file') return `<div class="tool-badge write"><i class="fas fa-check-circle"></i> Wrote ${args.filename}</div>`;
                         if (tc.function.name === 'generate_asset') return `<div class="tool-badge asset"><i class="fas fa-check-circle"></i> Generated ${args.type}</div>`;
+                        if (tc.function.name === 'http_request') return `<div class="tool-badge network"><i class="fas fa-globe"></i> Tested API: ${args.url.substring(0, 30)}...</div>`;
                     } catch(e) {}
                     return '';
                 }).join('');
@@ -891,7 +892,6 @@ async function startGithubPush(owner) {
     if(!repoName) return toast('Repository name is required.');
 
     const headers = { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' };
-    const coAuthorTrailer = `\n\nGenerated with CodeMaker AI\nCo-authored-by: CodeMaker AI <noreply@codemaker.ai>`;
 
     modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Checking repository...</div>`;
     const checkRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}`, { headers });
@@ -903,6 +903,20 @@ async function startGithubPush(owner) {
         });
         if (!createRes.ok) { modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error creating repo.</p>`; return; }
     }
+
+    // Generate AI Commit Message
+    modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> AI is writing commit message...</div>`;
+    let commitMsg = `feat: implement ${p.name}`;
+    try {
+        const commitRes = await callAI([
+            { role: 'system', content: 'You are a Git commit message expert. Write a single, highly descriptive commit message summarizing the implementation of the provided project. Output ONLY the commit message, no markdown backticks.' },
+            { role: 'user', content: `Project Name: ${p.name}\nPrompt: ${p.messages[0].content}` }
+        ], S.model);
+        if (commitRes.content) commitMsg = commitRes.content;
+    } catch(e) { /* fallback to basic */ }
+    
+    const coAuthorTrailer = `\n\nGenerated with CodeMaker AI\nCo-authored-by: CodeMaker AI <noreply@codemaker.ai>`;
+    commitMsg += coAuthorTrailer;
 
     const files = Object.keys(p.files);
     for (let i = 0; i < files.length; i++) {
@@ -919,7 +933,7 @@ async function startGithubPush(owner) {
         const putRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${encodeURIComponent(filename)}`, {
             method: 'PUT', headers,
             body: JSON.stringify({
-                message: `feat: update ${filename} via CodeMaker AI${coAuthorTrailer}`,
+                message: commitMsg,
                 content: btoa(unescape(encodeURIComponent(content))),
                 sha: sha,
                 branch: 'main'
@@ -948,7 +962,7 @@ async function startGithubPush(owner) {
     await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/README.md`, {
         method: 'PUT', headers,
         body: JSON.stringify({
-            message: `docs: update README.md${coAuthorTrailer}`,
+            message: `docs: add README.md${coAuthorTrailer}`,
             content: btoa(unescape(encodeURIComponent(readmeContent))),
             sha: sha,
             branch: 'main'
@@ -1138,38 +1152,22 @@ async function sendHttpReq() {
     }
 }
 
-// ===== SETTINGS (API KEY) =====
+// ===== SETTINGS =====
 function openSettings() {
     const modalBody = document.getElementById('generic-modal-body');
     document.getElementById('generic-modal-title').innerText = 'AI Settings';
-    const projectKey = localStorage.getItem('cm_project_key') || DEFAULT_PROJECT_KEY;
     
     modalBody.innerHTML = `
         <div style="margin-bottom: 20px; padding: 16px; background: var(--bg2); border-radius: 8px;">
             <h4 style="margin-bottom: 8px;">CodeMaker AI Engine</h4>
             <p style="font-size: 13px; color: var(--mt); margin-bottom: 0;">CodeMaker AI is powered by our internal key. You have unlimited generations.</p>
         </div>
-        
-        <div style="margin-bottom: 20px;">
-            <h4 style="margin-bottom: 8px;">Project API Key</h4>
-            <p style="font-size: 12px; color: var(--mt); margin-bottom: 8px;">If your generated app needs an AI API key (e.g., a chatbot), enter it here. The AI will embed this key into the generated code. We provide a shared key by default.</p>
-            <input type="password" class="modal-input" id="settings-project-key" placeholder="sk-..." value="${projectKey}">
-        </div>
-        
-        <button class="modal-btn" onclick="saveSettings()"><i class="fas fa-save"></i> Save Settings</button>
+        <p style="font-size: 12px; color: var(--mt); margin-bottom: 0;">All generated apps that require an AI API key will automatically use the shared CodeMaker AI key.</p>
     `;
     document.getElementById('generic-modal').classList.add('show');
 }
 
-function saveSettings() {
-    const projectKey = document.getElementById('settings-project-key').value.trim();
-    if (projectKey) localStorage.setItem('cm_project_key', projectKey);
-    else localStorage.removeItem('cm_project_key');
-    toast('Settings saved!');
-    document.getElementById('generic-modal').classList.remove('show');
-}
-
-// ===== SEO OPTIMIZER =====
+// ===== SEO OPTIMIZER & BEAUTIFIER =====
 async function optimizeSeo() {
     const p = S.projects.find(x => x.id === S.cur);
     if (!p || !p.files['index.html']) return toast('No index.html found.');
@@ -1187,6 +1185,27 @@ async function optimizeSeo() {
         p.files['index.html'] = code;
         saveProjects(); loadFileToEditor(); updatePreview();
         toast('SEO optimized successfully!');
+    }
+}
+
+async function beautifyCode() {
+    const p = S.projects.find(x => x.id === S.cur);
+    if (!p || !p.files[S.activeFile]) return toast('Nothing to beautify.');
+    
+    toast('Beautifying code...');
+    const res = await callAI([
+        { role: 'system', content: 'You are a code formatter. Return ONLY the properly formatted and indented code. Do not change any functionality. Do not add markdown blocks or explanations.' },
+        { role: 'user', content: p.files[S.activeFile] }
+    ], S.model);
+    
+    if (res.content) {
+        let code = res.content;
+        const m = code.match(/```[a-z]*\n?([\s\S]*?)```/);
+        if (m) code = m[1].trim();
+        
+        p.files[S.activeFile] = code;
+        saveProjects(); loadFileToEditor();
+        toast('Code beautified!');
     }
 }
 
@@ -1304,6 +1323,22 @@ async function generateAsset(type, prompt) {
     }
 }
 
+async function executeHttpRequest(url, method, body) {
+    try {
+        const options = { method };
+        if (body && method !== 'GET') {
+            options.headers = { 'Content-Type': 'application/json' };
+            options.body = body;
+        }
+        // Use proxy to avoid CORS issues in browser
+        const res = await fetch(PROXY + encodeURIComponent(url), options);
+        const text = await res.text();
+        return `HTTP ${res.status} ${res.statusText}\n\n${text.substring(0, 500)}`;
+    } catch(e) {
+        return `Fetch failed: ${e.message}`;
+    }
+}
+
 async function enhancePrompt() {
     const inp = document.getElementById('chat-input');
     const v = inp.value.trim();
@@ -1346,12 +1381,11 @@ async function generate() {
     if (p.history.length > 10) p.history.shift();
     saveProjects();
     
-    const tools = [{ type: "function", function: { name: "write_file", description: "Write file content.", parameters: { type: "object", properties: { filename: { type: "string" }, content: { type: "string" } }, required: ["filename", "content"] } } }];
-    const lastUserMsg = currentMessages.filter(m => m.role === 'user').pop();
-    const promptText = typeof lastUserMsg.content === 'string' ? lastUserMsg.content : '';
-    if (/image|img|video|picture|photo|asset|background/i.test(promptText)) {
-        tools.push({ type: "function", function: { name: "generate_asset", description: "Gen image/video.", parameters: { type: "object", properties: { type: { type: "string", enum: ["image", "video"] }, prompt: { type: "string" } }, required: ["type", "prompt"] } } });
-    }
+    const tools = [
+        { type: "function", function: { name: "write_file", description: "Write file content.", parameters: { type: "object", properties: { filename: { type: "string" }, content: { type: "string" } }, required: ["filename", "content"] } },
+        { type: "function", function: { name: "generate_asset", description: "Gen image/video.", parameters: { type: "object", properties: { type: { type: "string", enum: ["image", "video"] }, prompt: { type: "string" } }, required: ["type", "prompt"] } },
+        { type: "function", function: { name: "http_request", description: "Fetch data from a URL to test APIs or get real-time data.", parameters: { type: "object", properties: { url: { type: "string" }, method: { type: "string", enum: ["GET", "POST"], description: "HTTP method" }, body: { type: "string", description: "Request body for POST" } }, required: ["url", "method"] } }
+    ];
     
     try {
         while (true) {
@@ -1400,6 +1434,16 @@ async function generate() {
                             toolMsg.content = "Failed.";
                             badge.innerHTML = `<i class="fas fa-times-circle"></i> Failed to generate`;
                         }
+                    } else if (tc.function.name === 'http_request') {
+                        const args = JSON.parse(tc.function.arguments);
+                        const badge = document.createElement('div');
+                        badge.className = 'tool-badge network';
+                        badge.innerHTML = `<div class="spinner"></div> Fetching ${args.url.substring(0, 30)}...`;
+                        statusLog.appendChild(badge);
+                        
+                        const result = await executeHttpRequest(args.url, args.method, args.body);
+                        toolMsg.content = result;
+                        badge.innerHTML = `<i class="fas fa-globe"></i> Fetched data`;
                     }
                     currentMessages.push(toolMsg);
                     p.messages = currentMessages;
@@ -1498,9 +1542,9 @@ function init() {
         document.getElementById('btn-settings').onclick = openSettings;
         document.getElementById('btn-tools').onclick = openHttpTester;
         document.getElementById('btn-github').onclick = exportToGithub;
-        document.getElementById('btn-deploy').onclick = () => deployToGithubPages();
         document.getElementById('btn-history').onclick = showHistory;
         document.getElementById('btn-seo').onclick = optimizeSeo;
+        document.getElementById('btn-beautify').onclick = beautifyCode;
         document.querySelectorAll('.ptab').forEach(t => t.onclick = () => switchView(t.dataset.view));
         document.querySelectorAll('.mtab').forEach(t => t.onclick = () => {
             document.querySelectorAll('.mtab').forEach(x => x.classList.remove('active')); t.classList.add('active');
