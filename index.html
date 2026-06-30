@@ -161,8 +161,9 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .file-tab.active { background: var(--bg2); color: var(--tx); font-weight: 500; }
 .file-tab i { font-size: 12px; color: var(--mt); }
 .file-tab.active i { color: var(--ac); }
-.file-lock { font-size: 10px; opacity: 0.6; cursor: pointer; }
+.file-lock, .file-del { font-size: 10px; opacity: 0.6; cursor: pointer; margin-left: 4px; }
 .file-lock.locked { color: var(--warn); opacity: 1; }
+.file-del:hover { color: var(--dn); opacity: 1; }
 
 .prev-main { flex: 1; display: flex; flex-direction: column; position: relative; background: #fff; min-height: 0; overflow: hidden; }
 .prev-frame { width: 100%; height: 100%; border: none; transition: max-width 0.3s; align-self: center; }
@@ -170,6 +171,9 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .CodeMirror { height: 100% !important; font-size: 13px; }
 .apply-btn { position: absolute; bottom: 16px; right: 16px; padding: 8px 16px; border: none; background: var(--ac); color: #fff; border-radius: 8px; font-weight: 600; cursor: pointer; z-index: 10; }
 .editor-tools { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; z-index: 5; }
+
+#asset-preview-container { flex: 1; display: none; align-items: center; justify-content: center; background: var(--bg2); overflow: hidden; padding: 20px; }
+#asset-preview-container img, #asset-preview-container video { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
 
 .tasks-view { flex: 1; display: none; flex-direction: column; overflow-y: auto; padding: 16px; background: var(--bg2); min-height: 0; }
 .task-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
@@ -217,6 +221,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .modal-btn { padding: 10px 20px; border-radius: 8px; border: none; background: var(--ac); color: #fff; cursor: pointer; font-weight: 600; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; }
 .modal-btn.gh { background: var(--gh); }
 .modal-btn.secondary { background: var(--bg2); color: var(--tx); border: 1px solid var(--border); }
+.modal-btn.danger { background: var(--dn); }
 .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; font-size: 13px; }
 .restore-btn { padding: 6px 12px; background: var(--ac); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; }
 
@@ -350,7 +355,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
         <div class="prev-panel">
             <div class="prev-tabs">
                 <button class="ptab active" data-view="prev">Preview</button>
-                <button class="ptab" data-view="code">Code</button>
+                <button class="ptab" data-view="code">Files</button>
                 <button class="ptab" data-view="tasks">Tasks</button>
                 <button class="ptab" data-view="assets">Assets</button>
                 <button class="ptab" data-view="issues">Issues & PRs</button>
@@ -368,6 +373,10 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
                 <div class="code-view" id="code-view">
                     <div class="editor-tools">
                         <button class="pa-btn" id="btn-seo" title="Optimize SEO"><i class="fas fa-magnifying-glass-chart"></i></button>
+                    </div>
+                    <div id="asset-preview-container">
+                        <img id="asset-preview-img" src="" alt="Asset Preview">
+                        <video id="asset-preview-vid" src="" muted loop autoplay controls></video>
                     </div>
                     <textarea id="code-editor" spellcheck="false"></textarea>
                     <button class="apply-btn" id="apply-btn">Apply Changes</button>
@@ -471,7 +480,7 @@ const TEMPLATES = [
     { id: 't4', title: 'Snake Game', color: '#10b981', verified: true, author: 'CodeMaker AI', prompt: 'Create a fully playable Snake game with score tracking and modern UI.' }
 ];
 
-let S = { projects: [], cur: null, gen: false, model: '2.0', activeFile: 'index.html', view: 'prev', githubToken: localStorage.getItem('gh_token') || '', autoRefresh: true, zoom: 1, tasks: [] };
+let S = { projects: [], cur: null, gen: false, model: '2.0', activeFile: 'index.html', view: 'prev', viewMode: 'editor', githubToken: localStorage.getItem('gh_token') || '', autoRefresh: true, zoom: 1, tasks: [] };
 let cm;
 let abortCtrl = null;
 let mentionActive = false;
@@ -786,14 +795,109 @@ window.retryGen = function() {
 function renderFiles() {
     const p = S.projects.find(x => x.id === S.cur); if (!p) return;
     const bar = document.getElementById('files-bar'); bar.innerHTML = '';
+    
+    // Render text files
     Object.keys(p.files).forEach(f => {
         const t = document.createElement('div');
         const isLocked = p.lockedFiles.includes(f);
         t.className = `file-tab ${f === S.activeFile ? 'active' : ''}`;
-        t.innerHTML = `<i class="fab ${getFileIcon(f)}"></i> ${f} <span class="file-lock ${isLocked ? 'locked' : ''}" onclick="event.stopPropagation(); toggleLock('${f}')"><i class="fas ${isLocked ? 'fa-lock' : 'fa-lock-open'}"></i></span>`;
+        t.innerHTML = `<i class="fab ${getFileIcon(f)}"></i> ${f} 
+            <span class="file-lock ${isLocked ? 'locked' : ''}" onclick="event.stopPropagation(); toggleLock('${f}')" title="Lock/Unlock"><i class="fas ${isLocked ? 'fa-lock' : 'fa-lock-open'}"></i></span>
+            <span class="file-del" onclick="event.stopPropagation(); confirmDeleteFile('${f}')" title="Delete"><i class="fas fa-trash"></i></span>`;
         t.onclick = () => selectFile(f);
         bar.appendChild(t);
     });
+
+    // Render approved assets as files
+    p.assets.filter(a => a.approved || a.isUserUpload).forEach(a => {
+        const t = document.createElement('div');
+        const isActive = a.id === S.activeFile;
+        t.className = `file-tab ${isActive ? 'active' : ''}`;
+        t.innerHTML = `<i class="fas ${a.type === 'image' ? 'fa-image' : 'fa-video'}"></i> ${a.name}
+            <span class="file-del" onclick="event.stopPropagation(); confirmDeleteAsset('${a.id}')" title="Delete"><i class="fas fa-trash"></i></span>`;
+        t.onclick = () => selectAsset(a.id);
+        bar.appendChild(t);
+    });
+}
+
+function confirmDeleteFile(filename) {
+    const modal = document.getElementById('generic-modal');
+    const body = document.getElementById('generic-modal-body');
+    document.getElementById('generic-modal-title').innerText = 'Delete File?';
+    
+    body.innerHTML = `
+        <p class="modal-desc">Are you sure you want to delete <strong>${filename}</strong>? This action cannot be undone.</p>
+        <div style="display:flex; gap:8px; margin-top:16px;">
+            <button class="modal-btn secondary" id="confirm-cancel" style="margin:0;">Cancel</button>
+            <button class="modal-btn danger" id="confirm-yes" style="margin:0;">Delete</button>
+        </div>
+    `;
+    
+    document.getElementById('confirm-cancel').onclick = () => modal.classList.remove('show');
+    document.getElementById('confirm-yes').onclick = () => {
+        deleteFile(filename);
+        modal.classList.remove('show');
+    };
+    
+    modal.classList.add('show');
+}
+
+function deleteFile(filename) {
+    const p = S.projects.find(x => x.id === S.cur); if (!p) return;
+    delete p.files[filename];
+    const lockIdx = p.lockedFiles.indexOf(filename);
+    if (lockIdx > -1) p.lockedFiles.splice(lockIdx, 1);
+    
+    if (S.activeFile === filename) {
+        S.activeFile = Object.keys(p.files)[0] || 'index.html';
+        if (!p.files[S.activeFile]) p.files[S.activeFile] = '';
+    }
+    saveProjects();
+    renderFiles();
+    loadFileToEditor();
+    updatePreview();
+    toast(`${filename} deleted.`);
+}
+
+function confirmDeleteAsset(id) {
+    const p = S.projects.find(x => x.id === S.cur); if (!p) return;
+    const asset = p.assets.find(a => a.id === id);
+    if (!asset) return;
+
+    const modal = document.getElementById('generic-modal');
+    const body = document.getElementById('generic-modal-body');
+    document.getElementById('generic-modal-title').innerText = 'Delete Asset?';
+    
+    body.innerHTML = `
+        <p class="modal-desc">Are you sure you want to delete <strong>${asset.name}</strong>? This action cannot be undone.</p>
+        <div style="display:flex; gap:8px; margin-top:16px;">
+            <button class="modal-btn secondary" id="confirm-cancel" style="margin:0;">Cancel</button>
+            <button class="modal-btn danger" id="confirm-yes" style="margin:0;">Delete</button>
+        </div>
+    `;
+    
+    document.getElementById('confirm-cancel').onclick = () => modal.classList.remove('show');
+    document.getElementById('confirm-yes').onclick = () => {
+        deleteAsset(id);
+        modal.classList.remove('show');
+    };
+    
+    modal.classList.add('show');
+}
+
+function deleteAsset(id) {
+    const p = S.projects.find(x => x.id === S.cur); if (!p) return;
+    p.assets = p.assets.filter(a => a.id !== id);
+    
+    if (S.activeFile === id) {
+        S.activeFile = Object.keys(p.files)[0] || 'index.html';
+        S.viewMode = 'editor';
+    }
+    saveProjects();
+    renderFiles();
+    renderAssets();
+    loadFileToEditor();
+    toast(`Asset deleted.`);
 }
 
 function toggleLock(f) {
@@ -805,8 +909,13 @@ function toggleLock(f) {
 }
 
 function selectFile(f) {
-    if (cm && S.activeFile) { const p = S.projects.find(x => x.id === S.cur); if (p) p.files[S.activeFile] = cm.getValue(); saveProjects(); }
+    if (cm && S.activeFile) { 
+        const p = S.projects.find(x => x.id === S.cur); 
+        if (p && p.files[S.activeFile] !== undefined) p.files[S.activeFile] = cm.getValue(); 
+        saveProjects(); 
+    }
     S.activeFile = f;
+    S.viewMode = 'editor';
     const p = S.projects.find(x => x.id === S.cur); if (p) p.activeFile = f; saveProjects();
     renderFiles();
     if (S.view === 'code') {
@@ -815,8 +924,52 @@ function selectFile(f) {
     }
 }
 
+function selectAsset(id) {
+    S.activeFile = id;
+    S.viewMode = 'asset';
+    renderFiles();
+    if (S.view === 'code') {
+        loadFileToEditor();
+    }
+}
+
 function loadFileToEditor() {
     const p = S.projects.find(x => x.id === S.cur); if (!p || !cm) return;
+    const codeEditor = document.getElementById('code-editor');
+    const applyBtn = document.getElementById('apply-btn');
+    const assetContainer = document.getElementById('asset-preview-container');
+    
+    // Check if activeFile is an asset
+    const asset = p.assets.find(a => a.id === S.activeFile);
+    
+    if (asset && S.viewMode === 'asset') {
+        codeEditor.style.display = 'none';
+        applyBtn.style.display = 'none';
+        assetContainer.style.display = 'flex';
+        
+        const img = document.getElementById('asset-preview-img');
+        const vid = document.getElementById('asset-preview-vid');
+        if (asset.type === 'image') {
+            img.src = asset.url; img.style.display = 'block';
+            vid.style.display = 'none';
+            vid.pause();
+        } else {
+            vid.src = asset.url; vid.style.display = 'block';
+            img.style.display = 'none';
+        }
+        return;
+    }
+    
+    // It's a text file
+    codeEditor.style.display = 'block';
+    applyBtn.style.display = 'block';
+    assetContainer.style.display = 'none';
+    
+    const img = document.getElementById('asset-preview-img');
+    const vid = document.getElementById('asset-preview-vid');
+    img.src = ''; img.style.display = 'none';
+    vid.src = ''; vid.style.display = 'none';
+    
     cm.setValue(p.files[S.activeFile] || '');
     let mode = 'htmlmixed';
     if (S.activeFile.endsWith('.css')) mode = 'css';
@@ -914,7 +1067,8 @@ window.approveAsset = function(id) {
     asset.approved = true;
     saveProjects();
     renderAssets();
-    toast('Asset approved!');
+    renderFiles(); // Add to files bar
+    toast('Asset approved! It is now available in the Files tab.');
 };
 
 window.redoAsset = async function(id) {
@@ -944,12 +1098,13 @@ window.redoAsset = async function(id) {
         asset.approved = false; // Require approval again
         saveProjects();
         renderAssets();
+        renderFiles();
         updatePreview();
-        if (S.view === 'code') loadFileToEditor();
+        if (S.view === 'code' && S.activeFile === id) loadFileToEditor();
         toast('Asset redone! Code updated automatically.');
     } catch (e) {
         toast('Failed to redo asset: ' + e.message);
-        renderAssets(); // Restore view
+        renderAssets(); 
     }
 };
 
@@ -963,7 +1118,7 @@ window.handleAssetUpload = function(event) {
         const type = file.type.startsWith('image') ? 'image' : 'video';
         const name = `Asset_${p.assets.length + 1}.${ext}`;
         p.assets.push({ id: uid(), name, type, url: e.target.result, isUserUpload: true, approved: true });
-        saveProjects(); renderAssets();
+        saveProjects(); renderAssets(); renderFiles();
         toast(`${name} uploaded!`);
     };
     reader.readAsDataURL(file);
@@ -1898,7 +2053,7 @@ function init() {
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if(!S.gen && this.value.trim()) { updateSendButton(); document.getElementById('chat-send').click(); } }
         });
         
-        document.getElementById('apply-btn').onclick = () => { const p = S.projects.find(x => x.id === S.cur); if (p) { p.files[S.activeFile] = cm ? cm.getValue() : ''; saveProjects(); updatePreview(); toast('Applied!'); } };
+        document.getElementById('apply-btn').onclick = () => { const p = S.projects.find(x => x.id === S.cur); if (p && p.files[S.activeFile] !== undefined) { p.files[S.activeFile] = cm ? cm.getValue() : ''; saveProjects(); updatePreview(); toast('Applied!'); } };
         
         document.getElementById('zoom-in').onclick = () => { S.zoom = Math.min(2, S.zoom + 0.1); applyZoom(); };
         document.getElementById('zoom-out').onclick = () => { S.zoom = Math.max(0.5, S.zoom - 0.1); applyZoom(); };
