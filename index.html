@@ -103,7 +103,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .ed-body { flex: 1; display: flex; overflow: hidden; min-height: 0; }
 
 /* CHAT */
-.chat-panel { width: 400px; min-width: 320px; display: flex; flex-direction: column; background: var(--panel); border-right: 1px solid var(--border); }
+.chat-panel { width: 400px; min-width: 320px; display: flex; flex-direction: column; background: var(--panel); border-right: 1px solid var(--border); position: relative; }
 .chat-msgs { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
 .chat-welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; color: var(--mt); }
 .chat-welcome i { font-size: 28px; margin-bottom: 12px; color: var(--ac); }
@@ -135,7 +135,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .spinner { width: 12px; height: 12px; border: 2px solid var(--mt); border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; }
 
 .chat-input-area { padding: 12px; border-top: 1px solid var(--border); background: var(--panel); }
-.chat-input-wrap { display: flex; gap: 8px; align-items: flex-end; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 4px 4px 4px 12px; }
+.chat-input-wrap { display: flex; gap: 8px; align-items: flex-end; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 4px 4px 4px 12px; position: relative; }
 .chat-input { flex: 1; border: none; outline: none; resize: none; padding: 8px 0; font-size: 14px; max-height: 120px; background: transparent; color: var(--tx); font-family: 'Inter', sans-serif; min-width: 0; }
 .chat-icons { display: flex; gap: 2px; }
 .chat-icon { width: 30px; height: 30px; border: none; background: transparent; color: var(--mt); cursor: pointer; border-radius: 6px; display:flex; align-items:center; justify-content:center; }
@@ -143,6 +143,13 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .chat-send { width: 34px; height: 34px; border: none; background: var(--ac); color: #fff; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.3s; }
 .chat-send.stop { background: var(--dn); }
 .chat-send:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Mention Dropdown */
+.mention-dropdown { position: absolute; bottom: 60px; left: 12px; right: 50px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-height: 150px; overflow-y: auto; z-index: 100; display: none; }
+.mention-item { padding: 8px 12px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; color: var(--tx2); }
+.mention-item i { color: var(--mt); }
+.mention-item:hover, .mention-item.active { background: var(--acG); color: var(--ac); }
+.mention-item:hover i, .mention-item.active i { color: var(--ac); }
 
 /* PREVIEW */
 .prev-panel { flex: 1; display: flex; flex-direction: column; background: var(--bg2); min-width: 0; min-height: 0; }
@@ -299,7 +306,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
             </div>
         </div>
         <div class="ed-actions">
-            <button class="ed-btn" id="btn-settings" title="AI Key & Credits"><i class="fas fa-cog"></i></button>
+            <button class="ed-btn" id="btn-settings" title="AI Settings"><i class="fas fa-cog"></i></button>
             <button class="ed-btn" id="btn-tools" title="HTTP Tester"><i class="fas fa-flask"></i></button>
             <button class="ed-btn" id="btn-github" title="Export to GitHub"><i class="fab fa-github"></i></button>
             <button class="ed-btn" id="btn-deploy" title="Deploy to Pages" style="color:var(--ok)"><i class="fas fa-rocket"></i></button>
@@ -323,12 +330,13 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
             </div>
             <div class="chat-input-area">
                 <div class="chat-input-wrap">
-                    <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask AI to build..."></textarea>
+                    <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask AI to build... (Use # to mention files)"></textarea>
                     <div class="chat-icons">
                         <button class="chat-icon" id="btn-enhance" title="Enhance Prompt"><i class="fas fa-wand-magic-sparkles"></i></button>
                     </div>
                     <button class="chat-send" id="chat-send" disabled><i class="fas fa-arrow-up"></i></button>
                 </div>
+                <div class="mention-dropdown" id="mention-dropdown"></div>
             </div>
         </div>
         
@@ -364,10 +372,14 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 </div>
 
 <script>
+// App powered internally by this key
+const APP_API_KEY = 'sk-qZB4ieEv5UdIrYK3eEHAfdAv5xXYKLsVD7bAd9Kg7EQuDYF3';
+// Default key injected into generated projects if user doesn't provide their own
+const DEFAULT_PROJECT_KEY = 'sk-rWvCRyEKxFrHuuVaoQB1IwFoPXMGy6XQNQvpC3AhHl5kkNCE';
+
 const API_URL = 'https://apihub.agnes-ai.com/v1/chat/completions';
 const IMG_API_URL = 'https://apihub.agnes-ai.com/v1/images/generations';
 const VID_API_URL = 'https://apihub.agnes-ai.com/v1/videos/generations';
-const SITE_KEY = 'sk-rWvCRyEKxFrHuuVaoQB1IwFoPXMGyXQNQvpC3AhHl5kkNCE'; // New Site Key
 const PROXY = 'https://corsproxy.io/?url=';
 const MODELS = { '2.0':'agnes-2.0-flash', '1.5':'agnes-1.5-flash', 'video':'agnes-video-v2.0', 'image':'agnes-image-2.1-flash' };
 
@@ -389,6 +401,7 @@ To prevent timeouts, you MUST use the 'write_file' tool to write code. DO NOT ou
 You can create ANY file type (e.g., index.html, style.css, script.js, App.tsx, main.py, db.json, design.md).
 If the user asks for a web app, ensure you write standard web files (index.html, style.css, script.js) for the live preview to work.
 If the user has uploaded assets or generated assets, they will be listed in the system prompt. Use their exact names (e.g., Asset_1.png) in the code.
+If the user mentions a file using #filename, focus your modifications on that specific file.
 
 # DESIGN SYSTEM (design.md)
 You MUST strictly follow the design rules specified in the project's 'design.md' file. If the user asks for a design change, update the 'design.md' file using the 'write_file' tool.
@@ -413,37 +426,9 @@ const TEMPLATES = [
 let S = { projects: [], cur: null, gen: false, model: '2.0', activeFile: 'index.html', view: 'prev', githubToken: localStorage.getItem('gh_token') || '', autoRefresh: true, zoom: 1, tasks: [] };
 let cm;
 let abortCtrl = null;
-
-// AI Key & Credits Logic
-function getApiKey() {
-    const settings = JSON.parse(localStorage.getItem('cm_ai_settings') || '{}');
-    if (settings.useOwnKey && settings.apiKey) return settings.apiKey;
-    return SITE_KEY;
-}
-
-function checkCredits() {
-    const settings = JSON.parse(localStorage.getItem('cm_ai_settings') || '{}');
-    if (settings.useOwnKey) return true; // Unlimited if own key
-    
-    const today = new Date().toDateString();
-    let credits = JSON.parse(localStorage.getItem('cm_credits') || '{}');
-    if (credits.date !== today) {
-        credits = { date: today, count: 50 }; // 50 free credits per day
-        localStorage.setItem('cm_credits', JSON.stringify(credits));
-    }
-    return credits.count > 0;
-}
-
-function deductCredit() {
-    const settings = JSON.parse(localStorage.getItem('cm_ai_settings') || '{}');
-    if (settings.useOwnKey) return;
-    
-    let credits = JSON.parse(localStorage.getItem('cm_credits') || '{}');
-    if (credits.count > 0) {
-        credits.count--;
-        localStorage.setItem('cm_credits', JSON.stringify(credits));
-    }
-}
+let mentionActive = false;
+let mentionItems = [];
+let mentionIndex = 0;
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
 function toast(m) { const t = document.getElementById('toast'); const d = document.createElement('div'); d.style.cssText = 'padding:12px 18px;background:#fff;border:1px solid #ccc;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.1);margin-bottom:8px;font-size:13px'; d.textContent = m; t.appendChild(d); setTimeout(() => d.remove(), 3000); }
@@ -462,6 +447,10 @@ function getSystemPrompt() {
     }
     if (p && p.assets && p.assets.length > 0) {
         prompt += `\n\n# AVAILABLE ASSETS\nThe following assets are available in the project. Use their exact names in the code:\n${p.assets.map(a => `- ${a.name} (${a.type})`).join('\n')}\n`;
+    }
+    const projectKey = localStorage.getItem('cm_project_key') || DEFAULT_PROJECT_KEY;
+    if (projectKey) {
+        prompt += `\n\n# PROJECT API KEY\nThe user has provided an API key for their generated project: ${projectKey}. If the app requires an AI API key, use this one in the generated code.`;
     }
     if (S.tasks.length > 0) {
         prompt += `\n\n# CURRENT TASKS\nHere is the current task list. Please complete these:\n${S.tasks.map(t => '- [ ] ' + t.text).join('\n')}\n`;
@@ -946,21 +935,9 @@ async function startGithubPush(owner) {
     let readmeContent = `# ${p.name}\n\nGenerated by CodeMaker AI.`;
     try {
         const filesConcat = Object.keys(p.files).map(f => 'File: ' + f + '\n\`\`\`\n' + p.files[f] + '\n\`\`\`\n').join('\n').substring(0, 3000);
-        const res = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getApiKey()}` },
-            body: JSON.stringify({
-                model: MODELS[S.model],
-                messages: [
-                    { role: 'system', content: 'Write a professional GitHub README.md in pure markdown. Include title, description, features, and how to run.' },
-                    { role: 'user', content: 'Project Name: ' + p.name + '\nInitial Prompt: ' + p.messages[0].content + '\nCode Files:\n' + filesConcat }
-                ],
-                stream: false
-            })
-        });
-        if (res.ok) {
-            const j = await res.json();
-            readmeContent = j.choices[0].message.content;
+        const res = await callAI([{ role: 'system', content: 'Write a professional GitHub README.md in pure markdown. Include title, description, features, and how to run.' }, { role: 'user', content: 'Project Name: ' + p.name + '\nInitial Prompt: ' + p.messages[0].content + '\nCode Files:\n' + filesConcat }], S.model);
+        if (res.content) {
+            readmeContent = res.content;
             if (!readmeContent.startsWith('#')) readmeContent = `# ${p.name}\n\n` + readmeContent;
         }
     } catch(e) { /* fallback to basic readme */ }
@@ -993,7 +970,6 @@ async function deployToGithubPages(owner, repoName) {
     const token = S.githubToken;
     const modalBody = document.getElementById('generic-modal-body');
     if(!owner || !repoName) {
-        // If called from header, need to fetch user and ask for repo
         modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Fetching repos...</div>`;
         const headers = { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' };
         const userRes = await fetch('https://api.github.com/user', { headers });
@@ -1016,7 +992,6 @@ async function deployToGithubPages(owner, repoName) {
     const headers = { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' };
     
     try {
-        // Try to create Pages site
         const createRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/pages`, {
             method: 'POST', headers,
             body: JSON.stringify({ source: { branch: 'main', path: '/' } })
@@ -1163,32 +1138,22 @@ async function sendHttpReq() {
     }
 }
 
-// ===== SETTINGS (API KEY & CREDITS) =====
+// ===== SETTINGS (API KEY) =====
 function openSettings() {
     const modalBody = document.getElementById('generic-modal-body');
-    document.getElementById('generic-modal-title').innerText = 'AI Settings & Credits';
-    const settings = JSON.parse(localStorage.getItem('cm_ai_settings') || '{}');
-    const credits = JSON.parse(localStorage.getItem('cm_credits') || '{}');
-    const today = new Date().toDateString();
-    const remaining = (credits.date === today) ? credits.count : 50;
+    document.getElementById('generic-modal-title').innerText = 'AI Settings';
+    const projectKey = localStorage.getItem('cm_project_key') || DEFAULT_PROJECT_KEY;
     
     modalBody.innerHTML = `
         <div style="margin-bottom: 20px; padding: 16px; background: var(--bg2); border-radius: 8px;">
-            <h4 style="margin-bottom: 8px;">CodeMaker AI Credits</h4>
-            <p style="font-size: 13px; color: var(--mt); margin-bottom: 4px;">You have <strong style="color: var(--ac)">${remaining}/50</strong> free credits remaining today.</p>
-            <p style="font-size: 11px; color: var(--mt);">Credits reset daily at midnight. Use your own key for unlimited generations.</p>
+            <h4 style="margin-bottom: 8px;">CodeMaker AI Engine</h4>
+            <p style="font-size: 13px; color: var(--mt); margin-bottom: 0;">CodeMaker AI is powered by our internal key. You have unlimited generations.</p>
         </div>
         
-        <div style="display: flex; flex-direction: column; gap: 12px;">
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                <input type="radio" name="key-opt" value="site" ${!settings.useOwnKey ? 'checked' : ''} onchange="toggleKeyInput(false)">
-                <span>Use CodeMaker AI Key (50 credits/day)</span>
-            </label>
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                <input type="radio" name="key-opt" value="own" ${settings.useOwnKey ? 'checked' : ''} onchange="toggleKeyInput(true)">
-                <span>Use My Own Agnes AI Key</span>
-            </label>
-            <input type="password" id="settings-api-key" class="modal-input" placeholder="sk-..." value="${settings.apiKey || ''}" style="${settings.useOwnKey ? '' : 'display:none;'}">
+        <div style="margin-bottom: 20px;">
+            <h4 style="margin-bottom: 8px;">Project API Key</h4>
+            <p style="font-size: 12px; color: var(--mt); margin-bottom: 8px;">If your generated app needs an AI API key (e.g., a chatbot), enter it here. The AI will embed this key into the generated code. We provide a shared key by default.</p>
+            <input type="password" class="modal-input" id="settings-project-key" placeholder="sk-..." value="${projectKey}">
         </div>
         
         <button class="modal-btn" onclick="saveSettings()"><i class="fas fa-save"></i> Save Settings</button>
@@ -1196,14 +1161,10 @@ function openSettings() {
     document.getElementById('generic-modal').classList.add('show');
 }
 
-window.toggleKeyInput = function(show) {
-    document.getElementById('settings-api-key').style.display = show ? 'block' : 'none';
-};
-
 function saveSettings() {
-    const useOwnKey = document.querySelector('input[name="key-opt"]:checked').value === 'own';
-    const apiKey = document.getElementById('settings-api-key').value.trim();
-    localStorage.setItem('cm_ai_settings', JSON.stringify({ useOwnKey, apiKey }));
+    const projectKey = document.getElementById('settings-project-key').value.trim();
+    if (projectKey) localStorage.setItem('cm_project_key', projectKey);
+    else localStorage.removeItem('cm_project_key');
     toast('Settings saved!');
     document.getElementById('generic-modal').classList.remove('show');
 }
@@ -1212,10 +1173,8 @@ function saveSettings() {
 async function optimizeSeo() {
     const p = S.projects.find(x => x.id === S.cur);
     if (!p || !p.files['index.html']) return toast('No index.html found.');
-    if (!checkCredits()) return toast('Out of daily credits. Add your own key in Settings.');
     
     toast('Optimizing SEO...');
-    deductCredit();
     const res = await callAI([
         { role: 'system', content: 'You are an SEO expert. Analyze the provided HTML and return the FULL updated HTML with perfect SEO meta tags, Open Graph tags, Twitter cards, and structured data (JSON-LD) added to the <head>. Do not change the visible content.' },
         { role: 'user', content: p.files['index.html'] }
@@ -1231,10 +1190,70 @@ async function optimizeSeo() {
     }
 }
 
+// ===== MENTION LOGIC =====
+function handleMentionInput(e) {
+    const text = e.target.value;
+    const cursorPos = e.target.selectionStart;
+    const textBeforeCursor = text.substring(0, cursorPos);
+    const match = textBeforeCursor.match(/#([a-zA-Z0-9._-]*)$/);
+    
+    if (match) {
+        const query = match[1].toLowerCase();
+        const p = S.projects.find(x => x.id === S.cur);
+        if (!p) return;
+        
+        mentionItems = Object.keys(p.files).filter(f => f.toLowerCase().includes(query));
+        
+        if (mentionItems.length > 0) {
+            mentionActive = true;
+            mentionIndex = 0;
+            renderMentionDropdown();
+            return;
+        }
+    }
+    
+    mentionActive = false;
+    hideMentionDropdown();
+}
+
+function renderMentionDropdown() {
+    const dropdown = document.getElementById('mention-dropdown');
+    dropdown.innerHTML = mentionItems.map((item, i) => `
+        <div class="mention-item ${i === mentionIndex ? 'active' : ''}" onclick="selectMention('${item}')">
+            <i class="fab ${getFileIcon(item)}"></i> ${item}
+        </div>
+    `).join('');
+    dropdown.style.display = 'block';
+}
+
+function hideMentionDropdown() {
+    document.getElementById('mention-dropdown').style.display = 'none';
+}
+
+function selectMention(filename) {
+    const input = document.getElementById('chat-input');
+    const text = input.value;
+    const cursorPos = input.selectionStart;
+    const textBeforeCursor = text.substring(0, cursorPos);
+    const textAfterCursor = text.substring(cursorPos);
+    
+    const match = textBeforeCursor.match(/#([a-zA-Z0-9._-]*)$/);
+    if (match) {
+        const newText = textBeforeCursor.substring(0, match.index) + `#${filename} ` + textAfterCursor;
+        input.value = newText;
+        const newPos = match.index + filename.length + 2;
+        input.setSelectionRange(newPos, newPos);
+    }
+    
+    mentionActive = false;
+    hideMentionDropdown();
+    input.focus();
+}
+
 // ===== AI CALLS =====
 async function callAI(messages, modelKey, tools) {
     const body = { model: MODELS[modelKey], messages: [{role:'system', content: getSystemPrompt()}, ...messages], temperature: 0.7, stream: false, tools: tools };
-    const headers = { 'Content-Type':'application/json', 'Authorization':`Bearer ${getApiKey()}` };
+    const headers = { 'Content-Type':'application/json', 'Authorization':`Bearer ${APP_API_KEY}` };
     try {
         const ctrl = new AbortController();
         abortCtrl = ctrl;
@@ -1249,18 +1268,23 @@ async function callAI(messages, modelKey, tools) {
         throw new Error(`Direct HTTP ${res.status}`);
     } catch(e) {
         if (e.name === 'AbortError') throw new Error('Request aborted');
-        const res = await fetch(PROXY + encodeURIComponent(API_URL), { method:'POST', headers, body: JSON.stringify(body) });
-        if (res.ok) {
-            const j = await res.json();
-            const choice = j.choices[0];
-            return { content: choice.message.content || '', toolCalls: choice.message.tool_calls || [], finishReason: choice.finish_reason };
+        // Fallback to proxy
+        try {
+            const res = await fetch(PROXY + encodeURIComponent(API_URL), { method:'POST', headers, body: JSON.stringify(body) });
+            if (res.ok) {
+                const j = await res.json();
+                const choice = j.choices[0];
+                return { content: choice.message.content || '', toolCalls: choice.message.tool_calls || [], finishReason: choice.finish_reason };
+            }
+            throw new Error(`Proxy HTTP ${res.status}`);
+        } catch(proxyErr) {
+            throw new Error('Network or CORS error');
         }
-        throw new Error(`Proxy HTTP ${res.status}`);
     }
 }
 
 async function generateAsset(type, prompt) {
-    const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getApiKey()}` };
+    const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${APP_API_KEY}` };
     if (type === 'image') {
         const body = JSON.stringify({ model: 'agnes-image-2.0-flash', prompt: prompt, n: 1, size: '1024x1024' });
         let res;
@@ -1284,10 +1308,8 @@ async function enhancePrompt() {
     const inp = document.getElementById('chat-input');
     const v = inp.value.trim();
     if (!v) return toast('Type a prompt first.');
-    if (!checkCredits()) return toast('Out of daily credits. Add your own key in Settings.');
     document.getElementById('chat-send').disabled = true;
     inp.value = 'Enhancing prompt...';
-    deductCredit();
     const res = await callAI([{ role: 'system', content: 'Expand the user\'s prompt into a detailed UI/UX spec. Output ONLY the prompt.' }, { role: 'user', content: v }], S.model);
     inp.value = res.content || v;
     document.getElementById('chat-send').disabled = false;
@@ -1307,14 +1329,12 @@ function continueGen() {
 async function generate() {
     const p = S.projects.find(x => x.id === S.cur);
     if (!p || S.gen) return;
-    if (!checkCredits()) return toast('Out of daily credits. Add your own key in Settings.');
     
     S.gen = true;
     updateSendButton();
     hideContinueButton();
     S.tasks = []; 
     renderTasks();
-    deductCredit();
     
     const md = addMsg('ai', '', true);
     md.classList.add('thinking');
@@ -1490,8 +1510,24 @@ function init() {
         });
         
         document.getElementById('btn-enhance').onclick = enhancePrompt;
-        document.getElementById('chat-input').oninput = function() { if(!S.gen) document.getElementById('chat-send').disabled = !this.value.trim(); this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 120) + 'px'; };
-        document.getElementById('chat-input').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); updateSendButton(); if(!S.gen) document.getElementById('chat-send').click(); } };
+        
+        // Chat Input & Mention Logic
+        const chatInput = document.getElementById('chat-input');
+        chatInput.addEventListener('input', function(e) {
+            if(!S.gen) document.getElementById('chat-send').disabled = !this.value.trim();
+            this.style.height = 'auto'; 
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            handleMentionInput(e);
+        });
+        chatInput.addEventListener('keydown', e => {
+            if (mentionActive) {
+                if (e.key === 'ArrowDown') { e.preventDefault(); mentionIndex = (mentionIndex + 1) % mentionItems.length; renderMentionDropdown(); return; }
+                if (e.key === 'ArrowUp') { e.preventDefault(); mentionIndex = (mentionIndex - 1 + mentionItems.length) % mentionItems.length; renderMentionDropdown(); return; }
+                if (e.key === 'Enter' || e.key === 'Tab') { e.preventDefault(); selectMention(mentionItems[mentionIndex]); return; }
+                if (e.key === 'Escape') { mentionActive = false; hideMentionDropdown(); return; }
+            }
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); updateSendButton(); if(!S.gen) document.getElementById('chat-send').click(); }
+        });
         
         document.getElementById('apply-btn').onclick = () => { const p = S.projects.find(x => x.id === S.cur); if (p) { p.files[S.activeFile] = cm ? cm.getValue() : ''; saveProjects(); updatePreview(); toast('Applied!'); } };
         
