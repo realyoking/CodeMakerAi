@@ -398,17 +398,13 @@ CRITICAL RULE: You MUST output the FULL code for all files. Do NOT truncate.
 To prevent timeouts, you MUST use the 'write_file' tool to write code. DO NOT output code in markdown blocks.
 
 # TASK PLANNING
-1. First, output a brief markdown checklist of your plan using EXACTLY "- [ ] ". For example:
-   - [ ] Create HTML structure
-   - [ ] Add CSS styles
-   - [ ] Implement JS logic
-   The system will extract this and show it in the Tasks tab. Do not output the tasks again in the chat.
+1. First, output a brief markdown checklist of your plan using EXACTLY "- [ ] " in the chat. 
+   CRITICAL: Do NOT include this task list inside the generated files. It should ONLY be in your chat message.
 2. Use the 'write_file' tool to write files one by one. Wait for confirmation after each file.
 
 # FILE SYSTEM
 You can create ANY file type (e.g., index.html, style.css, script.js, App.tsx, main.py, db.json, design.md).
 If the user asks for a web app, ensure you write standard web files (index.html, style.css, script.js) for the live preview to work.
-If the user has uploaded assets or generated assets, they will be listed in the system prompt. Use their exact names (e.g., Asset_1.png) in the code.
 If the user mentions a file using #filename, focus your modifications on that specific file.
 
 # CURRENT CODE STATE
@@ -444,12 +440,15 @@ Body: { "model": "agnes-video-v2.0", "prompt": "prompt" }
 
 ALWAYS use the placeholder {{SITE_API_KEY}} for the Bearer token. The system will auto-replace it with a valid key. NEVER hardcode 'sk-xxx'.
 
-# IMAGE GENERATION (CRITICAL)
+# IMAGE GENERATION & ASSETS (CRITICAL)
 When the user asks for an image, picture, photo, icon, logo, illustration, background image, or ANY visual asset, you MUST use the 'generate_asset' tool with type="image".
 NEVER use SVG placeholders, emoji, or CSS-only graphics as substitutes for images.
 NEVER create SVG icons when the user asks for an image. Use the generate_asset tool.
-The only exception is if the user explicitly asks for an SVG or a CSS-only design.
-Put the returned URL directly into the img src or video src in your code. The user will review, approve, or request a redo of the asset later. If they redo it, the system will automatically update the URL in your code. Do not worry about the approval process, just use the URL provided.
+
+When you use the generate_asset tool, you will receive the exact URL of the generated asset in the tool response.
+You MUST put that EXACT URL into the 'src' attribute of your HTML. 
+Do NOT use the asset name as the src, use the URL returned by the tool.
+If you need an image, generate it FIRST, wait for the URL, and THEN write the HTML file using that URL.
 
 # ASSETS & ANIMATIONS
 If the user asks for a video or animation, use the 'generate_asset' tool with type="video". 
@@ -519,7 +518,7 @@ function getSystemPrompt() {
         prompt += `\n\n# LOCKED FILES\nThe following files are locked and MUST NOT be modified:\n${p.lockedFiles.join(', ')}\n`;
     }
     if (p.assets && p.assets.length > 0) {
-        prompt += `\n\n# AVAILABLE ASSETS\nThe following assets are available in the project. Use their exact names in the code:\n${p.assets.map(a => `- ${a.name} (${a.type})`).join('\n')}\n`;
+        prompt += `\n\n# AVAILABLE ASSETS\nThe following assets are available in the project. Use their exact URL in the code:\n${p.assets.map(a => `- ${a.name} (URL: ${a.url})`).join('\n')}\n`;
     }
     prompt += `\n\n# PROJECT API KEY\nIf the app requires an AI API key, use the placeholder {{SITE_API_KEY}} in the code. The system will auto-replace it with the real key.`;
     
@@ -550,7 +549,7 @@ function renderGrid() {
         </div>
     `).join('');
     g.querySelectorAll('.proj-card').forEach(c => c.onclick = e => { if(e.target.closest('.proj-del')) return; openEditor(c.dataset.id); });
-    g.querySelectorAll('[data-del]').forEach(b => b.onclick = e => { e.stopPropagation(); S.projects = S.projects.filter(p => p.id !== b.dataset_del); saveProjects(); renderGrid(); });
+    g.querySelectorAll('[data-del]').forEach(b => b.onclick = e => { e.stopPropagation(); S.projects = S.projects.filter(p => p.id !== b.dataset.del); saveProjects(); renderGrid(); });
 }
 
 function renderTemplates() {
