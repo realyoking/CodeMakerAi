@@ -74,7 +74,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .lib-btn.active { background: var(--panel); color: var(--tx); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
 
 .proj-section { padding: 0px 24px 120px; max-width: 1200px; margin: 0 auto; }
-.proj-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.proj-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
 .proj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
 .proj-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
 .proj-card:hover { border-color: var(--ac); transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
@@ -83,13 +83,12 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .proj-meta { font-size: 12px; color: var(--mt); }
 .proj-del { position: absolute; top: 12px; right: 12px; color: var(--mt); opacity: 0; transition: 0.2s; cursor: pointer; background: rgba(255,255,255,0.8); padding: 6px; border-radius: 6px; }
 .proj-card:hover .proj-del { opacity: 1; }
-.verified-badge { color: var(--ac); font-size: 12px; }
 
 /* EDITOR */
 #editor-view { position: absolute; inset: 0; display: none; flex-direction: column; z-index: 20; background: var(--bg); }
 #editor-view.active { display: flex; }
-.ed-header { display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--border); height: 56px; }
-.ed-btn { width: 32px; height: 32px; border-radius: 6px; background: transparent; border: 1px solid transparent; color: var(--tx2); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.ed-header { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--border); height: 56px; }
+.ed-btn { width: 32px; height: 32px; border-radius: 6px; background: transparent; border: 1px solid transparent; color: var(--tx2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; }
 .ed-btn:hover { background: var(--bg2); border-color: var(--border); }
 .ed-title { font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 8px; }
 .ed-actions { display: flex; gap: 4px; align-items: center; }
@@ -120,13 +119,11 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .msg.ai .msg-bubble { background: var(--bg2); border: 1px solid var(--border); border-top-left-radius: 2px; }
 .msg.user .msg-bubble { background: var(--ac); color: #fff; border-top-right-radius: 2px; }
 
-/* Progress Bar & Skeleton */
 .msg-progress-bar { position: absolute; bottom: 0; left: 0; width: 30%; height: 2px; background: var(--ac); animation: progressAnim 1.5s ease-in-out infinite; display: none; }
 .msg.thinking .msg-progress-bar { display: block; }
 .skeleton-line { height: 10px; background: var(--bg3); border-radius: 4px; margin-bottom: 8px; animation: pulse 1.5s infinite; }
 .skeleton-line:last-child { width: 60%; margin-bottom: 0; }
 
-/* Message Actions (Copy/Retry) */
 .msg-actions { display: flex; gap: 4px; margin-top: 8px; opacity: 0; transition: opacity 0.2s; }
 .msg.ai:hover .msg-actions { opacity: 1; }
 .msg-action-btn { background: none; border: 1px solid var(--border); color: var(--mt); padding: 3px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 4px; }
@@ -170,6 +167,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .code-view { flex: 1; display: none; flex-direction: column; position: relative; min-height: 0; overflow: hidden; }
 .CodeMirror { height: 100% !important; font-size: 13px; }
 .apply-btn { position: absolute; bottom: 16px; right: 16px; padding: 8px 16px; border: none; background: var(--ac); color: #fff; border-radius: 8px; font-weight: 600; cursor: pointer; z-index: 10; }
+.editor-tools { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; z-index: 5; }
 
 /* Tasks View */
 .tasks-view { flex: 1; display: none; flex-direction: column; overflow-y: auto; padding: 16px; background: var(--bg2); min-height: 0; }
@@ -182,23 +180,28 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 /* Assets View */
 .assets-view { flex: 1; display: none; flex-direction: column; overflow-y: auto; padding: 16px; background: var(--bg2); min-height: 0; }
 .asset-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
-.asset-preview { width: 100%; height: 200px; background: #000; display: flex; align-items: center; justify-content: center; }
+.asset-preview { width: 100%; height: 150px; background: #000; display: flex; align-items: center; justify-content: center; }
 .asset-preview img, .asset-preview video { max-width: 100%; max-height: 100%; object-fit: cover; }
 .asset-info { padding: 12px; }
 .asset-type { font-size: 11px; font-weight: 700; color: var(--ac); text-transform: uppercase; margin-bottom: 4px; }
-.asset-prompt { font-size: 13px; color: var(--tx2); margin-bottom: 12px; }
+.asset-name { font-size: 13px; color: var(--tx); margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; }
+.asset-prompt { font-size: 12px; color: var(--mt); margin-bottom: 12px; }
+.upload-btn { width: 100%; padding: 10px; border: 1px dashed var(--border); background: var(--panel); color: var(--mt); border-radius: 8px; cursor: pointer; margin-bottom: 16px; font-weight: 500; }
+.upload-btn:hover { border-color: var(--ac); color: var(--ac); }
 
 /* Modals */
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
 .modal-overlay.show { display: flex; }
-.modal-box { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 24px; width: 100%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+.modal-box { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 24px; width: 100%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; }
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .modal-title { font-size: 18px; font-weight: 700; }
 .modal-close { background: none; border: none; color: var(--mt); cursor: pointer; font-size: 24px; line-height: 1; }
 .modal-desc { font-size: 13px; color: var(--mt); margin-bottom: 16px; line-height: 1.5; }
 .modal-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--tx); font-family: 'Inter', sans-serif; font-size: 14px; margin-bottom: 12px; }
-.modal-btn { padding: 10px 20px; border-radius: 8px; border: none; background: var(--ac); color: #fff; cursor: pointer; font-weight: 600; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.modal-select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--tx); font-family: 'Inter', sans-serif; font-size: 14px; margin-bottom: 12px; cursor: pointer; }
+.modal-btn { padding: 10px 20px; border-radius: 8px; border: none; background: var(--ac); color: #fff; cursor: pointer; font-weight: 600; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; }
 .modal-btn.gh { background: var(--gh); }
+.modal-btn.secondary { background: var(--bg2); color: var(--tx); border: 1px solid var(--border); }
 .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; font-size: 13px; }
 .restore-btn { padding: 6px 12px; background: var(--ac); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; }
 
@@ -267,7 +270,10 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
         <div id="projects-view">
             <div class="proj-header">
                 <h2>Your Projects</h2>
-                <button style="padding:8px 16px;border:none;background:var(--ac);color:#fff;border-radius:8px;cursor:pointer" id="new-btn">New Project</button>
+                <div style="display:flex; gap:8px;">
+                    <button style="padding:8px 16px;border:1px solid var(--border);background:var(--panel);color:var(--tx);border-radius:8px;cursor:pointer" id="import-gh-btn"><i class="fab fa-github"></i> Import</button>
+                    <button style="padding:8px 16px;border:none;background:var(--ac);color:#fff;border-radius:8px;cursor:pointer" id="new-btn">New Project</button>
+                </div>
             </div>
             <div class="proj-grid" id="proj-grid"></div>
         </div>
@@ -293,7 +299,10 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
             </div>
         </div>
         <div class="ed-actions">
+            <button class="ed-btn" id="btn-settings" title="AI Key & Credits"><i class="fas fa-cog"></i></button>
+            <button class="ed-btn" id="btn-tools" title="HTTP Tester"><i class="fas fa-flask"></i></button>
             <button class="ed-btn" id="btn-github" title="Export to GitHub"><i class="fab fa-github"></i></button>
+            <button class="ed-btn" id="btn-deploy" title="Deploy to Pages" style="color:var(--ok)"><i class="fas fa-rocket"></i></button>
             <button class="ed-btn" id="btn-history" title="Version History"><i class="fas fa-history"></i></button>
             <button class="ed-btn" id="btn-share" title="Share"><i class="fas fa-share"></i></button>
             <button class="ed-btn" id="btn-zip" title="Download ZIP"><i class="fas fa-download"></i></button>
@@ -341,6 +350,9 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
             <div class="prev-main">
                 <iframe class="prev-frame" id="prev-frame" sandbox="allow-scripts allow-modals allow-forms allow-same-origin"></iframe>
                 <div class="code-view" id="code-view">
+                    <div class="editor-tools">
+                        <button class="pa-btn" id="btn-seo" title="Optimize SEO"><i class="fas fa-magnifying-glass-chart"></i></button>
+                    </div>
                     <textarea id="code-editor" spellcheck="false"></textarea>
                     <button class="apply-btn" id="apply-btn">Apply Changes</button>
                 </div>
@@ -355,7 +367,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 const API_URL = 'https://apihub.agnes-ai.com/v1/chat/completions';
 const IMG_API_URL = 'https://apihub.agnes-ai.com/v1/images/generations';
 const VID_API_URL = 'https://apihub.agnes-ai.com/v1/videos/generations';
-const API_KEY = 'sk-qZB4ieEv5UdIrYK3eEHAfdAv5xXYKLsVD7bAd9Kg7EQuDYF3';
+const SITE_KEY = 'sk-rWvCRyEKxFrHuuVaoQB1IwFoPXMGyXQNQvpC3AhHl5kkNCE'; // New Site Key
 const PROXY = 'https://corsproxy.io/?url=';
 const MODELS = { '2.0':'agnes-2.0-flash', '1.5':'agnes-1.5-flash', 'video':'agnes-video-v2.0', 'image':'agnes-image-2.1-flash' };
 
@@ -376,6 +388,7 @@ To prevent timeouts, you MUST use the 'write_file' tool to write code. DO NOT ou
 # FILE SYSTEM
 You can create ANY file type (e.g., index.html, style.css, script.js, App.tsx, main.py, db.json, design.md).
 If the user asks for a web app, ensure you write standard web files (index.html, style.css, script.js) for the live preview to work.
+If the user has uploaded assets or generated assets, they will be listed in the system prompt. Use their exact names (e.g., Asset_1.png) in the code.
 
 # DESIGN SYSTEM (design.md)
 You MUST strictly follow the design rules specified in the project's 'design.md' file. If the user asks for a design change, update the 'design.md' file using the 'write_file' tool.
@@ -401,6 +414,37 @@ let S = { projects: [], cur: null, gen: false, model: '2.0', activeFile: 'index.
 let cm;
 let abortCtrl = null;
 
+// AI Key & Credits Logic
+function getApiKey() {
+    const settings = JSON.parse(localStorage.getItem('cm_ai_settings') || '{}');
+    if (settings.useOwnKey && settings.apiKey) return settings.apiKey;
+    return SITE_KEY;
+}
+
+function checkCredits() {
+    const settings = JSON.parse(localStorage.getItem('cm_ai_settings') || '{}');
+    if (settings.useOwnKey) return true; // Unlimited if own key
+    
+    const today = new Date().toDateString();
+    let credits = JSON.parse(localStorage.getItem('cm_credits') || '{}');
+    if (credits.date !== today) {
+        credits = { date: today, count: 50 }; // 50 free credits per day
+        localStorage.setItem('cm_credits', JSON.stringify(credits));
+    }
+    return credits.count > 0;
+}
+
+function deductCredit() {
+    const settings = JSON.parse(localStorage.getItem('cm_ai_settings') || '{}');
+    if (settings.useOwnKey) return;
+    
+    let credits = JSON.parse(localStorage.getItem('cm_credits') || '{}');
+    if (credits.count > 0) {
+        credits.count--;
+        localStorage.setItem('cm_credits', JSON.stringify(credits));
+    }
+}
+
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
 function toast(m) { const t = document.getElementById('toast'); const d = document.createElement('div'); d.style.cssText = 'padding:12px 18px;background:#fff;border:1px solid #ccc;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.1);margin-bottom:8px;font-size:13px'; d.textContent = m; t.appendChild(d); setTimeout(() => d.remove(), 3000); }
 
@@ -415,6 +459,9 @@ function getSystemPrompt() {
     }
     if (p && p.lockedFiles && p.lockedFiles.length > 0) {
         prompt += `\n\n# LOCKED FILES\nThe following files are locked and MUST NOT be modified:\n${p.lockedFiles.join(', ')}\n`;
+    }
+    if (p && p.assets && p.assets.length > 0) {
+        prompt += `\n\n# AVAILABLE ASSETS\nThe following assets are available in the project. Use their exact names in the code:\n${p.assets.map(a => `- ${a.name} (${a.type})`).join('\n')}\n`;
     }
     if (S.tasks.length > 0) {
         prompt += `\n\n# CURRENT TASKS\nHere is the current task list. Please complete these:\n${S.tasks.map(t => '- [ ] ' + t.text).join('\n')}\n`;
@@ -543,7 +590,6 @@ function markTaskDone(filename) {
             }
         }
     }
-    // Fallback: if no specific match, check off the first undone task
     if (!found) {
         for (let i = 0; i < S.tasks.length; i++) {
             if (!S.tasks[i].done) {
@@ -747,26 +793,44 @@ function restoreVersion(i) {
 function renderAssets() {
     const p = S.projects.find(x => x.id === S.cur); if (!p) return;
     const view = document.getElementById('assets-view');
-    view.innerHTML = '';
+    view.innerHTML = '<button class="upload-btn" onclick="document.getElementById(\'asset-upload-input\').click()"><i class="fas fa-upload"></i> Upload Asset</button><input type="file" id="asset-upload-input" style="display:none" onchange="handleAssetUpload(event)">';
+    
     if (!p.assets || p.assets.length === 0) {
-        view.innerHTML = '<div style="color:var(--mt);text-align:center;padding:40px;">No assets generated yet.</div>';
+        view.innerHTML += '<div style="color:var(--mt);text-align:center;padding:40px;">No assets generated or uploaded yet.</div>';
         return;
     }
     p.assets.forEach(asset => {
         const card = document.createElement('div');
         card.className = 'asset-card';
         card.innerHTML = `
-            <div class="asset-preview">${asset.type === 'image' ? `<img src="${asset.url}" alt="${asset.prompt}">` : `<video src="${asset.url}" muted loop autoplay></video>`}</div>
+            <div class="asset-preview">${asset.type === 'image' ? `<img src="${asset.url}" alt="${asset.name}">` : `<video src="${asset.url}" muted loop autoplay></video>`}</div>
             <div class="asset-info">
-                <div class="asset-type">${asset.type.toUpperCase()}</div>
-                <div class="asset-prompt">${asset.prompt}</div>
+                <div class="asset-type">${asset.type.toUpperCase()} ${asset.isUserUpload ? '(Uploaded)' : '(AI Generated)'}</div>
+                <div class="asset-name">${asset.name}</div>
+                ${asset.prompt ? `<div class="asset-prompt">${asset.prompt}</div>` : ''}
             </div>
         `;
         view.appendChild(card);
     });
 }
 
-// ===== GITHUB EXPORT (FIXED & UPGRADED) =====
+window.handleAssetUpload = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const p = S.projects.find(x => x.id === S.cur);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const ext = file.name.split('.').pop().toLowerCase();
+        const type = file.type.startsWith('image') ? 'image' : 'video';
+        const name = `Asset_${p.assets.length + 1}.${ext}`;
+        p.assets.push({ id: uid(), name, type, url: e.target.result, isUserUpload: true });
+        saveProjects(); renderAssets();
+        toast(`${name} uploaded!`);
+    };
+    reader.readAsDataURL(file);
+};
+
+// ===== GITHUB EXPORT & DEPLOY =====
 async function exportToGithub() {
     const p = S.projects.find(x => x.id === S.cur);
     if (!p) return;
@@ -774,14 +838,31 @@ async function exportToGithub() {
     document.getElementById('generic-modal-title').innerText = 'Export to GitHub';
     
     if (S.githubToken) {
+        modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Fetching repositories...</div>`;
+        
+        const headers = { 'Authorization': `token ${S.githubToken}`, 'Accept': 'application/vnd.github+json' };
+        const userRes = await fetch('https://api.github.com/user', { headers });
+        if(!userRes.ok) { modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error: Invalid GitHub Token.</p>`; return; }
+        const owner = (await userRes.json()).login;
+
+        const reposRes = await fetch(`https://api.github.com/user/repos?per_page=100&sort=updated`, { headers });
+        const repos = reposRes.ok ? await reposRes.json() : [];
+        const repoOptions = repos.map(r => `<option value="${r.name}">${r.name}</option>`).join('');
+
         const defaultRepoName = p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
         modalBody.innerHTML = `
-            <p class="modal-desc">Push "${p.name}" to GitHub. If the repository doesn't exist, it will be created. If it does, files will be updated automatically.</p>
-            <input type="text" class="modal-input" id="gh-repo-input" placeholder="Repository Name" value="${defaultRepoName}">
-            <button class="modal-btn gh" id="gh-push-btn"><i class="fab fa-github"></i> Push / Update Repository</button>
+            <p class="modal-desc">Push "${p.name}" to GitHub. Select an existing repo or create a new one. CodeMaker AI will be attributed as a co-author.</p>
+            <select class="modal-select" id="gh-repo-select" onchange="toggleNewRepoInput(this.value)">
+                <option value="new">+ Create New Repository</option>
+                ${repoOptions}
+            </select>
+            <input type="text" class="modal-input" id="gh-repo-input" placeholder="New Repository Name" value="${defaultRepoName}">
+            <button class="modal-btn gh" id="gh-push-btn"><i class="fab fa-github"></i> Push Code</button>
+            <button class="modal-btn secondary" id="gh-deploy-btn"><i class="fas fa-rocket"></i> Deploy to GitHub Pages</button>
             <button style="width:100%;margin-top:8px;background:transparent;color:var(--mt);border:1px solid var(--border);padding:10px;border-radius:8px;cursor:pointer;" onclick="logoutGithub()">Logout / Change Token</button>
         `;
-        document.getElementById('gh-push-btn').onclick = startGithubPush;
+        document.getElementById('gh-push-btn').onclick = () => startGithubPush(owner);
+        document.getElementById('gh-deploy-btn').onclick = () => deployToGithubPages(owner);
     } else {
         modalBody.innerHTML = `
             <p class="modal-desc">To push code directly to GitHub, you need a Personal Access Token (PAT). <br><br><a href="https://github.com/settings/tokens/new?scopes=repo,workflow,admin:org,admin:repo_hook,gist,user,delete_repo,write:packages&description=CodeMakerAI" target="_blank" style="color:var(--ac);">Click here to generate a token with all permissions on GitHub</a>.</p>
@@ -799,28 +880,30 @@ async function exportToGithub() {
     document.getElementById('generic-modal').classList.add('show');
 }
 
+window.toggleNewRepoInput = function(val) {
+    const input = document.getElementById('gh-repo-input');
+    if(input) input.style.display = val === 'new' ? 'block' : 'none';
+};
+
 function logoutGithub() {
     localStorage.removeItem('gh_token');
     S.githubToken = '';
     exportToGithub();
 }
 
-async function startGithubPush() {
+async function startGithubPush(owner) {
     const p = S.projects.find(x => x.id === S.cur);
     const token = S.githubToken;
     const modalBody = document.getElementById('generic-modal-body');
-    const repoName = document.getElementById('gh-repo-input').value.trim();
+    const selectVal = document.getElementById('gh-repo-select').value;
+    const inputVal = document.getElementById('gh-repo-input').value.trim();
+    
+    let repoName = selectVal === 'new' ? inputVal : selectVal;
     if(!repoName) return toast('Repository name is required.');
 
     const headers = { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' };
-    
-    // 1. Get User
-    modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Fetching GitHub profile...</div>`;
-    const userRes = await fetch('https://api.github.com/user', { headers });
-    if(!userRes.ok) { modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error: Invalid GitHub Token.</p>`; return; }
-    const owner = (await userRes.json()).login;
+    const coAuthorTrailer = `\n\nGenerated with CodeMaker AI\nCo-authored-by: CodeMaker AI <noreply@codemaker.ai>`;
 
-    // 2. Check if repo exists
     modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Checking repository...</div>`;
     const checkRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}`, { headers });
     if (checkRes.status === 404) {
@@ -832,14 +915,12 @@ async function startGithubPush() {
         if (!createRes.ok) { modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error creating repo.</p>`; return; }
     }
 
-    // 3. Push files using Contents API (handles create/update automatically)
     const files = Object.keys(p.files);
     for (let i = 0; i < files.length; i++) {
         const filename = files[i];
         const content = p.files[filename];
         modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Pushing files... (${i+1}/${files.length})<br>${filename}</div>`;
         
-        // Check if file exists to get SHA (required by GitHub to update existing files)
         let sha = null;
         const fileCheckRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${encodeURIComponent(filename)}`, { headers });
         if (fileCheckRes.ok) {
@@ -849,26 +930,25 @@ async function startGithubPush() {
         const putRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${encodeURIComponent(filename)}`, {
             method: 'PUT', headers,
             body: JSON.stringify({
-                message: `feat: update ${filename} via CodeMaker AI`,
+                message: `feat: update ${filename} via CodeMaker AI${coAuthorTrailer}`,
                 content: btoa(unescape(encodeURIComponent(content))),
                 sha: sha,
                 branch: 'main'
             })
         });
         if (!putRes.ok) { 
-            modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error pushing ${filename}. Make sure the repo is not empty or has a README.</p>`; 
+            modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error pushing ${filename}.</p>`; 
             return; 
         }
     }
 
-    // 4. Generate and push README.md
     modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> AI is writing README.md...</div>`;
     let readmeContent = `# ${p.name}\n\nGenerated by CodeMaker AI.`;
     try {
         const filesConcat = Object.keys(p.files).map(f => 'File: ' + f + '\n\`\`\`\n' + p.files[f] + '\n\`\`\`\n').join('\n').substring(0, 3000);
         const res = await fetch(API_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` },
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getApiKey()}` },
             body: JSON.stringify({
                 model: MODELS[S.model],
                 messages: [
@@ -891,7 +971,7 @@ async function startGithubPush() {
     await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/README.md`, {
         method: 'PUT', headers,
         body: JSON.stringify({
-            message: `docs: update README.md`,
+            message: `docs: update README.md${coAuthorTrailer}`,
             content: btoa(unescape(encodeURIComponent(readmeContent))),
             sha: sha,
             branch: 'main'
@@ -904,31 +984,257 @@ async function startGithubPush() {
             <h3 style="margin-bottom:8px;">Successfully Pushed!</h3>
             <p style="color:var(--mt);margin-bottom:20px;">Your project is now live on GitHub.</p>
             <a href="https://github.com/${owner}/${repoName}" target="_blank" class="modal-btn gh" style="text-decoration:none;display:block;"><i class="fab fa-github"></i> Open Repository</a>
+            <button class="modal-btn secondary" onclick="deployToGithubPages('${owner}', '${repoName}')"><i class="fas fa-rocket"></i> Deploy to GitHub Pages</button>
         </div>
     `;
 }
 
-async function enhancePrompt() {
-    const inp = document.getElementById('chat-input');
-    const v = inp.value.trim();
-    if (!v) return toast('Type a prompt first.');
-    document.getElementById('chat-send').disabled = true;
-    inp.value = 'Enhancing prompt...';
-    const body = { model: MODELS[S.model], messages: [{ role: 'system', content: 'Expand the user\'s prompt into a detailed UI/UX spec. Output ONLY the prompt.' }, { role: 'user', content: v }], temperature: 0.7, stream: false };
-    try {
-        const res = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` }, body: JSON.stringify(body) });
-        if (!res.ok) throw new Error('Failed');
-        const j = await res.json();
-        inp.value = j.choices[0].message.content;
-    } catch (e) {
-        inp.value = v; toast('Enhance failed.');
+async function deployToGithubPages(owner, repoName) {
+    const token = S.githubToken;
+    const modalBody = document.getElementById('generic-modal-body');
+    if(!owner || !repoName) {
+        // If called from header, need to fetch user and ask for repo
+        modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Fetching repos...</div>`;
+        const headers = { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' };
+        const userRes = await fetch('https://api.github.com/user', { headers });
+        owner = (await userRes.json()).login;
+        
+        const reposRes = await fetch(`https://api.github.com/user/repos?per_page=100&sort=updated`, { headers });
+        const repos = reposRes.ok ? await reposRes.json() : [];
+        const repoOptions = repos.map(r => `<option value="${r.name}">${r.name}</option>`).join('');
+        
+        modalBody.innerHTML = `
+            <p class="modal-desc">Select a repository to deploy to GitHub Pages.</p>
+            <select class="modal-select" id="gh-deploy-select">${repoOptions}</select>
+            <button class="modal-btn" onclick="deployToGithubPages('${owner}', document.getElementById('gh-deploy-select').value)"><i class="fas fa-rocket"></i> Deploy Now</button>
+        `;
+        document.getElementById('generic-modal').classList.add('show');
+        return;
     }
-    document.getElementById('chat-send').disabled = false;
+
+    modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Enabling GitHub Pages for ${repoName}...</div>`;
+    const headers = { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' };
+    
+    try {
+        // Try to create Pages site
+        const createRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/pages`, {
+            method: 'POST', headers,
+            body: JSON.stringify({ source: { branch: 'main', path: '/' } })
+        });
+        
+        if (createRes.status === 409) { // Already exists
+            const updateRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/pages`, {
+                method: 'PUT', headers,
+                body: JSON.stringify({ source: { branch: 'main', path: '/' } })
+            });
+            if(!updateRes.ok) throw new Error('Failed to update Pages settings.');
+        } else if (!createRes.ok) {
+            const err = await createRes.json();
+            throw new Error(err.message);
+        }
+
+        const deployUrl = `https://${owner}.github.io/${repoName}/`;
+        modalBody.innerHTML = `
+            <div style="text-align:center; padding: 20px;">
+                <i class="fas fa-rocket" style="font-size:32px;color:var(--ok);margin-bottom:12px;"></i>
+                <h3 style="margin-bottom:8px;">Deployment Initiated!</h3>
+                <p style="color:var(--mt);margin-bottom:20px;">It may take 1-2 minutes for GitHub to build your site.</p>
+                <a href="${deployUrl}" target="_blank" class="modal-btn" style="text-decoration:none;display:block;background:var(--ok)"><i class="fas fa-globe"></i> Visit Live Site</a>
+            </div>
+        `;
+    } catch(e) {
+        modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error deploying: ${e.message}</p>`;
+    }
 }
 
+// ===== IMPORT FROM GITHUB =====
+async function importFromGithub() {
+    const modalBody = document.getElementById('generic-modal-body');
+    document.getElementById('generic-modal-title').innerText = 'Import from GitHub';
+    
+    if (!S.githubToken) {
+        modalBody.innerHTML = `<p class="modal-desc">You need a GitHub token to import repositories.</p>
+            <input type="password" class="modal-input" id="gh-token-input" placeholder="Paste your GitHub token here (ghp_...)">
+            <button class="modal-btn gh" id="gh-save-btn"><i class="fab fa-github"></i> Save Token & Continue</button>`;
+        document.getElementById('gh-save-btn').onclick = () => {
+            const token = document.getElementById('gh-token-input').value.trim();
+            if (!token) return toast('Token cannot be empty.');
+            S.githubToken = token;
+            localStorage.setItem('gh_token', token);
+            importFromGithub();
+        };
+    } else {
+        modalBody.innerHTML = `
+            <p class="modal-desc">Paste the GitHub repository URL or "owner/repo" name to import.</p>
+            <input type="text" class="modal-input" id="gh-import-input" placeholder="https://github.com/owner/repo OR owner/repo">
+            <button class="modal-btn gh" id="gh-import-btn"><i class="fab fa-github"></i> Import Repository</button>
+        `;
+        document.getElementById('gh-import-btn').onclick = startImportGithub;
+    }
+    document.getElementById('generic-modal').classList.add('show');
+}
+
+async function startImportGithub() {
+    const inputVal = document.getElementById('gh-import-input').value.trim();
+    const modalBody = document.getElementById('generic-modal-body');
+    let owner, repo;
+    
+    if (inputVal.includes('github.com/')) {
+        const parts = inputVal.split('github.com/')[1].split('/');
+        owner = parts[0]; repo = parts[1];
+    } else {
+        const parts = inputVal.split('/');
+        owner = parts[0]; repo = parts[1];
+    }
+    
+    if (!owner || !repo) return toast('Invalid URL or name.');
+    
+    modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Fetching repository contents...</div>`;
+    
+    const headers = { 'Authorization': `token ${S.githubToken}`, 'Accept': 'application/vnd.github+json' };
+    try {
+        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents`, { headers });
+        if (!res.ok) throw new Error('Repo not found or private.');
+        const files = await res.json();
+        
+        const proj = createProj(`Imported: ${repo}`, S.model);
+        proj.files = {}; // Clear default files
+        
+        for (const file of files) {
+            if (file.type === 'file') {
+                modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Importing ${file.name}...</div>`;
+                const fileRes = await fetch(file.url, { headers });
+                const fileData = await fileRes.json();
+                const content = atob(fileData.content);
+                proj.files[file.name] = content;
+            }
+        }
+        
+        if (!proj.files['index.html']) proj.files['index.html'] = '<!-- No index.html found in root -->';
+        if (!proj.files['style.css']) proj.files['style.css'] = '';
+        if (!proj.files['script.js']) proj.files['script.js'] = '';
+        if (!proj.files['design.md']) proj.files['design.md'] = DEFAULT_DESIGN_MD;
+        
+        saveProjects();
+        document.getElementById('generic-modal').classList.remove('show');
+        openEditor(proj.id);
+        toast('Repository imported successfully!');
+    } catch(e) {
+        modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error: ${e.message}</p>`;
+    }
+}
+
+// ===== HTTP REQUEST TESTER =====
+function openHttpTester() {
+    const modalBody = document.getElementById('generic-modal-body');
+    document.getElementById('generic-modal-title').innerText = 'HTTP Request Tester';
+    modalBody.innerHTML = `
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+            <select id="http-method" class="modal-select" style="width:120px; margin:0;">
+                <option>GET</option><option>POST</option><option>PUT</option><option>DELETE</option><option>PATCH</option>
+            </select>
+            <input type="text" id="http-url" class="modal-input" placeholder="https://api.example.com/data" style="flex:1; margin:0;">
+            <button class="modal-btn" style="width:auto; margin:0;" onclick="sendHttpReq()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+        <textarea id="http-body" class="modal-input" placeholder='Request Body (JSON): {"key": "value"}' style="height:80px; font-family:monospace;"></textarea>
+        <div id="http-response" style="margin-top:16px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px; min-height:100px; font-family:monospace; font-size:12px; white-space:pre-wrap; max-height:300px; overflow-y:auto;">Response will appear here...</div>
+    `;
+    document.getElementById('generic-modal').classList.add('show');
+}
+
+async function sendHttpReq() {
+    const method = document.getElementById('http-method').value;
+    const url = document.getElementById('http-url').value;
+    const body = document.getElementById('http-body').value;
+    const resDiv = document.getElementById('http-response');
+    resDiv.innerText = 'Sending...';
+    
+    try {
+        const options = { method };
+        if (body && method !== 'GET') {
+            options.headers = { 'Content-Type': 'application/json' };
+            options.body = body;
+        }
+        const res = await fetch(url, options);
+        const text = await res.text();
+        resDiv.innerText = `Status: ${res.status} ${res.statusText}\n\n${text}`;
+    } catch(e) {
+        resDiv.innerText = `Error: ${e.message}\n\n(CORS might be blocking this request)`;
+    }
+}
+
+// ===== SETTINGS (API KEY & CREDITS) =====
+function openSettings() {
+    const modalBody = document.getElementById('generic-modal-body');
+    document.getElementById('generic-modal-title').innerText = 'AI Settings & Credits';
+    const settings = JSON.parse(localStorage.getItem('cm_ai_settings') || '{}');
+    const credits = JSON.parse(localStorage.getItem('cm_credits') || '{}');
+    const today = new Date().toDateString();
+    const remaining = (credits.date === today) ? credits.count : 50;
+    
+    modalBody.innerHTML = `
+        <div style="margin-bottom: 20px; padding: 16px; background: var(--bg2); border-radius: 8px;">
+            <h4 style="margin-bottom: 8px;">CodeMaker AI Credits</h4>
+            <p style="font-size: 13px; color: var(--mt); margin-bottom: 4px;">You have <strong style="color: var(--ac)">${remaining}/50</strong> free credits remaining today.</p>
+            <p style="font-size: 11px; color: var(--mt);">Credits reset daily at midnight. Use your own key for unlimited generations.</p>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="radio" name="key-opt" value="site" ${!settings.useOwnKey ? 'checked' : ''} onchange="toggleKeyInput(false)">
+                <span>Use CodeMaker AI Key (50 credits/day)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                <input type="radio" name="key-opt" value="own" ${settings.useOwnKey ? 'checked' : ''} onchange="toggleKeyInput(true)">
+                <span>Use My Own Agnes AI Key</span>
+            </label>
+            <input type="password" id="settings-api-key" class="modal-input" placeholder="sk-..." value="${settings.apiKey || ''}" style="${settings.useOwnKey ? '' : 'display:none;'}">
+        </div>
+        
+        <button class="modal-btn" onclick="saveSettings()"><i class="fas fa-save"></i> Save Settings</button>
+    `;
+    document.getElementById('generic-modal').classList.add('show');
+}
+
+window.toggleKeyInput = function(show) {
+    document.getElementById('settings-api-key').style.display = show ? 'block' : 'none';
+};
+
+function saveSettings() {
+    const useOwnKey = document.querySelector('input[name="key-opt"]:checked').value === 'own';
+    const apiKey = document.getElementById('settings-api-key').value.trim();
+    localStorage.setItem('cm_ai_settings', JSON.stringify({ useOwnKey, apiKey }));
+    toast('Settings saved!');
+    document.getElementById('generic-modal').classList.remove('show');
+}
+
+// ===== SEO OPTIMIZER =====
+async function optimizeSeo() {
+    const p = S.projects.find(x => x.id === S.cur);
+    if (!p || !p.files['index.html']) return toast('No index.html found.');
+    if (!checkCredits()) return toast('Out of daily credits. Add your own key in Settings.');
+    
+    toast('Optimizing SEO...');
+    deductCredit();
+    const res = await callAI([
+        { role: 'system', content: 'You are an SEO expert. Analyze the provided HTML and return the FULL updated HTML with perfect SEO meta tags, Open Graph tags, Twitter cards, and structured data (JSON-LD) added to the <head>. Do not change the visible content.' },
+        { role: 'user', content: p.files['index.html'] }
+    ], S.model);
+    
+    if (res.content) {
+        let code = res.content;
+        const m = code.match(/```html\n?([\s\S]*?)```/);
+        if (m) code = m[1].trim();
+        p.files['index.html'] = code;
+        saveProjects(); loadFileToEditor(); updatePreview();
+        toast('SEO optimized successfully!');
+    }
+}
+
+// ===== AI CALLS =====
 async function callAI(messages, modelKey, tools) {
     const body = { model: MODELS[modelKey], messages: [{role:'system', content: getSystemPrompt()}, ...messages], temperature: 0.7, stream: false, tools: tools };
-    const headers = { 'Content-Type':'application/json', 'Authorization':`Bearer ${API_KEY}` };
+    const headers = { 'Content-Type':'application/json', 'Authorization':`Bearer ${getApiKey()}` };
     try {
         const ctrl = new AbortController();
         abortCtrl = ctrl;
@@ -954,7 +1260,7 @@ async function callAI(messages, modelKey, tools) {
 }
 
 async function generateAsset(type, prompt) {
-    const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}` };
+    const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getApiKey()}` };
     if (type === 'image') {
         const body = JSON.stringify({ model: 'agnes-image-2.0-flash', prompt: prompt, n: 1, size: '1024x1024' });
         let res;
@@ -974,6 +1280,19 @@ async function generateAsset(type, prompt) {
     }
 }
 
+async function enhancePrompt() {
+    const inp = document.getElementById('chat-input');
+    const v = inp.value.trim();
+    if (!v) return toast('Type a prompt first.');
+    if (!checkCredits()) return toast('Out of daily credits. Add your own key in Settings.');
+    document.getElementById('chat-send').disabled = true;
+    inp.value = 'Enhancing prompt...';
+    deductCredit();
+    const res = await callAI([{ role: 'system', content: 'Expand the user\'s prompt into a detailed UI/UX spec. Output ONLY the prompt.' }, { role: 'user', content: v }], S.model);
+    inp.value = res.content || v;
+    document.getElementById('chat-send').disabled = false;
+}
+
 function showContinueButton() { document.getElementById('continue-wrap').style.display = 'block'; }
 function hideContinueButton() { document.getElementById('continue-wrap').style.display = 'none'; }
 
@@ -988,11 +1307,14 @@ function continueGen() {
 async function generate() {
     const p = S.projects.find(x => x.id === S.cur);
     if (!p || S.gen) return;
+    if (!checkCredits()) return toast('Out of daily credits. Add your own key in Settings.');
+    
     S.gen = true;
     updateSendButton();
     hideContinueButton();
-    S.tasks = []; // Clear tasks at the start of generation
+    S.tasks = []; 
     renderTasks();
+    deductCredit();
     
     const md = addMsg('ai', '', true);
     md.classList.add('thinking');
@@ -1040,7 +1362,7 @@ async function generate() {
                         if (S.view === 'code') loadFileToEditor();
                         toolMsg.content = "File written.";
                         badge.innerHTML = `<i class="fas fa-check-circle"></i> Wrote ${args.filename}`;
-                        markTaskDone(args.filename); // <--- MARK TASK AS DONE
+                        markTaskDone(args.filename);
                     } else if (tc.function.name === 'generate_asset') {
                         const args = JSON.parse(tc.function.arguments);
                         const badge = document.createElement('div');
@@ -1049,10 +1371,11 @@ async function generate() {
                         statusLog.appendChild(badge);
                         try {
                             const url = await generateAsset(args.type, args.prompt);
-                            p.assets.push({ id: uid(), type: args.type, url, prompt: args.prompt });
+                            const name = `AI_${args.type === 'image' ? 'Image' : 'Video'}_${p.assets.length + 1}.${args.type === 'image' ? 'png' : 'mp4'}`;
+                            p.assets.push({ id: uid(), name, type: args.type, url, prompt: args.prompt, isUserUpload: false });
                             saveProjects(); renderAssets();
-                            toolMsg.content = `Asset URL: ${url}`;
-                            badge.innerHTML = `<i class="fas fa-check-circle"></i> Generated ${args.type} ready`;
+                            toolMsg.content = `Asset ${name} generated successfully. URL: ${url}`;
+                            badge.innerHTML = `<i class="fas fa-check-circle"></i> Generated ${name}`;
                         } catch(e) {
                             toolMsg.content = "Failed.";
                             badge.innerHTML = `<i class="fas fa-times-circle"></i> Failed to generate`;
@@ -1074,7 +1397,6 @@ async function generate() {
                 }
                 statusLog.innerHTML += choice.content ? fmtAI(choice.content) : "Done.";
                 
-                // Mark all remaining tasks as done just in case
                 S.tasks.forEach(t => t.done = true);
                 renderTasks();
 
@@ -1146,14 +1468,19 @@ function init() {
         document.getElementById('hero-submit').onclick = () => { const v = document.getElementById('hero-input').value.trim(); if (!v) return; openEditor(createProj(v).id); };
         document.querySelectorAll('#home-models .mp').forEach(b => b.onclick = () => { document.querySelectorAll('#home-models .mp').forEach(x => x.classList.remove('active')); b.classList.add('active'); S.model = b.dataset.model; });
         document.getElementById('new-btn').onclick = () => { document.getElementById('home-view').scrollTo({top:0, behavior:'smooth'}); document.getElementById('hero-input').focus(); };
+        document.getElementById('import-gh-btn').onclick = importFromGithub;
         
         document.getElementById('back-btn').onclick = closeEditor;
         document.getElementById('ms-btn').onclick = e => { e.stopPropagation(); document.getElementById('ms-menu').classList.toggle('open'); };
         document.addEventListener('click', () => document.getElementById('ms-menu').classList.remove('open'));
         document.querySelectorAll('.ms-item').forEach(o => o.onclick = e => { e.stopPropagation(); S.model = o.dataset.model; const p = S.projects.find(x => x.id === S.cur); if (p) { p.model = S.model; saveProjects(); } document.getElementById('ms-lbl').textContent = S.model; document.getElementById('ms-menu').classList.remove('open'); });
         
+        document.getElementById('btn-settings').onclick = openSettings;
+        document.getElementById('btn-tools').onclick = openHttpTester;
         document.getElementById('btn-github').onclick = exportToGithub;
+        document.getElementById('btn-deploy').onclick = () => deployToGithubPages();
         document.getElementById('btn-history').onclick = showHistory;
+        document.getElementById('btn-seo').onclick = optimizeSeo;
         document.querySelectorAll('.ptab').forEach(t => t.onclick = () => switchView(t.dataset.view));
         document.querySelectorAll('.mtab').forEach(t => t.onclick = () => {
             document.querySelectorAll('.mtab').forEach(x => x.classList.remove('active')); t.classList.add('active');
