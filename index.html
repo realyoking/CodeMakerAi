@@ -126,6 +126,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 
 .tool-badge { display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; margin-top: 6px; background: var(--bg3); color: var(--tx2); }
 .tool-badge.write { background: rgba(16,185,129,0.1); color: var(--ok); }
+.tool-badge.read { background: rgba(59,130,246,0.1); color: #3b82f6; }
 .tool-badge.asset { background: rgba(236,72,153,0.1); color: var(--pink); }
 .tool-badge.issue { background: rgba(245,158,11,0.1); color: var(--warn); }
 .tool-badge.pr { background: rgba(99,102,241,0.1); color: var(--ac); }
@@ -406,20 +407,26 @@ const SP = `You are CodeMaker AI, an autonomous coding agent.
 CRITICAL RULE: You MUST output the FULL code for all files. Do NOT truncate.
 To prevent timeouts, you MUST use the 'write_file' tool to write code. DO NOT output code in markdown blocks.
 
-# TASK PLANNING
-1. First, output a brief markdown checklist of your plan using EXACTLY "- [ ] " in the chat. 
+# TOOL USAGE & READING FILES
+You have access to the 'write_file', 'generate_asset', and 'read_file' tools.
+If you need to see the exact, full content of a specific file before modifying it, use the 'read_file' tool. 
+A truncated version of all files is already provided in your system prompt, but use 'read_file' if you need to see the rest of a file.
+
+# PERFORMANCE & CONCISENESS (CRITICAL)
+Be fast and concise. Do NOT write long explanations in the chat. Output the brief task list, then immediately use the tool. No fluff.
+
+# TASK PLANNING & EXECUTION
+1. Output a brief markdown checklist of your plan using EXACTLY "- [ ] " in the chat. 
    CRITICAL: Do NOT include this task list inside the generated files. It should ONLY be in your chat message.
-2. Use the 'write_file' tool to write files one by one. Wait for confirmation after each file.
+2. You MUST write ONLY ONE FILE PER RESPONSE. Call the 'write_file' tool for one file, and then STOP. 
+   The system will automatically save it and prompt you to write the next file. 
+   NEVER write multiple files in a single response, as it will cause a token limit cutoff.
+3. When writing a file, output the COMPLETE content of that file. Do not use placeholders like 'rest of code'.
 
 # FILE SYSTEM
 You can create ANY file type (e.g., index.html, style.css, script.js, App.tsx, main.py, db.json, design.md).
 If the user asks for a web app, ensure you write standard web files (index.html, style.css, script.js) for the live preview to work.
 If the user mentions a file using #filename, focus your modifications on that specific file.
-
-# CURRENT CODE STATE
-The current contents of ALL files in the project are provided to you below in the system prompt under "CURRENT FILES". 
-You ALWAYS know the current state of the code. You do NOT need to ask the user to fetch code from GitHub or anywhere else.
-When the user asks for a change, read the current files from the system prompt and modify them accordingly.
 
 # DESIGN SYSTEM (design.md)
 You MUST strictly follow the design rules specified in the project's 'design.md' file. If the user asks for a design change, update the 'design.md' file using the 'write_file' tool.
@@ -464,12 +471,6 @@ If the user asks for a video or animation, use the 'generate_asset' tool with ty
 For scroll animations, use IntersectionObserver in script.js.
 For video backgrounds, make them full-screen, looping, and muted with a dark overlay.
 
-# GITHUB INTEGRATION
-If a GitHub repository is connected to this project, you can use:
-- create_github_issue: Create an issue with a descriptive title and detailed body describing the problem.
-- create_github_pr: Create a pull request with a descriptive title and detailed body describing the changes.
-Use clear, professional commit messages and descriptions. Include what was changed, why, and how to test.
-
 # COMMIT MESSAGES
 When pushing to GitHub, write highly descriptive commit messages that explain WHAT changed, WHY it changed, and any breaking changes. Format: "type(scope): description" (e.g., "feat(auth): add OAuth2 login flow with Google").`;
 
@@ -512,10 +513,11 @@ function getSystemPrompt() {
     const p = S.projects.find(x => x.id === S.cur);
     if (!p) return prompt;
 
-    let filesContext = '\n\n# CURRENT FILES\nHere is the current state of all files in the project. Use this as context when making changes:\n';
+    // Truncate files to 50000 chars to provide full context without exceeding limits
+    let filesContext = '\n\n# CURRENT FILES\nHere is the current state of all files in the project (truncated to 50000 chars to save tokens). Use this as context when making changes:\n';
     Object.keys(p.files).forEach(fname => {
         const content = p.files[fname] || '';
-        const truncated = content.length > 5000 ? content.substring(0, 5000) + '\n... (truncated, file is ' + content.length + ' chars)' : content;
+        const truncated = content.length > 50000 ? content.substring(0, 50000) + '\n... (truncated, file is ' + content.length + ' chars. Output the full file to update it.)' : content;
         filesContext += `\n## File: ${fname}\n\`\`\`\n${truncated}\n\`\`\`\n`;
     });
     prompt += filesContext;
@@ -531,8 +533,9 @@ function getSystemPrompt() {
     }
     prompt += `\n\n# PROJECT API KEY\nIf the app requires an AI API key, use the placeholder {{SITE_API_KEY}} in the code. The system will auto-replace it with the real key.`;
     
-    if (p.github && p.github.owner && p.github.repo) {
-        prompt += `\n\n# GITHUB REPOSITORY CONNECTED\nOwner: ${p.github.owner}\nRepo: ${p.github.repo}\nYou can create issues and PRs using the create_github_issue and create_github_pr tools.`;
+    // ONLY tell the AI about GitHub if a repo is actually connected to this specific project
+    if (p.github && p.github.owner && p.github.repo && S.githubToken) {
+        prompt += `\n\n# GITHUB INTEGRATION\nA GitHub repository is connected to this project.\nOwner: ${p.github.owner}\nRepo: ${p.github.repo}\nYou have access to the 'create_github_issue' and 'create_github_pr' tools to manage it. Use clear, professional commit messages and descriptions.`;
     }
 
     if (S.tasks.length > 0) {
@@ -735,6 +738,7 @@ function renderChat() {
                     try {
                         const args = JSON.parse(tc.function.arguments);
                         if (tc.function.name === 'write_file') return `<div class="tool-badge write"><i class="fas fa-check-circle"></i> Wrote ${args.filename}</div>`;
+                        if (tc.function.name === 'read_file') return `<div class="tool-badge read"><i class="fas fa-eye"></i> Read ${args.filename}</div>`;
                         if (tc.function.name === 'generate_asset') return `<div class="tool-badge asset"><i class="fas fa-check-circle"></i> Generated ${args.type}</div>`;
                         if (tc.function.name === 'create_github_issue') return `<div class="tool-badge issue"><i class="fas fa-check-circle"></i> Created Issue: ${args.title}</div>`;
                         if (tc.function.name === 'create_github_pr') return `<div class="tool-badge pr"><i class="fas fa-check-circle"></i> Created PR: ${args.title}</div>`;
@@ -1272,6 +1276,7 @@ async function startGithubPush(owner) {
 
     modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Checking repository...</div>`;
     const checkRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}`, { headers });
+    let repoExists = checkRes.ok;
     if (checkRes.status === 404) {
         modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Creating repository...</div>`;
         const createRes = await fetch('https://api.github.com/user/repos', {
@@ -1279,10 +1284,21 @@ async function startGithubPush(owner) {
             body: JSON.stringify({ name: repoName, description: 'Generated by CodeMaker AI', private: false })
         });
         if (!createRes.ok) { modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error creating repo.</p>`; return; }
+        repoExists = true;
     }
 
     p.github = { owner, repo: repoName };
     saveProjects();
+
+    // Check existing files to avoid overwriting README if it exists
+    let remoteFiles = [];
+    if (repoExists) {
+        const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents`, { headers });
+        if (treeRes.ok) {
+            remoteFiles = await treeRes.json();
+        }
+    }
+    const remoteFileNames = remoteFiles.map(f => f.name);
 
     const files = Object.keys(p.files);
     for (let i = 0; i < files.length; i++) {
@@ -1298,7 +1314,7 @@ async function startGithubPush(owner) {
 
         let commitMsg = `feat: add ${filename}`;
         if (i === files.length - 1) {
-            commitMsg = `feat: complete project setup with ${files.length} files via CodeMaker AI`;
+            commitMsg = `feat: update project files via CodeMaker AI`;
         }
 
         const putRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${encodeURIComponent(filename)}`, {
@@ -1316,29 +1332,34 @@ async function startGithubPush(owner) {
         }
     }
 
-    modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> AI is writing README.md...</div>`;
-    let readmeContent = `# ${p.name}\n\nGenerated by CodeMaker AI.`;
-    try {
-        const filesConcat = Object.keys(p.files).map(f => 'File: ' + f + '\n\`\`\`\n' + p.files[f] + '\n\`\`\`\n').join('\n').substring(0, 3000);
-        const res = await callAI([{ role: 'system', content: 'Write a professional GitHub README.md in pure markdown. Include title, description, features, and how to run.' }, { role: 'user', content: 'Project Name: ' + p.name + '\nInitial Prompt: ' + p.messages[0].content + '\nCode Files:\n' + filesConcat }], S.model);
-        if (res.content) {
-            readmeContent = res.content;
-            if (!readmeContent.startsWith('#')) readmeContent = `# ${p.name}\n\n` + readmeContent;
-        }
-    } catch(e) { /* fallback to basic readme */ }
+    // Only generate README if it doesn't already exist in the repo
+    if (!remoteFileNames.includes('README.md')) {
+        modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> AI is writing README.md...</div>`;
+        let readmeContent = `# ${p.name}\n\nGenerated by CodeMaker AI.`;
+        try {
+            const filesConcat = Object.keys(p.files).map(f => 'File: ' + f + '\n\`\`\`\n' + p.files[f] + '\n\`\`\`\n').join('\n').substring(0, 3000);
+            const res = await callAI([{ role: 'system', content: 'Write a professional GitHub README.md in pure markdown. Include title, description, features, and how to run.' }, { role: 'user', content: 'Project Name: ' + p.name + '\nInitial Prompt: ' + p.messages[0].content + '\nCode Files:\n' + filesConcat }], S.model);
+            if (res.content) {
+                readmeContent = res.content;
+                if (!readmeContent.startsWith('#')) readmeContent = `# ${p.name}\n\n` + readmeContent;
+            }
+        } catch(e) { /* fallback to basic readme */ }
 
-    let sha = null;
-    const readmeCheckRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/README.md`, { headers });
-    if (readmeCheckRes.ok) { sha = (await readmeCheckRes.json()).sha; }
-    await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/README.md`, {
-        method: 'PUT', headers,
-        body: JSON.stringify({
-            message: `docs: add comprehensive README.md with setup instructions${coAuthorTrailer}`,
-            content: btoa(unescape(encodeURIComponent(readmeContent))),
-            sha: sha,
-            branch: 'main'
-        })
-    });
+        let sha = null;
+        const readmeCheckRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/README.md`, { headers });
+        if (readmeCheckRes.ok) { sha = (await readmeCheckRes.json()).sha; }
+        await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/README.md`, {
+            method: 'PUT', headers,
+            body: JSON.stringify({
+                message: `docs: add comprehensive README.md with setup instructions${coAuthorTrailer}`,
+                content: btoa(unescape(encodeURIComponent(readmeContent))),
+                sha: sha,
+                branch: 'main'
+            })
+        });
+    } else {
+        console.log("README.md already exists. Skipping generation.");
+    }
 
     modalBody.innerHTML = `
         <div style="text-align:center; padding: 20px;">
@@ -1675,12 +1696,12 @@ function selectMention(filename) {
 }
 
 async function callAI(messages, modelKey, tools) {
-    const body = { model: MODELS[modelKey], messages: [{role:'system', content: getSystemPrompt()}, ...messages], temperature: 0.7, stream: false, tools: tools };
+    const body = { model: MODELS[modelKey], messages: [{role:'system', content: getSystemPrompt()}, ...messages], temperature: 0.7, stream: false, tools: tools, max_tokens: 30000 };
     const headers = { 'Content-Type':'application/json', 'Authorization':`Bearer ${SITE_KEY}` };
     try {
         const ctrl = new AbortController();
         abortCtrl = ctrl;
-        const timer = setTimeout(() => ctrl.abort(), 90000);
+        const timer = setTimeout(() => ctrl.abort(), 120000); // 2 min timeout for large outputs
         const res = await fetch(API_URL, { signal: ctrl.signal, method:'POST', headers, body: JSON.stringify(body) });
         clearTimeout(timer);
         if (res.ok) {
@@ -1830,10 +1851,12 @@ async function generate() {
     saveProjects();
     
     const tools = [
-        { type: "function", function: { name: "write_file", description: "Write file content.", parameters: { type: "object", properties: { filename: { type: "string" }, content: { type: "string" } }, required: ["filename", "content"] } } },
+        { type: "function", function: { name: "write_file", description: "Write file content. ONLY WRITE ONE FILE PER RESPONSE.", parameters: { type: "object", properties: { filename: { type: "string" }, content: { type: "string" } }, required: ["filename", "content"] } } },
+        { type: "function", function: { name: "read_file", description: "Read the full content of a specific file in the project.", parameters: { type: "object", properties: { filename: { type: "string" } }, required: ["filename"] } } },
         { type: "function", function: { name: "generate_asset", description: "Generate an image or video asset. Use this when the user asks for an image, picture, photo, icon, logo, or video. NEVER use SVG placeholders.", parameters: { type: "object", properties: { type: { type: "string", enum: ["image", "video"] }, prompt: { type: "string" } }, required: ["type", "prompt"] } } }
     ];
     
+    // ONLY provide GitHub tools to the AI if the project actually has a connected repo
     if (p.github && p.github.owner && p.github.repo && S.githubToken) {
         tools.push({ type: "function", function: { name: "create_github_issue", description: "Create a GitHub issue in the connected repository.", parameters: { type: "object", properties: { title: { type: "string" }, body: { type: "string" }, labels: { type: "array", items: { type: "string" } } }, required: ["title", "body"] } } });
         tools.push({ type: "function", function: { name: "create_github_pr", description: "Create a GitHub pull request with file changes in the connected repository.", parameters: { type: "object", properties: { title: { type: "string" }, body: { type: "string" }, headBranch: { type: "string" }, files: { type: "array", items: { type: "object", properties: { filename: { type: "string" }, content: { type: "string" } } } } }, required: ["title", "body"] } } });
@@ -1855,6 +1878,16 @@ async function generate() {
                 if (choice.content) {
                     statusLog.innerHTML += fmtAI(choice.content);
                 }
+
+                // Handle cutoff during tool call (incomplete JSON)
+                if (res.finishReason === 'length') {
+                    statusLog.innerHTML += '<br><span style="color:var(--warn)">⚠️ Cut off during tool call. Auto-retrying...</span>';
+                    currentMessages.push({ role: 'user', content: 'You were cut off. Please try writing that file again.' });
+                    p.messages = currentMessages;
+                    saveProjects();
+                    continue;
+                }
+
                 for (const tc of choice.tool_calls) {
                     const toolMsg = { role: "tool", tool_call_id: tc.id, name: tc.function.name };
                     if (tc.function.name === 'write_file') {
@@ -1870,6 +1903,16 @@ async function generate() {
                         toolMsg.content = "File written successfully. The {{SITE_API_KEY}} placeholder has been replaced with the real API key.";
                         badge.innerHTML = `<i class="fas fa-check-circle"></i> Wrote ${args.filename}`;
                         markTaskDone(args.filename);
+                    } else if (tc.function.name === 'read_file') {
+                        const args = JSON.parse(tc.function.arguments);
+                        const badge = document.createElement('div');
+                        badge.className = 'tool-badge read';
+                        badge.innerHTML = `<div class="spinner"></div> Reading ${args.filename}...`;
+                        statusLog.appendChild(badge);
+                        
+                        const content = p.files[args.filename] || 'File not found.';
+                        toolMsg.content = content;
+                        badge.innerHTML = `<i class="fas fa-eye"></i> Read ${args.filename}`;
                     } else if (tc.function.name === 'generate_asset') {
                         const args = JSON.parse(tc.function.arguments);
                         const badge = document.createElement('div');
@@ -1928,11 +1971,16 @@ async function generate() {
                 if (statusLog.querySelector('.skeleton-line')) {
                     statusLog.innerHTML = ''; 
                 }
+
+                // Auto-continue if it hits length limit without tool calls
                 if (res.finishReason === 'length') {
-                    statusLog.innerHTML += '<br><span style="color:var(--warn)">⚠️ Cut off.</span>';
-                    showContinueButton();
-                    break;
+                    statusLog.innerHTML += '<br><span style="color:var(--warn)">⚠️ Token limit reached. Auto-continuing...</span>';
+                    currentMessages.push({ role: 'user', content: 'Please continue exactly where you left off. Do not repeat yourself.' });
+                    p.messages = currentMessages;
+                    saveProjects();
+                    continue;
                 }
+
                 statusLog.innerHTML += choice.content ? fmtAI(choice.content) : "Done.";
                 
                 S.tasks.forEach(t => t.done = true);
