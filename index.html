@@ -54,9 +54,10 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 /* Custom Image Icon Styles */
 .home-logo { position: absolute; top: 24px; left: 24px; height: 40px; width: 40px; border-radius: 8px; object-fit: cover; z-index: 20; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
 .msg-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
-.ed-btn img, .ms-btn img, .pa-btn img, .ptab img, .msg-action-btn img, .chat-icon img, .file-tab img, .file-lock img, .file-del img, .modal-btn img {
+.ed-btn img, .ms-btn img, .pa-btn img, .ptab img, .msg-action-btn img, .chat-icon img, .file-tab img, .file-lock img, .file-del img, .modal-btn img, .ms-item img {
     width: 18px; height: 18px; object-fit: contain; vertical-align: middle; display: inline-block;
 }
+.ms-item img { margin-right: 8px; }
 
 #home-view { position: absolute; inset: 0; overflow-y: auto; z-index: 10; background: var(--bg); }
 .hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
@@ -105,15 +106,15 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
 #editor-view { position: absolute; inset: 0; display: none; flex-direction: column; z-index: 20; background: var(--bg); }
 #editor-view.active { display: flex; }
 .ed-header { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--border); height: 60px; }
-.ed-btn { width: 40px; height: 40px; border-radius: 8px; background: transparent; border: 1px solid transparent; color: var(--tx2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: 0.2s; }
+.ed-btn { width: 40px; height: 40px; border-radius: 8px; background: transparent; border: 1px solid transparent; color: var(--tx2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: 0.2s; flex-shrink: 0; }
 .ed-btn:hover { background: var(--bg2); border-color: var(--border); }
-.ed-title { font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 8px; font-size: 16px; }
-.ed-actions { display: flex; gap: 6px; align-items: center; }
-.ms-dd { position: relative; }
+.ed-title { font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 8px; font-size: 16px; min-width: 0; }
+.ed-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.ms-dd { position: relative; flex-shrink: 0; }
 .ms-btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg2); color: var(--tx); cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; height: 40px; }
 .ms-menu { position: absolute; top: 46px; right: 0; width: 240px; background: var(--panel); border: 1px solid var(--border); border-radius:8px; box-shadow: var(--shadow); padding: 6px; z-index: 100; display: none; }
 .ms-menu.open { display: block; }
-.ms-item { padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+.ms-item { padding: 10px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; }
 .ms-item:hover { background: var(--bg2); }
 .ms-item.active { background: var(--acG); color: var(--ac); }
 
@@ -331,6 +332,7 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
     <header class="ed-header">
         <button class="ed-btn" id="back-btn"><i class="fas fa-arrow-left"></i></button>
         <div class="ed-title" id="ed-title">Project</div>
+        
         <div class="ms-dd">
             <button class="ms-btn" id="ms-btn"><img src="model.HEIC"> <span id="ms-lbl">2.0 Flash</span></button>
             <div class="ms-menu" id="ms-menu">
@@ -340,15 +342,22 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
                 <div class="ms-item" data-model="image">agnes-image-2.1-flash</div>
             </div>
         </div>
+
         <div class="ed-actions">
-            <button class="ed-btn" id="btn-settings" title="Settings"><img src="setting.HEIC"></button>
-            <button class="ed-btn" id="btn-tools" title="HTTP Tester"><img src="test.HEIC"></button>
             <button class="ed-btn" id="btn-github" title="Export to GitHub"><img src="github.HEIC"></button>
             <button class="ed-btn" id="btn-deploy" title="Deploy to Pages"><img src="rocket.HEIC"></button>
-            <button class="ed-btn" id="btn-history" title="Version History"><img src="version.HEIC"></button>
-            <button class="ed-btn" id="btn-share" title="Share"><img src="share.HEIC"></button>
-            <button class="ed-btn" id="btn-zip" title="Download ZIP"><img src="download.PNG"></button>
             <button class="ed-btn" id="btn-theme" title="Toggle Theme"><img src="dark.HEIC" id="theme-icon"></button>
+            
+            <div class="ms-dd">
+                <button class="ed-btn" id="btn-more" title="More Tools"><i class="fas fa-ellipsis-vertical"></i></button>
+                <div class="ms-menu" id="more-menu" style="width: 220px;">
+                    <div class="ms-item" id="m-settings"><img src="setting.HEIC"> Settings</div>
+                    <div class="ms-item" id="m-tools"><img src="test.HEIC"> HTTP Tester</div>
+                    <div class="ms-item" id="m-history"><img src="version.HEIC"> Version History</div>
+                    <div class="ms-item" id="m-share"><img src="share.HEIC"> Share Project</div>
+                    <div class="ms-item" id="m-zip"><img src="download.PNG"> Download ZIP</div>
+                </div>
+            </div>
         </div>
     </header>
     
@@ -483,10 +492,8 @@ When the user asks for an image, picture, photo, icon, logo, illustration, backg
 NEVER use SVG placeholders, emoji, or CSS-only graphics as substitutes for images.
 NEVER create SVG icons when the user asks for an image. Use the generate_asset tool.
 
-When you use the generate_asset tool, you will receive the exact URL of the generated asset in the tool response.
-You MUST put that EXACT URL into the 'src' attribute of your HTML. 
-Do NOT use the asset name as the src, use the URL returned by the tool.
-If you need an image, generate it FIRST, wait for the URL, and THEN write the HTML file using that URL.
+When you use the generate_asset tool, you will receive a URL. Put that EXACT URL into your code.
+If the user approves the asset and exports the project to GitHub, the system will automatically download the asset, push it to the repository, and replace the URL in your code with the local filename (e.g., "AI_Image_1.png"). You do not need to worry about local paths; just use the provided URL.
 
 # ASSETS & ANIMATIONS
 If the user asks for a video or animation, use the 'generate_asset' tool with type="video". 
@@ -1247,7 +1254,7 @@ async function exportToGithub() {
                 ${repoOptions}
             </select>
             <input type="text" class="modal-input" id="gh-repo-input" placeholder="New Repository Name" value="${defaultRepoName}">
-            <button class="modal-btn gh" id="gh-push-btn"><img src="github.HEIC"> Push Code</button>
+            <button class="modal-btn gh" id="gh-push-btn"><img src="github.HEIC"> Push Code & Assets</button>
             <button class="modal-btn secondary" id="gh-deploy-btn"><img src="rocket.HEIC"> Deploy to GitHub Pages</button>
             <button style="width:100%;margin-top:8px;background:transparent;color:var(--mt);border:1px solid var(--border);padding:10px;border-radius:8px;cursor:pointer;" onclick="logoutGithub()">Logout / Change Token</button>
         `;
@@ -1278,6 +1285,33 @@ function logoutGithub() {
     localStorage.removeItem('gh_token');
     S.githubToken = '';
     exportToGithub();
+}
+
+// Helper function to fetch asset and convert to base64 for GitHub
+async function urlToBase64(url) {
+    if (url.startsWith('data:')) {
+        return url.split(',')[1];
+    }
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Direct fetch failed');
+        const blob = await res.blob();
+        return await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result.split(',')[1]);
+            reader.readAsDataURL(blob);
+        });
+    } catch (e) {
+        // Fallback to proxy
+        const res = await fetch(PROXY + encodeURIComponent(url));
+        if (!res.ok) throw new Error('Proxy fetch failed');
+        const blob = await res.blob();
+        return await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result.split(',')[1]);
+            reader.readAsDataURL(blob);
+        });
+    }
 }
 
 async function startGithubPush(owner) {
@@ -1318,10 +1352,21 @@ async function startGithubPush(owner) {
     }
     const remoteFileNames = remoteFiles.map(f => f.name);
 
+    // Push Text Files (Replace asset URLs with local filenames first)
+    const approvedAssets = p.assets.filter(a => a.approved || a.isUserUpload);
     const files = Object.keys(p.files);
+    
     for (let i = 0; i < files.length; i++) {
         const filename = files[i];
-        const content = p.files[filename];
+        let content = p.files[filename];
+        
+        // Replace asset URLs with local filenames for the GitHub repo
+        approvedAssets.forEach(a => {
+            if (content.includes(a.url)) {
+                content = content.split(a.url).join(a.name);
+            }
+        });
+
         modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Pushing files... (${i+1}/${files.length})<br>${filename}</div>`;
         
         let sha = null;
@@ -1350,6 +1395,36 @@ async function startGithubPush(owner) {
         }
     }
 
+    // Push Assets (Images/Videos)
+    if (approvedAssets.length > 0) {
+        for (let i = 0; i < approvedAssets.length; i++) {
+            const asset = approvedAssets[i];
+            modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Pushing assets... (${i+1}/${approvedAssets.length})<br>${asset.name}</div>`;
+            
+            try {
+                const base64Content = await urlToBase64(asset.url);
+                let sha = null;
+                const fileCheckRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${encodeURIComponent(asset.name)}`, { headers });
+                if (fileCheckRes.ok) {
+                    sha = (await fileCheckRes.json()).sha;
+                }
+
+                await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${encodeURIComponent(asset.name)}`, {
+                    method: 'PUT', headers,
+                    body: JSON.stringify({
+                        message: `feat: add asset ${asset.name}${coAuthorTrailer}`,
+                        content: base64Content,
+                        sha: sha,
+                        branch: 'main'
+                    })
+                });
+            } catch(e) {
+                console.error(`Failed to push asset ${asset.name}:`, e);
+            }
+        }
+    }
+
+    // Generate README if it doesn't exist
     if (!remoteFileNames.includes('README.md')) {
         modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> AI is writing README.md...</div>`;
         let readmeContent = `# ${p.name}\n\nGenerated by Brew AI.`;
@@ -1374,15 +1449,13 @@ async function startGithubPush(owner) {
                 branch: 'main'
             })
         });
-    } else {
-        console.log("README.md already exists. Skipping generation.");
     }
 
     modalBody.innerHTML = `
         <div style="text-align:center; padding: 20px;">
             <i class="fas fa-check-circle" style="font-size:32px;color:var(--ok);margin-bottom:12px;"></i>
             <h3 style="margin-bottom:8px;">Successfully Pushed!</h3>
-            <p style="color:var(--mt);margin-bottom:20px;">Your project is now live on GitHub. Issues & PRs tab is now active.</p>
+            <p style="color:var(--mt);margin-bottom:20px;">Your project and assets are now live on GitHub. Issues & PRs tab is now active.</p>
             <a href="https://github.com/${owner}/${repoName}" target="_blank" class="modal-btn gh" style="text-decoration:none;display:block;"><img src="github.HEIC"> Open Repository</a>
             <button class="modal-btn secondary" onclick="deployToGithubPages('${owner}', '${repoName}')"><img src="rocket.HEIC"> Deploy to GitHub Pages</button>
         </div>
@@ -2076,26 +2149,51 @@ function init() {
         document.getElementById('import-gh-btn').onclick = importFromGithub;
         
         document.getElementById('back-btn').onclick = closeEditor;
-        document.getElementById('ms-btn').onclick = e => { e.stopPropagation(); document.getElementById('ms-menu').classList.toggle('open'); };
-        document.addEventListener('click', () => document.getElementById('ms-menu').classList.remove('open'));
-        document.querySelectorAll('.ms-item').forEach(o => o.onclick = e => { e.stopPropagation(); S.model = o.dataset.model; const p = S.projects.find(x => x.id === S.cur); if (p) { p.model = S.model; saveProjects(); } document.getElementById('ms-lbl').textContent = S.model; document.getElementById('ms-menu').classList.remove('open'); });
         
-        document.getElementById('btn-settings').onclick = openSettings;
-        document.getElementById('btn-tools').onclick = openHttpTester;
+        // Dropdowns logic
+        const closeDropdowns = () => {
+            document.getElementById('ms-menu').classList.remove('open');
+            document.getElementById('more-menu').classList.remove('open');
+        };
+        document.getElementById('ms-btn').onclick = e => { e.stopPropagation(); closeDropdowns(); document.getElementById('ms-menu').classList.toggle('open'); };
+        document.getElementById('btn-more').onclick = e => { e.stopPropagation(); closeDropdowns(); document.getElementById('more-menu').classList.toggle('open'); };
+        document.addEventListener('click', closeDropdowns);
+        
+        document.querySelectorAll('#ms-menu .ms-item').forEach(o => o.onclick = e => { e.stopPropagation(); closeDropdowns(); S.model = o.dataset.model; const p = S.projects.find(x => x.id === S.cur); if (p) { p.model = S.model; saveProjects(); } document.getElementById('ms-lbl').textContent = S.model; });
+        
+        // Primary Actions
         document.getElementById('btn-github').onclick = exportToGithub;
         document.getElementById('btn-deploy').onclick = () => deployToGithubPages();
-        document.getElementById('btn-history').onclick = showHistory;
-        document.getElementById('btn-seo').onclick = optimizeSeo;
-        document.getElementById('btn-share').onclick = () => { const p = S.projects.find(x => x.id === S.cur); navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}#share=${btoa(JSON.stringify(p.files))}`); toast('Link copied!'); };
-        document.getElementById('btn-zip').onclick = async () => { if (typeof JSZip === 'undefined') return; const p = S.projects.find(x => x.id === S.cur); const zip = new JSZip(); Object.keys(p.files).forEach(f => zip.file(f, p.files[f])); const blob = await zip.generateAsync({type:'blob'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${p.name}.zip`; a.click(); };
         document.getElementById('btn-theme').onclick = () => { 
             document.body.classList.toggle('light'); 
             const isLight = document.body.classList.contains('light');
-            const btn = document.getElementById('btn-theme');
-            btn.innerHTML = '<img src="dark.HEIC">'; 
+            document.getElementById('theme-icon').src = 'dark.HEIC'; 
             if (cm) cm.setOption('theme', isLight ? 'default' : 'material-darker'); 
         };
         
+        // "More" Menu Actions
+        document.getElementById('m-settings').onclick = (e) => { e.stopPropagation(); closeDropdowns(); openSettings(); };
+        document.getElementById('m-tools').onclick = (e) => { e.stopPropagation(); closeDropdowns(); openHttpTester(); };
+        document.getElementById('m-history').onclick = (e) => { e.stopPropagation(); closeDropdowns(); showHistory(); };
+        document.getElementById('m-share').onclick = (e) => { 
+            e.stopPropagation(); closeDropdowns(); 
+            const p = S.projects.find(x => x.id === S.cur); 
+            navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}#share=${btoa(JSON.stringify(p.files))}`); 
+            toast('Link copied!'); 
+        };
+        document.getElementById('m-zip').onclick = async (e) => { 
+            e.stopPropagation(); closeDropdowns(); 
+            if (typeof JSZip === 'undefined') return; 
+            const p = S.projects.find(x => x.id === S.cur); 
+            const zip = new JSZip(); 
+            Object.keys(p.files).forEach(f => zip.file(f, p.files[f])); 
+            const blob = await zip.generateAsync({type:'blob'}); 
+            const a = document.createElement('a'); 
+            a.href = URL.createObjectURL(blob); 
+            a.download = `${p.name}.zip`; 
+            a.click(); 
+        };
+
         document.querySelectorAll('.ptab').forEach(t => t.onclick = () => switchView(t.dataset.view));
         
         document.querySelectorAll('.mtab').forEach(t => t.onclick = () => {
