@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CodeMaker AI</title>
+<title>Brew AI</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -17,22 +17,33 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
+/* ===== PROFESSIONAL DARK THEME (DEFAULT) ===== */
 :root {
+    --bg: #09090b; --bg2: #111118; --bg3: #1c1c24;
+    --panel: #131319; --border: #27272e;
+    --tx: #fafafa; --tx2: #d4d4d8; --mt: #71717a;
+    --ac: #6366f1; --ac2: #8b5cf6; --acG: rgba(99,102,241,0.15);
+    --dn: #ef4444; --ok: #10b981; --warn: #f59e0b; --pink: #ec4899;
+    --gh: #ffffff;
+    --shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* ===== LIGHT THEME OVERRIDE ===== */
+body.light {
     --bg: #f8fafc; --bg2: #f1f5f9; --bg3: #e2e8f0;
     --panel: #ffffff; --border: #e2e8f0;
     --tx: #0f172a; --tx2: #475569; --mt: #94a3b8;
     --ac: #6366f1; --ac2: #818cf8; --acG: rgba(99,102,241,0.1);
-    --dn: #ef4444; --ok: #10b981; --warn: #f59e0b; --pink: #ec4899;
-    --gh: #24292e;
+    --shadow: 0 10px 30px rgba(0,0,0,0.08);
 }
-body.dark { --bg: #0f172a; --bg2: #1e293b; --bg3: #334155; --panel: #1e293b; --border: #334155; --tx: #f1f5f9; --tx2: #cbd5e1; --mt: #64748b; }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; overflow: hidden; }
-body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx); transition: background 0.3s; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx); transition: background 0.3s, color 0.3s; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--mt); }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
@@ -40,57 +51,65 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 @keyframes progressAnim { 0% { left: -30%; } 100% { left: 100%; } }
 @keyframes pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
 
+/* Custom Image Icon Styles */
+.ed-logo { height: 24px; width: 24px; border-radius: 4px; margin-right: 8px; object-fit: cover; }
+.hero-logo { height: 16px; width: 16px; border-radius: 3px; object-fit: cover; margin-right: 6px; }
+.msg-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+.ed-btn img, .ms-btn img, .pa-btn img, .ptab img, .msg-action-btn img, .chat-icon img, .file-tab img, .file-lock img, .file-del img {
+    width: 14px; height: 14px; object-fit: contain; vertical-align: middle; display: inline-block;
+}
+
 #home-view { position: absolute; inset: 0; overflow-y: auto; z-index: 10; background: var(--bg); }
 .hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
-.hero-bg { position: absolute; inset: 0; background: url('https://i.postimg.cc/rpJxTXpm/IMG-1873.jpg') center/cover no-repeat; filter: brightness(0.9); z-index: -1; }
-.hero-bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,23,42,0.6) 0%, var(--bg) 100%); }
+.hero-bg { position: absolute; inset: 0; z-index: -1; overflow: hidden; background: url('sky.JPG') center/cover no-repeat; }
+.hero-bg::after { content: ''; position: absolute; inset: 0; background: var(--bg); opacity: 0.85; }
+
 .hero-content { text-align: center; max-width: 760px; z-index: 1; width: 100%; }
-.hero-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 999px; color: #fff; font-size: 12px; margin-bottom: 24px; backdrop-filter: blur(10px); }
-.hero-title { font-size: 3rem; font-weight: 800; color: #fff; margin-bottom: 16px; text-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-.hero-sub { color: rgba(255,255,255,0.9); font-size: 1.1rem; margin-bottom: 32px; }
+.hero-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 999px; color: var(--tx2); font-size: 12px; margin-bottom: 24px; backdrop-filter: blur(10px); }
+.hero-title { font-size: 3.5rem; font-weight: 800; color: var(--tx); margin-bottom: 16px; text-shadow: 0 4px 20px rgba(0,0,0,0.3); letter-spacing: -0.02em; }
+.hero-sub { color: var(--mt); font-size: 1.1rem; margin-bottom: 32px; font-weight: 400; }
 .model-pills { display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
-.mp { padding: 6px 14px; border-radius: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 12px; cursor: pointer; transition: 0.2s; }
-.mp:hover { background: rgba(255,255,255,0.2); }
-.mp.active { background: var(--ac); border-color: var(--ac); }
-.input-box { background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 6px; display: flex; gap: 6px; align-items: center; box-shadow: 0 20px 50px rgba(0,0,0,0.2); position: relative; width: 100%; max-width: 680px; margin: 0 auto; height: 52px; }
+.mp { padding: 6px 14px; border-radius: 8px; background: var(--bg2); border: 1px solid var(--border); color: var(--tx2); font-size: 12px; cursor: pointer; transition: 0.2s; backdrop-filter: blur(10px); }
+.mp:hover { background: var(--bg3); }
+.mp.active { background: var(--ac); border-color: var(--ac); color: #fff; box-shadow: 0 4px 10px var(--acG); }
+.input-box { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 6px; display: flex; gap: 6px; align-items: center; box-shadow: var(--shadow); position: relative; width: 100%; max-width: 680px; margin: 0 auto; height: 56px; transition: border-color 0.2s; }
+.input-box:focus-within { border-color: var(--ac); box-shadow: 0 0 0 3px var(--acG); }
 .input-box input { flex: 1; border: none; outline: none; padding: 0 20px; background: transparent; color: var(--tx); font-size: 15px; height: 100%; min-width: 0; }
 .typing-overlay { position: absolute; left: 26px; top: 50%; transform: translateY(-50%); color: var(--mt); pointer-events: none; font-size: 15px; display: flex; align-items: center; max-width: 60%; overflow: hidden; white-space: nowrap; }
 .typing-overlay .cursor { width: 2px; height: 16px; background: var(--ac); margin-left: 2px; animation: blink 1s step-end infinite; }
 .chips { display: flex; justify-content: center; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
-.chip { padding: 6px 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; font-size: 12px; border-radius: 999px; cursor: pointer; }
+.chip { padding: 6px 12px; background: var(--bg2); border: 1px solid var(--border); color: var(--tx2); font-size: 12px; border-radius: 999px; cursor: pointer; backdrop-filter: blur(10px); }
 
-.btn-gen { display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 15px -5px rgba(99, 102, 241, 0.6); transition: all 0.3s; position: relative; overflow: hidden; font-size: 13px; font-weight: 600; color: #fff; background: linear-gradient(135deg, #4f46e5, #7c3aed); border: 1px solid rgba(255,255,255,0.1); border-radius: 999px; padding: 0 16px; cursor: pointer; flex-shrink: 0; height: 40px; line-height: 1; margin-right: 2px; }
-.btn-gen:hover { box-shadow: 0 6px 20px -5px rgba(99, 102, 241, 0.8); border-color: rgba(255,255,255,0.3); transform: translateY(-1px); }
-.btn-gen .shine-effect { content: ''; position: absolute; width: 60px; height: 100%; background-image: linear-gradient(120deg, rgba(255,255,255,0) 30%, rgba(255,255,255,0.6), rgba(255,255,255,0) 70%); top: 0; left: -60px; pointer-events: none; }
+.btn-gen { display: inline-flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 15px -5px rgba(99, 102, 241, 0.6); transition: all 0.3s; position: relative; overflow: hidden; font-size: 13px; font-weight: 600; color: #fff; background: linear-gradient(135deg, #6366f1, #8b5cf6); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 0 16px; cursor: pointer; flex-shrink: 0; height: 44px; line-height: 1; margin-right: 2px; }
+.btn-gen:hover { box-shadow: 0 6px 20px -5px rgba(99, 102, 241, 0.8); transform: translateY(-1px); }
+.btn-gen .shine-effect { content: ''; position: absolute; width: 60px; height: 100%; background-image: linear-gradient(120deg, rgba(255,255,255,0) 30%, rgba(255,255,255,0.4), rgba(255,255,255,0) 70%); top: 0; left: -60px; pointer-events: none; }
 .btn-gen:hover .shine-effect { animation: shine 1.5s ease-out infinite; }
-.btn-gen svg { width: 14px; height: 14px; transition: transform 0.3s ease-in-out; }
-.btn-gen:hover svg { transform: translateX(3px); }
 
-.lib-toggle { display: flex; background: var(--bg2); padding: 4px; border-radius: 12px; margin-bottom: 24px; width: fit-content; margin-left: auto; margin-right: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+.lib-toggle { display: flex; background: var(--bg2); padding: 4px; border-radius: 12px; margin-bottom: 24px; width: fit-content; margin-left: auto; margin-right: auto; border: 1px solid var(--border); }
 .lib-btn { padding: 8px 24px; border: none; background: none; cursor: pointer; border-radius: 8px; font-weight: 600; font-size: 14px; color: var(--mt); transition: 0.2s; display: flex; align-items: center; gap: 6px; }
-.lib-btn.active { background: var(--panel); color: var(--tx); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+.lib-btn.active { background: var(--panel); color: var(--tx); box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
 
 .proj-section { padding: 0px 24px 120px; max-width: 1200px; margin: 0 auto; }
 .proj-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
 .proj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
 .proj-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
-.proj-card:hover { border-color: var(--ac); transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+.proj-card:hover { border-color: var(--ac); transform: translateY(-2px); box-shadow: var(--shadow); }
 .proj-card-thumb { height: 140px; border-radius: 8px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 24px; font-weight: 700; }
 .proj-name { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; font-size: 15px; }
 .proj-meta { font-size: 12px; color: var(--mt); }
-.proj-del { position: absolute; top: 12px; right: 12px; color: var(--mt); opacity: 0; transition: 0.2s; cursor: pointer; background: rgba(255,255,255,0.8); padding: 6px; border-radius: 6px; }
+.proj-del { position: absolute; top: 12px; right: 12px; color: var(--mt); opacity: 0; transition: 0.2s; cursor: pointer; background: var(--bg2); padding: 6px; border-radius: 6px; }
 .proj-card:hover .proj-del { opacity: 1; }
 
 #editor-view { position: absolute; inset: 0; display: none; flex-direction: column; z-index: 20; background: var(--bg); }
 #editor-view.active { display: flex; }
 .ed-header { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--border); height: 56px; }
-.ed-btn { width: 32px; height: 32px; border-radius: 6px; background: transparent; border: 1px solid transparent; color: var(--tx2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.ed-btn { width: 32px; height: 32px; border-radius: 6px; background: transparent; border: 1px solid transparent; color: var(--tx2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: 0.2s; }
 .ed-btn:hover { background: var(--bg2); border-color: var(--border); }
 .ed-title { font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 8px; }
 .ed-actions { display: flex; gap: 4px; align-items: center; }
 .ms-dd { position: relative; }
 .ms-btn { padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg2); color: var(--tx); cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; }
-.ms-menu { position: absolute; top: 40px; right: 0; width: 240px; background: var(--panel); border: 1px solid var(--border); border-radius:8px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 6px; z-index: 100; display: none; }
+.ms-menu { position: absolute; top: 40px; right: 0; width: 240px; background: var(--panel); border: 1px solid var(--border); border-radius:8px; box-shadow: var(--shadow); padding: 6px; z-index: 100; display: none; }
 .ms-menu.open { display: block; }
 .ms-item { padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; }
 .ms-item:hover { background: var(--bg2); }
@@ -106,7 +125,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 
 .msg { display: flex; gap: 10px; animation: fadeIn 0.3s; position: relative; }
 .msg.user { flex-direction: row-reverse; }
-.msg-av { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; flex-shrink: 0; }
+.msg-av { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; flex-shrink: 0; overflow: hidden; }
 .msg.ai .msg-av { background: var(--ac); }
 .msg.user .msg-av { background: var(--tx2); }
 .msg.tool .msg-av { background: var(--warn); }
@@ -133,7 +152,8 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .spinner { width: 12px; height: 12px; border: 2px solid var(--mt); border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; }
 
 .chat-input-area { padding: 12px; border-top: 1px solid var(--border); background: var(--panel); }
-.chat-input-wrap { display: flex; gap: 8px; align-items: flex-end; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 4px 4px 4px 12px; position: relative; }
+.chat-input-wrap { display: flex; gap: 8px; align-items: flex-end; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 4px 4px 4px 12px; position: relative; transition: border-color 0.2s; }
+.chat-input-wrap:focus-within { border-color: var(--ac); box-shadow: 0 0 0 3px var(--acG); }
 .chat-input { flex: 1; border: none; outline: none; resize: none; padding: 8px 0; font-size: 14px; max-height: 120px; background: transparent; color: var(--tx); font-family: 'Inter', sans-serif; min-width: 0; }
 .chat-icons { display: flex; gap: 2px; }
 .chat-icon { width: 30px; height: 30px; border: none; background: transparent; color: var(--mt); cursor: pointer; border-radius: 6px; display:flex; align-items:center; justify-content:center; }
@@ -142,15 +162,14 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .chat-send.stop { background: var(--dn); }
 .chat-send:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.mention-dropdown { position: absolute; bottom: 60px; left: 12px; right: 50px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-height: 150px; overflow-y: auto; z-index: 100; display: none; }
+.mention-dropdown { position: absolute; bottom: 60px; left: 12px; right: 50px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow); max-height: 150px; overflow-y: auto; z-index: 100; display: none; }
 .mention-item { padding: 8px 12px; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 8px; color: var(--tx2); }
 .mention-item i { color: var(--mt); }
 .mention-item:hover, .mention-item.active { background: var(--acG); color: var(--ac); }
-.mention-item:hover i, .mention-item.active i { color: var(--ac); }
 
 .prev-panel { flex: 1; display: flex; flex-direction: column; background: var(--bg2); min-width: 0; min-height: 0; }
 .prev-tabs { display: flex; align-items: center; padding: 0 12px; background: var(--panel); border-bottom: 1px solid var(--border); height: 40px; gap: 4px; }
-.ptab { padding: 8px 14px; border: none; background: none; color: var(--mt); font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; }
+.ptab { padding: 8px 14px; border: none; background: none; color: var(--mt); font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; transition: 0.2s; display: flex; align-items: center; gap: 4px; }
 .ptab.active { color: var(--ac); border-bottom-color: var(--ac); }
 .prev-actions { margin-left: auto; display: flex; gap: 4px; align-items: center; }
 .pa-btn { width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: var(--panel); color: var(--mt); cursor: pointer; font-size: 11px; display: flex; align-items: center; justify-content: center; }
@@ -162,19 +181,19 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .file-tab.active { background: var(--bg2); color: var(--tx); font-weight: 500; }
 .file-tab i { font-size: 12px; color: var(--mt); }
 .file-tab.active i { color: var(--ac); }
-.file-lock, .file-del { font-size: 10px; opacity: 0.6; cursor: pointer; margin-left: 4px; }
+.file-lock, .file-del { font-size: 10px; opacity: 0.6; cursor: pointer; margin-left: 4px; display: inline-flex; align-items: center; }
 .file-lock.locked { color: var(--warn); opacity: 1; }
 .file-del:hover { color: var(--dn); opacity: 1; }
 
 .prev-main { flex: 1; display: flex; flex-direction: column; position: relative; background: #fff; min-height: 0; overflow: hidden; }
 .prev-frame { width: 100%; height: 100%; border: none; transition: max-width 0.3s; align-self: center; }
-.code-view { flex: 1; display: none; flex-direction: column; position: relative; min-height: 0; overflow: hidden; }
+.code-view { flex: 1; display: none; flex-direction: column; position: relative; min-height: 0; overflow: hidden; background: var(--panel); }
 .CodeMirror { height: 100% !important; font-size: 13px; }
 .apply-btn { position: absolute; bottom: 16px; right: 16px; padding: 8px 16px; border: none; background: var(--ac); color: #fff; border-radius: 8px; font-weight: 600; cursor: pointer; z-index: 10; }
 .editor-tools { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; z-index: 5; }
 
 #asset-preview-container { flex: 1; display: none; align-items: center; justify-content: center; background: var(--bg2); overflow: hidden; padding: 20px; }
-#asset-preview-container img, #asset-preview-container video { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+#asset-preview-container img, #asset-preview-container video { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: var(--shadow); }
 
 .tasks-view { flex: 1; display: none; flex-direction: column; overflow-y: auto; padding: 16px; background: var(--bg2); min-height: 0; }
 .task-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
@@ -212,7 +231,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 
 .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
 .modal-overlay.show { display: flex; }
-.modal-box { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 24px; width: 100%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto; }
+.modal-box { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 24px; width: 100%; max-width: 500px; box-shadow: var(--shadow); max-height: 90vh; overflow-y: auto; }
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .modal-title { font-size: 18px; font-weight: 700; }
 .modal-close { background: none; border: none; color: var(--mt); cursor: pointer; font-size: 24px; line-height: 1; }
@@ -220,7 +239,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .modal-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--tx); font-family: 'Inter', sans-serif; font-size: 14px; margin-bottom: 12px; }
 .modal-select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--tx); font-family: 'Inter', sans-serif; font-size: 14px; margin-bottom: 12px; cursor: pointer; }
 .modal-btn { padding: 10px 20px; border-radius: 8px; border: none; background: var(--ac); color: #fff; cursor: pointer; font-weight: 600; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px; }
-.modal-btn.gh { background: var(--gh); }
+.modal-btn.gh { background: var(--gh); color: #000; }
 .modal-btn.secondary { background: var(--bg2); color: var(--tx); border: 1px solid var(--border); }
 .modal-btn.danger { background: var(--dn); }
 .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; font-size: 13px; }
@@ -260,8 +279,8 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
     <div class="hero">
         <div class="hero-bg"></div>
         <div class="hero-content">
-            <div class="hero-badge"><i class="fas fa-bolt"></i> Powered by Agnes AI</div>
-            <h1 class="hero-title">CodeMaker AI</h1>
+            <div class="hero-badge"><img src="brew.HEIC" class="hero-logo"> Powered by Agnes AI</div>
+            <h1 class="hero-title">Brew AI</h1>
             <p class="hero-sub">Lightning fast code generation with split files, live preview, and asset management.</p>
             <div class="model-pills" id="home-models">
                 <div class="mp active" data-model="2.0">2.0 Flash</div>
@@ -308,9 +327,10 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 <div id="editor-view">
     <header class="ed-header">
         <button class="ed-btn" id="back-btn"><i class="fas fa-arrow-left"></i></button>
+        <img src="brew.HEIC" class="ed-logo" alt="Logo">
         <div class="ed-title" id="ed-title">Project</div>
         <div class="ms-dd">
-            <button class="ms-btn" id="ms-btn"><i class="fas fa-microchip"></i> <span id="ms-lbl">2.0 Flash</span> <i class="fas fa-chevron-down" style="font-size:10px"></i></button>
+            <button class="ms-btn" id="ms-btn"><img src="model.HEIC"> <span id="ms-lbl">2.0 Flash</span></button>
             <div class="ms-menu" id="ms-menu">
                 <div class="ms-item active" data-model="2.0">agnes-2.0-flash</div>
                 <div class="ms-item" data-model="1.5">agnes-1.5-flash</div>
@@ -319,14 +339,14 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
             </div>
         </div>
         <div class="ed-actions">
-            <button class="ed-btn" id="btn-settings" title="Settings"><i class="fas fa-cog"></i></button>
-            <button class="ed-btn" id="btn-tools" title="HTTP Tester"><i class="fas fa-flask"></i></button>
-            <button class="ed-btn" id="btn-github" title="Export to GitHub"><i class="fab fa-github"></i></button>
-            <button class="ed-btn" id="btn-deploy" title="Deploy to Pages" style="color:var(--ok)"><i class="fas fa-rocket"></i></button>
-            <button class="ed-btn" id="btn-history" title="Version History"><i class="fas fa-history"></i></button>
-            <button class="ed-btn" id="btn-share" title="Share"><i class="fas fa-share"></i></button>
-            <button class="ed-btn" id="btn-zip" title="Download ZIP"><i class="fas fa-download"></i></button>
-            <button class="ed-btn" id="btn-theme" title="Theme"><i class="fas fa-moon"></i></button>
+            <button class="ed-btn" id="btn-settings" title="Settings"><img src="setting.HEIC"></button>
+            <button class="ed-btn" id="btn-tools" title="HTTP Tester"><img src="test.HEIC"></button>
+            <button class="ed-btn" id="btn-github" title="Export to GitHub"><img src="github.HEIC"></button>
+            <button class="ed-btn" id="btn-deploy" title="Deploy to Pages"><img src="rocket.HEIC"></button>
+            <button class="ed-btn" id="btn-history" title="Version History"><img src="version.HEIC"></button>
+            <button class="ed-btn" id="btn-share" title="Share"><img src="share.HEIC"></button>
+            <button class="ed-btn" id="btn-zip" title="Download ZIP"><img src="download.PNG"></button>
+            <button class="ed-btn" id="btn-theme" title="Toggle Theme"><img src="dark.HEIC" id="theme-icon"></button>
         </div>
     </header>
     
@@ -345,7 +365,7 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
                 <div class="chat-input-wrap">
                     <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask AI to build... (Use # to mention files)"></textarea>
                     <div class="chat-icons">
-                        <button class="chat-icon" id="btn-enhance" title="Enhance Prompt"><i class="fas fa-wand-magic-sparkles"></i></button>
+                        <button class="chat-icon" id="btn-enhance" title="Enhance Prompt"><img src="magic.HEIC"></button>
                     </div>
                     <button class="chat-send" id="chat-send" disabled><i class="fas fa-arrow-up"></i></button>
                 </div>
@@ -355,15 +375,15 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
         
         <div class="prev-panel">
             <div class="prev-tabs">
-                <button class="ptab active" data-view="prev">Preview</button>
-                <button class="ptab" data-view="code">Files</button>
-                <button class="ptab" data-view="tasks">Tasks</button>
-                <button class="ptab" data-view="assets">Assets</button>
-                <button class="ptab" data-view="issues">Issues & PRs</button>
+                <button class="ptab active" data-view="prev"><img src="preview.HEIC"> Preview</button>
+                <button class="ptab" data-view="code"><img src="file.HEIC"> Files</button>
+                <button class="ptab" data-view="tasks"><img src="task.HEIC"> Tasks</button>
+                <button class="ptab" data-view="assets"><img src="asset.HEIC"> Assets</button>
+                <button class="ptab" data-view="issues"><img src="issue.HEIC"> Issues & PRs</button>
                 <div class="prev-actions">
-                    <button class="pa-btn" id="zoom-out" title="Zoom Out"><i class="fas fa-search-minus"></i></button>
+                    <button class="pa-btn" id="zoom-out" title="Zoom Out"><img src="zoomout.HEIC"></button>
                     <span class="zoom-text" id="zoom-text">100%</span>
-                    <button class="pa-btn" id="zoom-in" title="Zoom In"><i class="fas fa-search-plus"></i></button>
+                    <button class="pa-btn" id="zoom-in" title="Zoom In"><img src="zoomin.HEIC"></button>
                     <button class="pa-btn active" id="auto-refresh" title="Auto Refresh"><i class="fas fa-sync-alt"></i></button>
                     <button class="pa-btn" id="refresh-btn" title="Refresh Now"><i class="fas fa-rotate-right"></i></button>
                 </div>
@@ -475,10 +495,10 @@ For video backgrounds, make them full-screen, looping, and muted with a dark ove
 When pushing to GitHub, write highly descriptive commit messages that explain WHAT changed, WHY it changed, and any breaking changes. Format: "type(scope): description" (e.g., "feat(auth): add OAuth2 login flow with Google").`;
 
 const TEMPLATES = [
-    { id: 't1', title: 'SaaS Landing Page', color: '#6366f1', verified: true, author: 'CodeMaker AI', prompt: 'Build a high-converting SaaS landing page. Include a sticky navbar, a hero section with a gradient background, feature cards with hover effects, and a footer. Use modern glassmorphism.' },
-    { id: 't2', title: 'Scroll Animation Portfolio', color: '#ec4899', verified: true, author: 'CodeMaker AI', prompt: 'Build a personal portfolio website. Use IntersectionObserver to fade in elements as the user scrolls down. Include a hero section, an about me section, and a projects grid.' },
-    { id: 't3', title: 'Video Background Hero', color: '#14b8a6', verified: true, author: 'CodeMaker AI', prompt: 'Build a hero section with a generated video as a full-screen background. Overlay a dark gradient and centered white text. Make the video loop and muted.' },
-    { id: 't4', title: 'Snake Game', color: '#10b981', verified: true, author: 'CodeMaker AI', prompt: 'Create a fully playable Snake game with score tracking and modern UI.' }
+    { id: 't1', title: 'SaaS Landing Page', color: '#6366f1', verified: true, author: 'Brew AI', prompt: 'Build a high-converting SaaS landing page. Include a sticky navbar, a hero section with a gradient background, feature cards with hover effects, and a footer. Use modern glassmorphism.' },
+    { id: 't2', title: 'Scroll Animation Portfolio', color: '#ec4899', verified: true, author: 'Brew AI', prompt: 'Build a personal portfolio website. Use IntersectionObserver to fade in elements as the user scrolls down. Include a hero section, an about me section, and a projects grid.' },
+    { id: 't3', title: 'Video Background Hero', color: '#14b8a6', verified: true, author: 'Brew AI', prompt: 'Build a hero section with a generated video as a full-screen background. Overlay a dark gradient and centered white text. Make the video loop and muted.' },
+    { id: 't4', title: 'Snake Game', color: '#10b981', verified: true, author: 'Brew AI', prompt: 'Create a fully playable Snake game with score tracking and modern UI.' }
 ];
 
 let S = { projects: [], cur: null, gen: false, model: '2.0', activeFile: 'index.html', view: 'prev', viewMode: 'editor', githubToken: localStorage.getItem('gh_token') || '', autoRefresh: true, zoom: 1, tasks: [] };
@@ -513,7 +533,6 @@ function getSystemPrompt() {
     const p = S.projects.find(x => x.id === S.cur);
     if (!p) return prompt;
 
-    // Truncate files to 50000 chars to provide full context without exceeding limits
     let filesContext = '\n\n# CURRENT FILES\nHere is the current state of all files in the project (truncated to 50000 chars to save tokens). Use this as context when making changes:\n';
     Object.keys(p.files).forEach(fname => {
         const content = p.files[fname] || '';
@@ -533,7 +552,6 @@ function getSystemPrompt() {
     }
     prompt += `\n\n# PROJECT API KEY\nIf the app requires an AI API key, use the placeholder {{SITE_API_KEY}} in the code. The system will auto-replace it with the real key.`;
     
-    // ONLY tell the AI about GitHub if a repo is actually connected to this specific project
     if (p.github && p.github.owner && p.github.repo && S.githubToken) {
         prompt += `\n\n# GITHUB INTEGRATION\nA GitHub repository is connected to this project.\nOwner: ${p.github.owner}\nRepo: ${p.github.repo}\nYou have access to the 'create_github_issue' and 'create_github_pr' tools to manage it. Use clear, professional commit messages and descriptions.`;
     }
@@ -569,7 +587,7 @@ function renderTemplates() {
     g.innerHTML = TEMPLATES.map(t => `
         <div class="proj-card" onclick="useTemplate('${t.id}')">
             <div class="proj-card-thumb" style="background:linear-gradient(135deg, ${t.color}, #1e1b4b);"><i class="fas fa-rocket"></i></div>
-            <div class="proj-name">${t.title} <i class="fas fa-check-circle" title="Verified by CodeMaker AI"></i></div>
+            <div class="proj-name">${t.title} <i class="fas fa-check-circle" title="Verified by Brew AI"></i></div>
             <div class="proj-meta">by ${t.author}</div>
         </div>
     `).join('');
@@ -593,14 +611,6 @@ function switchLibView(view) {
         document.getElementById('tab-projects').classList.remove('active');
         document.getElementById('tab-templates').classList.add('active');
     }
-}
-
-function getFileIcon(f) {
-    if (f.endsWith('.html')) return 'fa-html5';
-    if (f.endsWith('.css')) return 'fa-css3-alt';
-    if (f.endsWith('.js')) return 'fa-js';
-    if (f.endsWith('.md')) return 'fa-markdown';
-    return 'fa-file-code';
 }
 
 function fmtAI(content) {
@@ -753,8 +763,8 @@ function renderChat() {
                 const actions = document.createElement('div');
                 actions.className = 'msg-actions';
                 actions.innerHTML = `
-                    <button class="msg-action-btn" onclick="copyMsg(${i})"><i class="fas fa-copy"></i> Copy</button>
-                    <button class="msg-action-btn" onclick="retryGen()"><i class="fas fa-redo"></i> Retry</button>
+                    <button class="msg-action-btn" onclick="copyMsg(${i})"><img src="copy.HEIC"> Copy</button>
+                    <button class="msg-action-btn" onclick="retryGen()"><img src="retry.HEIC"> Retry</button>
                 `;
                 msgDiv.querySelector('.msg-bubble').appendChild(actions);
             }
@@ -769,7 +779,11 @@ function addMsg(role, content, animate=true, msgIndex=-1) {
     const row = document.createElement('div');
     row.className = `msg ${role}`;
     if (!animate) row.style.animation = 'none';
-    row.innerHTML = `<div class="msg-av"><i class="fas ${role === 'ai' ? 'fa-robot' : 'fa-user'}"></i></div><div class="msg-bubble">${content}<div class="msg-progress-bar"></div></div>`;
+    
+    const avSrc = role === 'ai' ? 'ai.HEIC' : (role === 'user' ? 'user.HEIC' : 'https://placehold.co/28x28?text=Tool');
+    const avHtml = `<div class="msg-av"><img src="${avSrc}" alt="${role} avatar"></div>`;
+    
+    row.innerHTML = `${avHtml}<div class="msg-bubble">${content}<div class="msg-progress-bar"></div></div>`;
     if(msgIndex >= 0) row.dataset.msgIndex = msgIndex;
     c.appendChild(row); c.scrollTop = c.scrollHeight; return row;
 }
@@ -800,25 +814,23 @@ function renderFiles() {
     const p = S.projects.find(x => x.id === S.cur); if (!p) return;
     const bar = document.getElementById('files-bar'); bar.innerHTML = '';
     
-    // Render text files
     Object.keys(p.files).forEach(f => {
         const t = document.createElement('div');
         const isLocked = p.lockedFiles.includes(f);
         t.className = `file-tab ${f === S.activeFile ? 'active' : ''}`;
-        t.innerHTML = `<i class="fab ${getFileIcon(f)}"></i> ${f} 
-            <span class="file-lock ${isLocked ? 'locked' : ''}" onclick="event.stopPropagation(); toggleLock('${f}')" title="Lock/Unlock"><i class="fas ${isLocked ? 'fa-lock' : 'fa-lock-open'}"></i></span>
-            <span class="file-del" onclick="event.stopPropagation(); confirmDeleteFile('${f}')" title="Delete"><i class="fas fa-trash"></i></span>`;
+        t.innerHTML = `<img src="file.HEIC"> ${f} 
+            <span class="file-lock ${isLocked ? 'locked' : ''}" onclick="event.stopPropagation(); toggleLock('${f}')" title="Lock/Unlock"><img src="${isLocked ? 'lock.HEIC' : 'unlock.HEIC'}"></span>
+            <span class="file-del" onclick="event.stopPropagation(); confirmDeleteFile('${f}')" title="Delete"><img src="trash.HEIC"></span>`;
         t.onclick = () => selectFile(f);
         bar.appendChild(t);
     });
 
-    // Render approved assets as files
     p.assets.filter(a => a.approved || a.isUserUpload).forEach(a => {
         const t = document.createElement('div');
         const isActive = a.id === S.activeFile;
         t.className = `file-tab ${isActive ? 'active' : ''}`;
-        t.innerHTML = `<i class="fas ${a.type === 'image' ? 'fa-image' : 'fa-video'}"></i> ${a.name}
-            <span class="file-del" onclick="event.stopPropagation(); confirmDeleteAsset('${a.id}')" title="Delete"><i class="fas fa-trash"></i></span>`;
+        t.innerHTML = `<img src="file.HEIC"> ${a.name}
+            <span class="file-del" onclick="event.stopPropagation(); confirmDeleteAsset('${a.id}')" title="Delete"><img src="trash.HEIC"></span>`;
         t.onclick = () => selectAsset(a.id);
         bar.appendChild(t);
     });
@@ -943,7 +955,6 @@ function loadFileToEditor() {
     const applyBtn = document.getElementById('apply-btn');
     const assetContainer = document.getElementById('asset-preview-container');
     
-    // Check if activeFile is an asset
     const asset = p.assets.find(a => a.id === S.activeFile);
     
     if (asset && S.viewMode === 'asset') {
@@ -964,7 +975,6 @@ function loadFileToEditor() {
         return;
     }
     
-    // It's a text file
     codeEditor.style.display = 'block';
     applyBtn.style.display = 'block';
     assetContainer.style.display = 'none';
@@ -1071,7 +1081,7 @@ window.approveAsset = function(id) {
     asset.approved = true;
     saveProjects();
     renderAssets();
-    renderFiles(); // Add to files bar
+    renderFiles(); 
     toast('Asset approved! It is now available in the Files tab.');
 };
 
@@ -1091,7 +1101,6 @@ window.redoAsset = async function(id) {
         const newUrl = await generateAsset(asset.type, asset.prompt);
         const oldUrl = asset.url;
         
-        // Replace old URL with new URL in all files
         Object.keys(p.files).forEach(fname => {
             if (p.files[fname] && p.files[fname].includes(oldUrl)) {
                 p.files[fname] = p.files[fname].split(oldUrl).join(newUrl);
@@ -1099,7 +1108,7 @@ window.redoAsset = async function(id) {
         });
         
         asset.url = newUrl;
-        asset.approved = false; // Require approval again
+        asset.approved = false; 
         saveProjects();
         renderAssets();
         renderFiles();
@@ -1222,23 +1231,23 @@ async function exportToGithub() {
 
         const defaultRepoName = p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
         modalBody.innerHTML = `
-            <p class="modal-desc">Push "${p.name}" to GitHub. Select an existing repo or create a new one. CodeMaker AI will be attributed as a co-author.</p>
+            <p class="modal-desc">Push "${p.name}" to GitHub. Select an existing repo or create a new one. Brew AI will be attributed as a co-author.</p>
             <select class="modal-select" id="gh-repo-select" onchange="toggleNewRepoInput(this.value)">
                 <option value="new">+ Create New Repository</option>
                 ${repoOptions}
             </select>
             <input type="text" class="modal-input" id="gh-repo-input" placeholder="New Repository Name" value="${defaultRepoName}">
-            <button class="modal-btn gh" id="gh-push-btn"><i class="fab fa-github"></i> Push Code</button>
-            <button class="modal-btn secondary" id="gh-deploy-btn"><i class="fas fa-rocket"></i> Deploy to GitHub Pages</button>
+            <button class="modal-btn gh" id="gh-push-btn"><img src="github.HEIC"> Push Code</button>
+            <button class="modal-btn secondary" id="gh-deploy-btn"><img src="rocket.HEIC"> Deploy to GitHub Pages</button>
             <button style="width:100%;margin-top:8px;background:transparent;color:var(--mt);border:1px solid var(--border);padding:10px;border-radius:8px;cursor:pointer;" onclick="logoutGithub()">Logout / Change Token</button>
         `;
         document.getElementById('gh-push-btn').onclick = () => startGithubPush(owner);
         document.getElementById('gh-deploy-btn').onclick = () => deployToGithubPages(owner);
     } else {
         modalBody.innerHTML = `
-            <p class="modal-desc">To push code directly to GitHub, you need a Personal Access Token (PAT). <br><br><a href="https://github.com/settings/tokens/new?scopes=repo,workflow,admin:org,admin:repo_hook,gist,user,delete_repo,write:packages&description=CodeMakerAI" target="_blank" style="color:var(--ac);">Click here to generate a token with all permissions on GitHub</a>.</p>
+            <p class="modal-desc">To push code directly to GitHub, you need a Personal Access Token (PAT). <br><br><a href="https://github.com/settings/tokens/new?scopes=repo,workflow,admin:org,admin:repo_hook,gist,user,delete_repo,write:packages&description=BrewAI" target="_blank" style="color:var(--ac);">Click here to generate a token with all permissions on GitHub</a>.</p>
             <input type="password" class="modal-input" id="gh-token-input" placeholder="Paste your GitHub token here (ghp_...)">
-            <button class="modal-btn gh" id="gh-save-btn"><i class="fab fa-github"></i> Save Token & Continue</button>
+            <button class="modal-btn gh" id="gh-save-btn"><img src="github.HEIC"> Save Token & Continue</button>
         `;
         document.getElementById('gh-save-btn').onclick = () => {
             const token = document.getElementById('gh-token-input').value.trim();
@@ -1272,7 +1281,7 @@ async function startGithubPush(owner) {
     if(!repoName) return toast('Repository name is required.');
 
     const headers = { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' };
-    const coAuthorTrailer = `\n\nGenerated with CodeMaker AI\nCo-authored-by: CodeMaker AI <noreply@codemaker.ai>`;
+    const coAuthorTrailer = `\n\nGenerated with Brew AI\nCo-authored-by: Brew AI <noreply@brew.ai>`;
 
     modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Checking repository...</div>`;
     const checkRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}`, { headers });
@@ -1281,7 +1290,7 @@ async function startGithubPush(owner) {
         modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Creating repository...</div>`;
         const createRes = await fetch('https://api.github.com/user/repos', {
             method: 'POST', headers,
-            body: JSON.stringify({ name: repoName, description: 'Generated by CodeMaker AI', private: false })
+            body: JSON.stringify({ name: repoName, description: 'Generated by Brew AI', private: false })
         });
         if (!createRes.ok) { modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error creating repo.</p>`; return; }
         repoExists = true;
@@ -1290,7 +1299,6 @@ async function startGithubPush(owner) {
     p.github = { owner, repo: repoName };
     saveProjects();
 
-    // Check existing files to avoid overwriting README if it exists
     let remoteFiles = [];
     if (repoExists) {
         const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents`, { headers });
@@ -1314,7 +1322,7 @@ async function startGithubPush(owner) {
 
         let commitMsg = `feat: add ${filename}`;
         if (i === files.length - 1) {
-            commitMsg = `feat: update project files via CodeMaker AI`;
+            commitMsg = `feat: update project files via Brew AI`;
         }
 
         const putRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${encodeURIComponent(filename)}`, {
@@ -1332,10 +1340,9 @@ async function startGithubPush(owner) {
         }
     }
 
-    // Only generate README if it doesn't already exist in the repo
     if (!remoteFileNames.includes('README.md')) {
         modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> AI is writing README.md...</div>`;
-        let readmeContent = `# ${p.name}\n\nGenerated by CodeMaker AI.`;
+        let readmeContent = `# ${p.name}\n\nGenerated by Brew AI.`;
         try {
             const filesConcat = Object.keys(p.files).map(f => 'File: ' + f + '\n\`\`\`\n' + p.files[f] + '\n\`\`\`\n').join('\n').substring(0, 3000);
             const res = await callAI([{ role: 'system', content: 'Write a professional GitHub README.md in pure markdown. Include title, description, features, and how to run.' }, { role: 'user', content: 'Project Name: ' + p.name + '\nInitial Prompt: ' + p.messages[0].content + '\nCode Files:\n' + filesConcat }], S.model);
@@ -1366,8 +1373,8 @@ async function startGithubPush(owner) {
             <i class="fas fa-check-circle" style="font-size:32px;color:var(--ok);margin-bottom:12px;"></i>
             <h3 style="margin-bottom:8px;">Successfully Pushed!</h3>
             <p style="color:var(--mt);margin-bottom:20px;">Your project is now live on GitHub. Issues & PRs tab is now active.</p>
-            <a href="https://github.com/${owner}/${repoName}" target="_blank" class="modal-btn gh" style="text-decoration:none;display:block;"><i class="fab fa-github"></i> Open Repository</a>
-            <button class="modal-btn secondary" onclick="deployToGithubPages('${owner}', '${repoName}')"><i class="fas fa-rocket"></i> Deploy to GitHub Pages</button>
+            <a href="https://github.com/${owner}/${repoName}" target="_blank" class="modal-btn gh" style="text-decoration:none;display:block;"><img src="github.HEIC"> Open Repository</a>
+            <button class="modal-btn secondary" onclick="deployToGithubPages('${owner}', '${repoName}')"><img src="rocket.HEIC"> Deploy to GitHub Pages</button>
         </div>
     `;
     renderIssues();
@@ -1402,7 +1409,7 @@ async function deployToGithubPages(owner, repoName) {
             modalBody.innerHTML = `
                 <p class="modal-desc">Select a repository to deploy to GitHub Pages.</p>
                 <select class="modal-select" id="gh-deploy-select">${repoOptions}</select>
-                <button class="modal-btn" style="background:var(--ok)" onclick="deployToGithubPages('${owner}', document.getElementById('gh-deploy-select').value)"><i class="fas fa-rocket"></i> Deploy Now</button>
+                <button class="modal-btn" style="background:var(--ok)" onclick="deployToGithubPages('${owner}', document.getElementById('gh-deploy-select').value)"><img src="rocket.HEIC"> Deploy Now</button>
             `;
         } catch(e) {
             modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error fetching repos: ${e.message}</p>`;
@@ -1452,7 +1459,7 @@ async function importFromGithub() {
     if (!S.githubToken) {
         modalBody.innerHTML = `<p class="modal-desc">You need a GitHub token to import private repos, but you can try importing public ones without a token.</p>
             <input type="password" class="modal-input" id="gh-token-input" placeholder="Paste GitHub token (optional, for private repos)">
-            <button class="modal-btn gh" id="gh-save-btn"><i class="fab fa-github"></i> Save Token & Continue</button>
+            <button class="modal-btn gh" id="gh-save-btn"><img src="github.HEIC"> Save Token & Continue</button>
             <button class="modal-btn secondary" id="gh-skip-btn">Skip & Import Public Repo</button>`;
         document.getElementById('gh-save-btn').onclick = () => {
             const token = document.getElementById('gh-token-input').value.trim();
@@ -1475,7 +1482,7 @@ function showImportInput() {
     modalBody.innerHTML = `
         <p class="modal-desc">Paste the GitHub repository URL or "owner/repo" name to import.</p>
         <input type="text" class="modal-input" id="gh-import-input" placeholder="https://github.com/owner/repo OR owner/repo">
-        <button class="modal-btn gh" id="gh-import-btn"><i class="fab fa-github"></i> Import Repository</button>
+        <button class="modal-btn gh" id="gh-import-btn"><img src="github.HEIC"> Import Repository</button>
     `;
     document.getElementById('gh-import-btn').onclick = startImportGithub;
 }
@@ -1596,7 +1603,7 @@ function openSettings() {
     
     modalBody.innerHTML = `
         <div style="margin-bottom: 20px; padding: 16px; background: var(--bg2); border-radius: 8px;">
-            <h4 style="margin-bottom: 8px;">CodeMaker AI</h4>
+            <h4 style="margin-bottom: 8px;">Brew AI</h4>
             <p style="font-size: 13px; color: var(--mt);">Powered by Agnes AI. No credits or limits — generate freely.</p>
         </div>
         
@@ -1664,7 +1671,7 @@ function renderMentionDropdown() {
     const dropdown = document.getElementById('mention-dropdown');
     dropdown.innerHTML = mentionItems.map((item, i) => `
         <div class="mention-item ${i === mentionIndex ? 'active' : ''}" onclick="selectMention('${item}')">
-            <i class="fab ${getFileIcon(item)}"></i> ${item}
+            <i class="fas fa-file-code"></i> ${item}
         </div>
     `).join('');
     dropdown.style.display = 'block';
@@ -1701,7 +1708,7 @@ async function callAI(messages, modelKey, tools) {
     try {
         const ctrl = new AbortController();
         abortCtrl = ctrl;
-        const timer = setTimeout(() => ctrl.abort(), 120000); // 2 min timeout for large outputs
+        const timer = setTimeout(() => ctrl.abort(), 120000); 
         const res = await fetch(API_URL, { signal: ctrl.signal, method:'POST', headers, body: JSON.stringify(body) });
         clearTimeout(timer);
         if (res.ok) {
@@ -1856,7 +1863,6 @@ async function generate() {
         { type: "function", function: { name: "generate_asset", description: "Generate an image or video asset. Use this when the user asks for an image, picture, photo, icon, logo, or video. NEVER use SVG placeholders.", parameters: { type: "object", properties: { type: { type: "string", enum: ["image", "video"] }, prompt: { type: "string" } }, required: ["type", "prompt"] } } }
     ];
     
-    // ONLY provide GitHub tools to the AI if the project actually has a connected repo
     if (p.github && p.github.owner && p.github.repo && S.githubToken) {
         tools.push({ type: "function", function: { name: "create_github_issue", description: "Create a GitHub issue in the connected repository.", parameters: { type: "object", properties: { title: { type: "string" }, body: { type: "string" }, labels: { type: "array", items: { type: "string" } } }, required: ["title", "body"] } } });
         tools.push({ type: "function", function: { name: "create_github_pr", description: "Create a GitHub pull request with file changes in the connected repository.", parameters: { type: "object", properties: { title: { type: "string" }, body: { type: "string" }, headBranch: { type: "string" }, files: { type: "array", items: { type: "object", properties: { filename: { type: "string" }, content: { type: "string" } } } } }, required: ["title", "body"] } } });
@@ -1879,7 +1885,6 @@ async function generate() {
                     statusLog.innerHTML += fmtAI(choice.content);
                 }
 
-                // Handle cutoff during tool call (incomplete JSON)
                 if (res.finishReason === 'length') {
                     statusLog.innerHTML += '<br><span style="color:var(--warn)">⚠️ Cut off during tool call. Auto-retrying...</span>';
                     currentMessages.push({ role: 'user', content: 'You were cut off. Please try writing that file again.' });
@@ -1972,7 +1977,6 @@ async function generate() {
                     statusLog.innerHTML = ''; 
                 }
 
-                // Auto-continue if it hits length limit without tool calls
                 if (res.finishReason === 'length') {
                     statusLog.innerHTML += '<br><span style="color:var(--warn)">⚠️ Token limit reached. Auto-continuing...</span>';
                     currentMessages.push({ role: 'user', content: 'Please continue exactly where you left off. Do not repeat yourself.' });
@@ -1989,8 +1993,8 @@ async function generate() {
                 const actions = document.createElement('div');
                 actions.className = 'msg-actions';
                 actions.innerHTML = `
-                    <button class="msg-action-btn" onclick="copyMsg(${p.messages.length-1})"><i class="fas fa-copy"></i> Copy</button>
-                    <button class="msg-action-btn" onclick="retryGen()"><i class="fas fa-redo"></i> Retry</button>
+                    <button class="msg-action-btn" onclick="copyMsg(${p.messages.length-1})"><img src="copy.HEIC"> Copy</button>
+                    <button class="msg-action-btn" onclick="retryGen()"><img src="retry.HEIC"> Retry</button>
                 `;
                 statusLog.appendChild(actions);
                 break;
@@ -2049,7 +2053,7 @@ function init() {
     try {
         loadProjects(); renderGrid(); renderTemplates(); runTyping();
         if (typeof CodeMirror !== 'undefined') {
-            cm = CodeMirror.fromTextArea(document.getElementById('code-editor'), { lineNumbers: true, theme: 'default', indentUnit: 2 });
+            cm = CodeMirror.fromTextArea(document.getElementById('code-editor'), { lineNumbers: true, theme: 'material-darker', indentUnit: 2 });
         }
         
         document.getElementById('hero-submit').onclick = () => { const v = document.getElementById('hero-input').value.trim(); if (!v) return; openEditor(createProj(v).id); };
@@ -2071,7 +2075,13 @@ function init() {
         document.getElementById('btn-seo').onclick = optimizeSeo;
         document.getElementById('btn-share').onclick = () => { const p = S.projects.find(x => x.id === S.cur); navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}#share=${btoa(JSON.stringify(p.files))}`); toast('Link copied!'); };
         document.getElementById('btn-zip').onclick = async () => { if (typeof JSZip === 'undefined') return; const p = S.projects.find(x => x.id === S.cur); const zip = new JSZip(); Object.keys(p.files).forEach(f => zip.file(f, p.files[f])); const blob = await zip.generateAsync({type:'blob'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${p.name}.zip`; a.click(); };
-        document.getElementById('btn-theme').onclick = () => { document.body.classList.toggle('dark'); if (cm) cm.setOption('theme', document.body.classList.contains('dark') ? 'material-darker' : 'default'); };
+        document.getElementById('btn-theme').onclick = () => { 
+            document.body.classList.toggle('light'); 
+            const isLight = document.body.classList.contains('light');
+            const btn = document.getElementById('btn-theme');
+            btn.innerHTML = isLight ? '<img src="dark.HEIC">' : '<img src="dark.HEIC">'; // User only provided dark.HEIC, keeping it static
+            if (cm) cm.setOption('theme', isLight ? 'default' : 'material-darker'); 
+        };
         
         document.querySelectorAll('.ptab').forEach(t => t.onclick = () => switchView(t.dataset.view));
         
