@@ -71,18 +71,21 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 body.light .hero-title { color: #0f172a; text-shadow: 0 2px 15px rgba(255,255,255,0.6); }
 .hero-sub { color: #f1f5f9; font-size: 1.1rem; margin-bottom: 32px; font-weight: 400; text-shadow: 0 2px 10px rgba(0,0,0,0.4); }
 body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,0.5); }
-.model-pills { display: flex; justify-content: center; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
-.mp { padding: 6px 14px; border-radius: 8px; background: var(--bg2); border: 1px solid var(--border); color: var(--tx2); font-size: 12px; cursor: pointer; transition: 0.2s; backdrop-filter: blur(10px); }
-.mp:hover { background: var(--bg3); }
-.mp.active { background: var(--ac); border-color: var(--ac); color: #fff; box-shadow: 0 4px 10px var(--acG); }
+
 .input-box { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 6px; display: flex; gap: 6px; align-items: center; box-shadow: var(--shadow); position: relative; width: 100%; max-width: 680px; margin: 0 auto; height: 56px; transition: border-color 0.2s; }
 .input-box:focus-within { border-color: var(--ac); box-shadow: 0 0 0 3px var(--acG); }
 .input-box input { flex: 1; border: none; outline: none; padding: 0 20px; background: transparent; color: var(--tx); font-size: 15px; height: 100%; min-width: 0; }
-.input-box input::placeholder { color: transparent; } /* Hide native placeholder */
-.typing-overlay { position: absolute; left: 26px; top: 50%; transform: translateY(-50%); color: var(--mt); pointer-events: none; font-size: 15px; display: flex; align-items: center; max-width: 60%; overflow: hidden; white-space: nowrap; transition: opacity 0.2s; }
+.input-box input::placeholder { color: transparent; }
+.typing-overlay { position: absolute; left: 140px; top: 50%; transform: translateY(-50%); color: var(--mt); pointer-events: none; font-size: 15px; display: flex; align-items: center; max-width: 50%; overflow: hidden; white-space: nowrap; transition: opacity 0.2s; }
 .input-box:focus-within .typing-overlay,
 .input-box input:not(:placeholder-shown) ~ .typing-overlay { opacity: 0; }
 .typing-overlay .cursor { width: 2px; height: 16px; background: var(--ac); margin-left: 2px; animation: blink 1s step-end infinite; }
+
+/* Model Selector Chip inside Input */
+.home-model-dd { position: relative; flex-shrink: 0; height: 100%; display: flex; align-items: center; border-right: 1px solid var(--border); padding-right: 6px; }
+.home-model-btn { display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; color: var(--tx2); font-size: 13px; cursor: pointer; transition: 0.2s; font-weight: 500; }
+.home-model-btn:hover { background: var(--bg3); border-color: var(--ac); color: var(--ac); }
+.home-model-btn i { font-size: 12px; }
 
 /* Idea Giver Auto-scroll Styles */
 .idea-giver-container { max-width: 680px; margin: 24px auto 0; height: 140px; overflow: hidden; mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%); position: relative; }
@@ -173,7 +176,7 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
 .ed-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
 .ms-dd { position: relative; flex-shrink: 0; }
 .ms-btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg2); color: var(--tx); cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; height: 40px; }
-.ms-menu { position: absolute; top: 46px; right: 0; width: 240px; background: var(--panel); border: 1px solid var(--border); border-radius:8px; box-shadow: var(--shadow); padding: 6px; z-index: 100; display: none; }
+.ms-menu { position: absolute; top: 46px; right: 0; width: 240px; background: var(--panel); border: 1px solid var(--border); border-radius:8px; box-shadow: var(--shadow); padding: 6px; z-index: 100; display: none; max-height: 300px; overflow-y: auto; }
 .ms-menu.open { display: block; }
 .ms-item { padding: 10px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; display: flex; align-items: center; }
 .ms-item:hover { background: var(--bg2); }
@@ -219,8 +222,8 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
 .chat-input-wrap { display: flex; gap: 8px; align-items: flex-end; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 6px 6px 6px 12px; position: relative; transition: border-color 0.2s; }
 .chat-input-wrap:focus-within { border-color: var(--ac); box-shadow: 0 0 0 3px var(--acG); }
 .chat-input { flex: 1; border: none; outline: none; resize: none; padding: 10px 0; font-size: 15px; max-height: 120px; background: transparent; color: var(--tx); font-family: 'Inter', sans-serif; min-width: 0; }
-.chat-icons { display: flex; gap: 4px; }
-.chat-icon { width: 36px; height: 36px; border: none; background: transparent; color: var(--mt); cursor: pointer; border-radius: 8px; display:flex; align-items:center; justify-content:center; }
+.chat-icons { display: flex; gap: 4px; position: relative; }
+.chat-icon { width: 36px; height: 36px; border: none; background: transparent; color: var(--mt); cursor: pointer; border-radius: 8px; display:flex; align-items:center; justify-content:center; font-size: 16px; }
 .chat-icon:hover { color: var(--ac); background: var(--bg3); }
 .chat-send { width: 40px; height: 40px; border: none; background: var(--ac); color: #fff; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.3s; font-size: 16px; }
 .chat-send.stop { background: var(--dn); }
@@ -342,6 +345,7 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
     .comp-name { font-size: 13px; }
     .comp-bar-container { height: 28px; }
     .comp-price { font-size: 12px; }
+    .home-model-dd { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding-bottom: 6px; padding-right: 0; }
 }
 </style>
 </head>
@@ -368,15 +372,26 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
             <div class="hero-badge">Powered by Agnes AI & Pollinations</div>
             <h1 class="hero-title">Brew AI</h1>
             <p class="hero-sub">Lightning fast code generation with split files, live preview, and asset management.</p>
-            <div class="model-pills" id="home-models">
-                <div class="mp active" data-model="auto">Auto</div>
-                <div class="mp" data-model="2.0">Agnes 2.0</div>
-                <div class="mp" data-model="1.5">Agnes 1.5</div>
-                <div class="mp" data-model="openai">Pollinations</div>
-                <div class="mp" data-model="video">Video v2</div>
-                <div class="mp" data-model="image">Image</div>
-            </div>
+            
             <div class="input-box">
+                <!-- Model Selector inside Input -->
+                <div class="home-model-dd">
+                    <button class="home-model-btn" id="home-model-btn"><i class="fas fa-microchip"></i> <span id="home-ms-lbl">Auto</span> <i class="fas fa-chevron-down" style="font-size:10px"></i></button>
+                    <div class="ms-menu" id="home-ms-menu" style="bottom: 60px; top: auto; left: 0; right: auto; width: 250px;">
+                        <div class="ms-item active" data-model="auto">Auto (Smart Select)</div>
+                        <div class="ms-item" data-model="2.0">agnes-2.0-flash</div>
+                        <div class="ms-item" data-model="1.5">agnes-1.5-flash</div>
+                        <div class="ms-item" data-model="openai">Pollinations (OpenAI)</div>
+                        <div class="ms-item" data-model="openai-fast">Pollinations (Fast)</div>
+                        <div class="ms-item" data-model="openai-large">Pollinations (Large)</div>
+                        <div class="ms-item" data-model="qwen-coder">Pollinations (Qwen Coder)</div>
+                        <div class="ms-item" data-model="mistral">Pollinations (Mistral)</div>
+                        <div class="ms-item" data-model="claude-fast">Pollinations (Claude Fast)</div>
+                        <div class="ms-item" data-model="gemini-fast">Pollinations (Gemini Fast)</div>
+                        <div class="ms-item" data-model="video">agnes-video-v2.0</div>
+                        <div class="ms-item" data-model="image">agnes-image-2.1-flash</div>
+                    </div>
+                </div>
                 <div class="typing-overlay" id="typing-overlay"><span id="typed-text"></span><span class="cursor"></span></div>
                 <input type="text" id="hero-input" autocomplete="off" placeholder=" ">
                 <button id="hero-submit" class="btn-gen">
@@ -562,21 +577,13 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
                 <div class="ms-item" data-model="1.5">agnes-1.5-flash</div>
                 <div class="ms-item" data-model="openai">Pollinations (OpenAI)</div>
                 <div class="ms-item" data-model="openai-fast">Pollinations (Fast)</div>
+                <div class="ms-item" data-model="openai-large">Pollinations (Large)</div>
+                <div class="ms-item" data-model="qwen-coder">Pollinations (Qwen Coder)</div>
+                <div class="ms-item" data-model="mistral">Pollinations (Mistral)</div>
+                <div class="ms-item" data-model="claude-fast">Pollinations (Claude Fast)</div>
+                <div class="ms-item" data-model="gemini-fast">Pollinations (Gemini Fast)</div>
                 <div class="ms-item" data-model="video">agnes-video-v2.0</div>
                 <div class="ms-item" data-model="image">agnes-image-2.1-flash</div>
-            </div>
-        </div>
-
-        <!-- Component Injector -->
-        <div class="ms-dd">
-            <button class="ms-btn" id="comp-btn" title="Insert Component"><i class="fas fa-shapes"></i> <span style="display:none">Insert</span></button>
-            <div class="ms-menu" id="comp-menu" style="width: 200px;">
-                <div class="ms-item comp-item" data-comp="Navbar"><i class="fas fa-bars"></i> Navbar</div>
-                <div class="ms-item comp-item" data-comp="Hero Section"><i class="fas fa-star"></i> Hero Section</div>
-                <div class="ms-item comp-item" data-comp="Pricing Table"><i class="fas fa-tags"></i> Pricing Table</div>
-                <div class="ms-item comp-item" data-comp="Footer"><i class="fas fa-shoe-prints"></i> Footer</div>
-                <div class="ms-item comp-item" data-comp="Contact Form"><i class="fas fa-envelope"></i> Contact Form</div>
-                <div class="ms-item comp-item" data-comp="Testimonial Slider"><i class="fas fa-comments"></i> Testimonials</div>
             </div>
         </div>
 
@@ -613,6 +620,18 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
                 <div class="chat-input-wrap">
                     <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask AI to build... (Use # to mention files)"></textarea>
                     <div class="chat-icons">
+                        <!-- Component Injector moved here -->
+                        <div class="ms-dd">
+                            <button class="chat-icon" id="btn-comp-inject" title="Insert Component"><i class="fas fa-shapes"></i></button>
+                            <div class="ms-menu" id="comp-menu" style="bottom: 50px; right: 0; top: auto; width: 200px;">
+                                <div class="ms-item comp-item" data-comp="Navbar"><i class="fas fa-bars"></i> Navbar</div>
+                                <div class="ms-item comp-item" data-comp="Hero Section"><i class="fas fa-star"></i> Hero Section</div>
+                                <div class="ms-item comp-item" data-comp="Pricing Table"><i class="fas fa-tags"></i> Pricing Table</div>
+                                <div class="ms-item comp-item" data-comp="Footer"><i class="fas fa-shoe-prints"></i> Footer</div>
+                                <div class="ms-item comp-item" data-comp="Contact Form"><i class="fas fa-envelope"></i> Contact Form</div>
+                                <div class="ms-item comp-item" data-comp="Testimonial Slider"><i class="fas fa-comments"></i> Testimonials</div>
+                            </div>
+                        </div>
                         <button class="chat-icon" id="btn-enhance" title="Enhance Prompt"><img src="magic.HEIC"></button>
                     </div>
                     <button class="chat-send" id="chat-send" disabled><i class="fas fa-arrow-up"></i></button>
@@ -689,7 +708,12 @@ const MODELS = {
     'video':'agnes-video-v2.0', 
     'image':'agnes-image-2.1-flash',
     'openai': 'openai',
-    'openai-fast': 'openai-fast'
+    'openai-fast': 'openai-fast',
+    'openai-large': 'openai-large',
+    'qwen-coder': 'qwen-coder',
+    'mistral': 'mistral',
+    'claude-fast': 'claude-fast',
+    'gemini-fast': 'gemini-fast'
 };
 
 const DEFAULT_DESIGN_MD = `# Design System\n\n## Aesthetics\nModern, sleek, and visually striking. NEVER use default browser styles.\n\n## Colors\nUse a sophisticated palette. Prefer dark themes (e.g., #0f172a background, #f1f5f9 text) with vibrant, glowing accents (indigo, violet, fuchsia). Use CSS variables.\n\n## Typography\nUse 'Inter' for sans-serif and 'JetBrains Mono' for code. Large, bold headings (clamp up to 4rem) with tight tracking. Muted, readable body text.\n\n## Layout\nGenerous whitespace (padding: 2rem+). Centered max-width containers (1200px). Fully responsive Flexbox/Grid.\n\n## Components\nBackgrounds should be subtle (rgba). Use 1px solid borders with low opacity. Border-radius 12px-16px. Use backdrop-filter: blur() for glassmorphism.\n\n## Interactions\nSmooth transitions (0.3s ease). Hover states should scale slightly (1.02) and increase glow/shadow.`;
@@ -2109,26 +2133,28 @@ function resolveAutoModel(messages) {
     if (/video|animation|animate/i.test(text)) return 'video';
     if (/image|picture|photo|icon|logo|illustration/i.test(text)) return 'image';
     if (text.length > 1000 || /complex|dashboard|admin|system|architecture|database/i.test(text)) return '2.0'; 
-    return '1.5'; // Use 1.5 for simple tasks instead of external to keep it fast and internal
+    return '1.5'; // Use 1.5 for simple tasks
 }
 
+// Fast, proxy-free API Call
 async function callAI(messages, modelKey, tools) {
     let actualModel = modelKey;
     let endpoint = API_URL;
     let apiKey = SITE_KEY;
+    let useProxy = true; // Only use proxy for Agnes fallback
     
     if (modelKey === 'auto') {
         actualModel = resolveAutoModel(messages);
     }
     
-    // If explicitly choosing Pollinations
-    if (modelKey.startsWith('openai')) {
-        actualModel = modelKey;
+    // Pollinations API setup (Direct fetch, NO PROXY for speed)
+    if (modelKey.startsWith('openai') || actualModel.startsWith('openai') || actualModel.includes('qwen') || actualModel.includes('mistral') || actualModel.includes('claude') || actualModel.includes('gemini')) {
         endpoint = POLLI_URL;
-        apiKey = ''; // Pollinations doesn't strictly require key for basic usage
+        apiKey = ''; 
+        useProxy = false; // Pollinations is CORS-enabled, proxy slows it down 10x
     }
 
-    const body = { model: MODELS[actualModel] || actualModel, messages: [{role:'system', content: getSystemPrompt()}, ...messages], temperature: 0.7, stream: false, tools: tools, max_tokens: 30000 };
+    const body = { model: actualModel, messages: [{role:'system', content: getSystemPrompt()}, ...messages], temperature: 0.7, stream: false, tools: tools, max_tokens: 30000 };
     const headers = { 'Content-Type':'application/json' };
     if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
     
@@ -2143,9 +2169,12 @@ async function callAI(messages, modelKey, tools) {
             const choice = j.choices[0];
             return { content: choice.message.content || '', toolCalls: choice.message.tool_calls || [], finishReason: choice.finish_reason };
         }
-        throw new Error(`Direct HTTP ${res.status}`);
+        throw new Error(`HTTP ${res.status}`);
     } catch(e) {
         if (e.name === 'AbortError') throw new Error('Request aborted');
+        if (!useProxy) throw new Error('Network or CORS error');
+        
+        // Fallback to proxy ONLY for Agnes
         try {
             const res = await fetch(PROXY + encodeURIComponent(endpoint), { method:'POST', headers, body: JSON.stringify(body) });
             if (res.ok) {
@@ -2264,6 +2293,23 @@ function replaceApiKeyPlaceholder(content) {
     return content.replace(/\{\{SITE_API_KEY\}\}/g, PROJECT_KEY);
 }
 
+// Typewriter effect for streaming feel
+function typeWriter(element, html, speed = 15) {
+    let i = 0;
+    element.innerHTML = '';
+    const interval = setInterval(() => {
+        if (i < html.length) {
+            element.innerHTML += html.charAt(i);
+            i++;
+            element.scrollTop = element.scrollHeight;
+            const chatMsgs = document.getElementById('chat-msgs');
+            if(chatMsgs) chatMsgs.scrollTop = chatMsgs.scrollHeight;
+        } else {
+            clearInterval(interval);
+        }
+    }, speed);
+}
+
 async function generate() {
     const p = S.projects.find(x => x.id === S.cur);
     if (!p || S.gen) return;
@@ -2309,7 +2355,8 @@ async function generate() {
                     statusLog.innerHTML = ''; 
                 }
                 if (choice.content) {
-                    statusLog.innerHTML += fmtAI(choice.content);
+                    // Use typewriter for tool calling context
+                    typeWriter(statusLog, fmtAI(choice.content));
                 }
 
                 if (res.finishReason === 'length') {
@@ -2412,18 +2459,27 @@ async function generate() {
                     continue;
                 }
 
-                statusLog.innerHTML += choice.content ? fmtAI(choice.content) : "Done.";
+                // Use typewriter for final response
+                if (choice.content) {
+                    typeWriter(statusLog, fmtAI(choice.content));
+                } else {
+                    statusLog.innerHTML = "Done.";
+                }
                 
                 S.tasks.forEach(t => t.done = true);
                 renderTasks();
 
-                const actions = document.createElement('div');
-                actions.className = 'msg-actions';
-                actions.innerHTML = `
-                    <button class="msg-action-btn" onclick="copyMsg(${p.messages.length-1})"><img src="copy.HEIC"> Copy</button>
-                    <button class="msg-action-btn" onclick="retryGen()"><img src="retry.HEIC"> Retry</button>
-                `;
-                statusLog.appendChild(actions);
+                // Delay adding actions slightly to not interrupt typewriter
+                setTimeout(() => {
+                    const actions = document.createElement('div');
+                    actions.className = 'msg-actions';
+                    actions.innerHTML = `
+                        <button class="msg-action-btn" onclick="copyMsg(${p.messages.length-1})"><img src="copy.HEIC"> Copy</button>
+                        <button class="msg-action-btn" onclick="retryGen()"><img src="retry.HEIC"> Retry</button>
+                    `;
+                    statusLog.appendChild(actions);
+                }, 500);
+                
                 break;
             }
         }
@@ -2532,7 +2588,6 @@ function init() {
         
         document.getElementById('hero-submit').onclick = () => { const v = document.getElementById('hero-input').value.trim(); if (!v) return; openEditor(createProj(v).id); };
         document.getElementById('hero-input').addEventListener('keydown', e => { if (e.key === 'Enter') { const v = document.getElementById('hero-input').value.trim(); if (v) openEditor(createProj(v).id); } });
-        document.querySelectorAll('#home-models .mp').forEach(b => b.onclick = () => { document.querySelectorAll('#home-models .mp').forEach(x => x.classList.remove('active')); b.classList.add('active'); S.model = b.dataset.model; });
         document.getElementById('new-btn').onclick = () => { document.getElementById('home-view').scrollTo({top:0, behavior:'smooth'}); document.getElementById('hero-input').focus(); };
         document.getElementById('import-gh-btn').onclick = importFromGithub;
         
@@ -2543,13 +2598,32 @@ function init() {
             document.getElementById('ms-menu').classList.remove('open');
             document.getElementById('more-menu').classList.remove('open');
             document.getElementById('comp-menu').classList.remove('open');
+            document.getElementById('home-ms-menu').classList.remove('open');
         };
+        
+        // Editor Model Picker
         document.getElementById('ms-btn').onclick = e => { e.stopPropagation(); closeDropdowns(); document.getElementById('ms-menu').classList.toggle('open'); };
-        document.getElementById('comp-btn').onclick = e => { e.stopPropagation(); closeDropdowns(); document.getElementById('comp-menu').classList.toggle('open'); };
+        // Home Model Picker
+        document.getElementById('home-model-btn').onclick = e => { e.stopPropagation(); closeDropdowns(); document.getElementById('home-ms-menu').classList.toggle('open'); };
+        // Component Injector Picker
+        document.getElementById('btn-comp-inject').onclick = e => { e.stopPropagation(); closeDropdowns(); document.getElementById('comp-menu').classList.toggle('open'); };
+        // More Tools Picker
         document.getElementById('btn-more').onclick = e => { e.stopPropagation(); closeDropdowns(); document.getElementById('more-menu').classList.toggle('open'); };
+        
         document.addEventListener('click', closeDropdowns);
         
-        document.querySelectorAll('#ms-menu .ms-item').forEach(o => o.onclick = e => { e.stopPropagation(); closeDropdowns(); S.model = o.dataset.model; const p = S.projects.find(x => x.id === S.cur); if (p) { p.model = S.model; saveProjects(); } document.getElementById('ms-lbl').textContent = S.model; });
+        // Model Selection Logic (Home & Editor)
+        const modelItems = document.querySelectorAll('#ms-menu .ms-item, #home-ms-menu .ms-item');
+        modelItems.forEach(o => o.onclick = e => { 
+            e.stopPropagation(); 
+            closeDropdowns(); 
+            S.model = o.dataset.model; 
+            const p = S.projects.find(x => x.id === S.cur); 
+            if (p) { p.model = S.model; saveProjects(); } 
+            // Update both labels if they exist
+            if(document.getElementById('ms-lbl')) document.getElementById('ms-lbl').textContent = S.model;
+            if(document.getElementById('home-ms-lbl')) document.getElementById('home-ms-lbl').textContent = S.model;
+        });
 
         // Component Injector Logic
         document.querySelectorAll('.comp-item').forEach(item => {
