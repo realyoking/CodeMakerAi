@@ -760,7 +760,6 @@ const PROJECT_KEY = 'sk-rWvCRyEKxFrHuuVaoQB1IwFoPXMGy6XQNQvpC3AhHl5kkNCE';
 const PROXY = 'https://corsproxy.io/?url=';
 const POLLI_URL = 'https://text.pollinations.ai/v1/chat/completions';
 const POLLI_IMG_URL = 'https://gen.pollinations.ai/image/';
-const MODELS = { 'auto': 'agnes-2.0-flash', '2.0':'agnes-2.0-flash', 'video':'agnes-video-v2.0', 'image':'agnes-image-2.1-flash', 'openai-fast': 'openai-fast' };
 
 const DEFAULT_DESIGN_MD = `# Design System\n\n## Aesthetics\nModern, sleek, and visually striking. NEVER use default browser styles.\n\n## Colors\nUse a sophisticated palette. Prefer dark themes (e.g., #0f172a background, #f1f5f9 text) with vibrant, glowing accents (indigo, violet, fuchsia). Use CSS variables.\n\n## Typography\nUse 'Inter' for sans-serif and 'JetBrains Mono' for code. Large, bold headings (clamp up to 4rem) with tight tracking. Muted, readable body text.\n\n## Layout\nGenerous whitespace (padding: 2rem+). Centered max-width containers (1200px). Fully responsive Flexbox/Grid.\n\n## Components\nBackgrounds should be subtle (rgba). Use 1px solid borders with low opacity. Border-radius 12px-16px. Use backdrop-filter: blur() for glassmorphism.\n\n## Interactions\nSmooth transitions (0.3s ease). Hover states should scale slightly (1.02) and increase glow/shadow.`;
 
@@ -1117,7 +1116,14 @@ function openEditor(id) {
     document.querySelector('.top-nav').style.display = 'none';
     document.getElementById('editor-view').classList.add('active');
     document.getElementById('ed-title').textContent = p.name;
-    document.getElementById('ms-lbl').textContent = p.model;
+    document.getElementById('ms-lbl').textContent = getModelLabel(p.model);
+    
+    // Update active states for dropdown
+    document.querySelectorAll('#ms-menu .ms-item').forEach(item => {
+        if (item.dataset.model === p.model) item.classList.add('active');
+        else item.classList.remove('active');
+    });
+    
     renderChat(); renderFiles(); renderTasks(); renderAssets(); renderIssues(); updateContextIndicator();
     
     if (cm) {
@@ -2068,44 +2074,62 @@ function selectMention(filename) {
 
 window.selectMention = selectMention;
 
+// --- MODEL RESOLUTION & MAPPING ---
+function resolveModelName(key) {
+    if (key === 'auto') return 'agnes-2.0-flash';
+    if (key === '2.0') return 'agnes-2.0-flash';
+    if (key === 'video') return 'agnes-video-v2.0';
+    if (key === 'image') return 'agnes-image-2.1-flash';
+    if (key === 'openai-fast') return 'openai-fast';
+    return key;
+}
+
+function getModelLabel(key) {
+    if (key === 'auto') return 'Auto';
+    if (key === '2.0') return 'agnes-2.0-flash';
+    if (key === 'video') return 'agnes-video-v2.0';
+    if (key === 'image') return 'agnes-image-2.1-flash';
+    if (key === 'openai-fast') return 'Pollinations (Fast)';
+    return key;
+}
+
 function resolveAutoModel(messages) {
     const userMsg = messages.find(m => m.role === 'user');
     const text = userMsg ? (typeof userMsg.content === 'string' ? userMsg.content : JSON.stringify(userMsg.content)) : '';
     if (/video|animation|animate/i.test(text)) return 'agnes-video-v2.0';
     if (/image|picture|photo|icon|logo|illustration/i.test(text)) return 'agnes-image-2.1-flash';
-    return 'agnes-2.0-flash'; // Upgraded default to 2.0 to prevent 503 errors
+    return 'agnes-2.0-flash';
 }
 
 async function callAI(messages, modelKey, tools, onChunk) {
-    let actualModel = modelKey;
+    let actualModel = resolveModelName(modelKey);
     let endpoint = API_URL;
     let apiKey = SITE_KEY;
-    let useProxy = false;
-    
-    if (modelKey === 'auto') actualModel = resolveAutoModel(messages);
-    let isPollinationsReq = modelKey.startsWith('openai') || actualModel.startsWith('openai');
-    
+    let isPollinationsReq = (actualModel === 'openai-fast');
+
+    if (modelKey === 'auto') {
+        actualModel = resolveAutoModel(messages);
+    }
+
     if (isPollinationsReq) {
         endpoint = POLLI_URL;
-        actualModel = 'openai-fast';
-        apiKey = ''; 
-        useProxy = true; 
+        apiKey = '';
     }
-    
-    const body = { 
-        model: actualModel, 
-        messages: [{role:'system', content: getSystemPrompt()}, ...messages], 
-        temperature: 0.7, 
-        stream: true, 
-        tools: tools, 
-        max_tokens: 20000 
+
+    const body = {
+        model: actualModel,
+        messages: [{role:'system', content: getSystemPrompt()}, ...messages],
+        temperature: 0.7,
+        stream: true,
+        tools: tools,
+        max_tokens: 20000
     };
-    
-    // Enable Thinking mode for Agnes AI to enhance coding capabilities
+
+    // Enable Thinking mode for Agnes AI
     if (!isPollinationsReq) {
         body.chat_template_kwargs = { enable_thinking: true };
     }
-    
+
     const headers = { 'Content-Type':'application/json' };
     if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
 
@@ -2114,15 +2138,15 @@ async function callAI(messages, modelKey, tools, onChunk) {
         abortCtrl = ctrl;
         let fetchBody = JSON.stringify(body);
         let fetchHeaders = {...headers};
-        
+
         if (isFallback) {
             fetchBody = JSON.stringify({...body, model: 'openai-fast', chat_template_kwargs: undefined});
             fetchHeaders = { 'Content-Type':'application/json' };
         }
-        
+
         const res = await fetch(url, { signal: ctrl.signal, method:'POST', headers: fetchHeaders, body: fetchBody });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        
+
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let content = '';
@@ -2143,7 +2167,7 @@ async function callAI(messages, modelKey, tools, onChunk) {
                         if (!data.choices || !data.choices[0]) continue;
                         const delta = data.choices[0].delta;
                         finishReason = data.choices[0].finish_reason;
-                        
+
                         if (delta && delta.content) {
                             content += delta.content;
                             if (onChunk) onChunk(delta.content);
@@ -2167,20 +2191,25 @@ async function callAI(messages, modelKey, tools, onChunk) {
         return await doFetch(endpoint, false);
     } catch(e) {
         if (e.name === 'AbortError') throw new Error('Request aborted');
-        
-        // If Agnes fails (e.g., 503 Service Unavailable), fallback to Pollinations
+
         if (!isPollinationsReq) {
-            console.warn('Agnes AI request failed (' + e.message + '), falling back to Pollinations openai-fast...');
+            console.warn('Agnes direct failed (' + e.message + '), trying proxy...');
             try {
-                return await doFetch(POLLI_URL, true);
-            } catch (fallbackErr) {
-                if (fallbackErr.name === 'AbortError') throw new Error('Request aborted');
-                console.warn('Pollinations direct failed, trying proxy...');
-                return await doFetch(PROXY + encodeURIComponent(POLLI_URL), true);
+                return await doFetch(PROXY + encodeURIComponent(endpoint), false);
+            } catch(proxyErr) {
+                if (proxyErr.name === 'AbortError') throw new Error('Request aborted');
+                console.warn('Agnes proxy failed (' + proxyErr.message + '), falling back to Pollinations...');
+                try {
+                    return await doFetch(POLLI_URL, true);
+                } catch (fallbackErr) {
+                    if (fallbackErr.name === 'AbortError') throw new Error('Request aborted');
+                    console.warn('Pollinations direct failed, trying proxy...');
+                    return await doFetch(PROXY + encodeURIComponent(POLLI_URL), true);
+                }
             }
         }
-        
-        console.warn('Direct request failed, trying proxy...');
+
+        console.warn('Pollinations direct failed, trying proxy...');
         return await doFetch(PROXY + encodeURIComponent(endpoint), false);
     }
 }
@@ -2282,10 +2311,9 @@ function replaceApiKeyPlaceholder(content) {
 function updateContextIndicator() {
     const p = S.projects.find(x => x.id === S.cur); 
     if (!p) return;
-    // Calculate approximate tokens (1 token ≈ 4 chars)
     const text = JSON.stringify(p.messages) + JSON.stringify(p.files);
     const tokens = Math.ceil(text.length / 4);
-    const maxTokens = 128000; // Standard context window for Flash models
+    const maxTokens = 128000;
     const pct = Math.min(100, (tokens / maxTokens) * 100);
     
     const fill = document.getElementById('ci-bar-fill');
@@ -2585,7 +2613,7 @@ function init() {
         document.getElementById('ci-new-chat').onclick = () => {
             const p = S.projects.find(x => x.id === S.cur); if (!p) return;
             if (S.gen) return toast('Wait for generation to finish.');
-            p.messages = []; // Clear chat memory to free up context
+            p.messages = [];
             saveProjects();
             renderChat();
             updateContextIndicator();
@@ -2612,8 +2640,17 @@ function init() {
             S.model = o.dataset.model; 
             const p = S.projects.find(x => x.id === S.cur); 
             if (p) { p.model = S.model; saveProjects(); } 
-            if(document.getElementById('ms-lbl')) document.getElementById('ms-lbl').textContent = S.model;
-            if(document.getElementById('home-ms-lbl')) document.getElementById('home-ms-lbl').textContent = S.model;
+            
+            // Update active classes
+            document.querySelectorAll('#ms-menu .ms-item, #home-ms-menu .ms-item').forEach(item => {
+                if (item.dataset.model === S.model) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+
+            // Update labels
+            const labelText = getModelLabel(S.model);
+            if(document.getElementById('ms-lbl')) document.getElementById('ms-lbl').textContent = labelText;
+            if(document.getElementById('home-ms-lbl')) document.getElementById('home-ms-lbl').textContent = labelText;
         });
 
         document.querySelectorAll('.comp-item').forEach(item => {
