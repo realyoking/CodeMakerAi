@@ -76,8 +76,6 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 .nav-right { display: flex; gap: 8px; align-items: center; }
 .nav-btn { background: var(--bg2); border: 1px solid var(--border); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--tx); transition: 0.2s; }
 .nav-btn:hover { border-color: var(--ac); color: var(--ac); }
-.nav-cta { padding: 8px 20px; border-radius: 999px; background: var(--ac); color: #fff; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px; }
-.nav-cta:hover { background: var(--ac2); transform: translateY(-1px); }
 
 #home-view { position: absolute; inset: 0; overflow-y: auto; z-index: 10; background: var(--bg); padding-top: 80px; }
 .hero { min-height: calc(100vh - 80px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
@@ -382,7 +380,6 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
 @media (max-width: 768px) {
     .top-nav { padding: 6px 12px; }
     .nav-link { padding: 6px 10px; font-size: 12px; }
-    .nav-cta { padding: 6px 12px; font-size: 12px; }
     .nav-links { gap: 2px; }
     .chat-panel { width: 100%; }
     .prev-panel { display: none; }
@@ -437,7 +434,6 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
         <button class="nav-btn" id="nav-theme-btn" title="Toggle Theme">
             <img src="dark.HEIC" id="nav-theme-icon" alt="theme">
         </button>
-        <button class="nav-cta" onclick="document.getElementById('home-view').scrollTo({top:0, behavior:'smooth'}); document.getElementById('hero-input').focus();">New Project</button>
     </div>
 </nav>
 
@@ -457,8 +453,6 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
                         <div class="ms-menu" id="home-ms-menu" style="bottom: 60px; top: auto; left: 0; right: auto; width: 250px;">
                             <div class="ms-item active" data-model="auto">Auto (Smart Select)</div>
                             <div class="ms-item" data-model="2.0">agnes-2.0-flash</div>
-                            <div class="ms-item" data-model="1.5">agnes-1.5-flash</div>
-                            <div class="ms-item" data-model="openai">Pollinations (OpenAI)</div>
                             <div class="ms-item" data-model="openai-fast">Pollinations (Fast)</div>
                             <div class="ms-item" data-model="video">agnes-video-v2.0</div>
                             <div class="ms-item" data-model="image">agnes-image-2.1-flash</div>
@@ -643,8 +637,6 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
             <div class="ms-menu" id="ms-menu">
                 <div class="ms-item active" data-model="auto">Auto (Smart Select)</div>
                 <div class="ms-item" data-model="2.0">agnes-2.0-flash</div>
-                <div class="ms-item" data-model="1.5">agnes-1.5-flash</div>
-                <div class="ms-item" data-model="openai">Pollinations (OpenAI)</div>
                 <div class="ms-item" data-model="openai-fast">Pollinations (Fast)</div>
                 <div class="ms-item" data-model="video">agnes-video-v2.0</div>
                 <div class="ms-item" data-model="image">agnes-image-2.1-flash</div>
@@ -766,9 +758,9 @@ const VID_API_URL = 'https://apihub.agnes-ai.com/v1/videos/generations';
 const SITE_KEY = 'sk-qZB4ieEv5UdIrYK3eEHAfdAv5xXYKLsVD7bAd9Kg7EQuDYF3';
 const PROJECT_KEY = 'sk-rWvCRyEKxFrHuuVaoQB1IwFoPXMGy6XQNQvpC3AhHl5kkNCE';
 const PROXY = 'https://corsproxy.io/?url=';
-const POLLI_URL = 'https://gen.pollinations.ai/v1/chat/completions';
+const POLLI_URL = 'https://text.pollinations.ai/v1/chat/completions';
 const POLLI_IMG_URL = 'https://gen.pollinations.ai/image/';
-const MODELS = { 'auto': 'agnes-2.0-flash', '2.0':'agnes-2.0-flash', '1.5':'agnes-1.5-flash', 'video':'agnes-video-v2.0', 'image':'agnes-image-2.1-flash', 'openai': 'openai', 'openai-fast': 'openai-fast' };
+const MODELS = { 'auto': 'agnes-2.0-flash', '2.0':'agnes-2.0-flash', 'video':'agnes-video-v2.0', 'image':'agnes-image-2.1-flash', 'openai-fast': 'openai-fast' };
 
 const DEFAULT_DESIGN_MD = `# Design System\n\n## Aesthetics\nModern, sleek, and visually striking. NEVER use default browser styles.\n\n## Colors\nUse a sophisticated palette. Prefer dark themes (e.g., #0f172a background, #f1f5f9 text) with vibrant, glowing accents (indigo, violet, fuchsia). Use CSS variables.\n\n## Typography\nUse 'Inter' for sans-serif and 'JetBrains Mono' for code. Large, bold headings (clamp up to 4rem) with tight tracking. Muted, readable body text.\n\n## Layout\nGenerous whitespace (padding: 2rem+). Centered max-width containers (1200px). Fully responsive Flexbox/Grid.\n\n## Components\nBackgrounds should be subtle (rgba). Use 1px solid borders with low opacity. Border-radius 12px-16px. Use backdrop-filter: blur() for glassmorphism.\n\n## Interactions\nSmooth transitions (0.3s ease). Hover states should scale slightly (1.02) and increase glow/shadow.`;
 
@@ -777,10 +769,16 @@ const SP = `You are CodeMaker AI, an autonomous coding agent.
 CRITICAL RULE: You MUST output the FULL code for all files. Do NOT truncate.
 To prevent timeouts, you MUST use the 'write_file' tool to write code. DO NOT output code in markdown blocks.
 
-# TOOL USAGE & READING FILES
-You have access to the 'write_file', 'generate_asset', and 'read_file' tools.
-If you need to see the exact, full content of a specific file before modifying it, use the 'read_file' tool. 
-A truncated version of all files is already provided in your system prompt, but use 'read_file' if you need to see the rest of a file.
+# TOOL USAGE & STRATEGY (CRITICAL)
+1. **Analyze First**: You only have the file NAMES initially. If you need to see or modify a file, you MUST use 'read_file' first.
+2. **One Tool at a Time**: Output a brief thought about your plan, then call the tool.
+3. **No Placeholders**: When writing a file, output the COMPLETE content.
+
+You have access to:
+- 'read_file': Get the content of a file.
+- 'write_file': Save content to a file.
+- 'generate_asset': Create images or videos.
+- 'create_github_issue/pr': Manage connected repositories.
 
 # PERFORMANCE & CONCISENESS (CRITICAL)
 Be fast and concise. Do NOT write long explanations in the chat. Output the brief task list, then immediately use the tool. No fluff.
@@ -855,19 +853,19 @@ const BLOG_POSTS = [
         author: "@BrewAi",
         date: "July 2, 2026",
         image: "blog1.PNG",
-        excerpt: "If you’ve been trying to build a web app or website lately, you’ve probably noticed that the AI coding space is moving at absolute warp speed. Tools like Lovable and Base44 have completely changed the game...",
-        content: `<p>If you’ve been trying to build a web app or website lately, you’ve probably noticed that the AI coding space is moving at absolute warp speed. Tools like Lovable and Base44 have completely changed the game, allowing anyone to turn plain-text prompts into fully functional applications in seconds through a process widely known as "vibe coding."</p>
+        excerpt: "If you've been trying to build a web app or website lately, you've probably noticed that the AI coding space is moving at absolute warp speed. Tools like Lovable and Base44 have completely changed the game...",
+        content: `<p>If you've been trying to build a web app or website lately, you've probably noticed that the AI coding space is moving at absolute warp speed. Tools like Lovable and Base44 have completely changed the game, allowing anyone to turn plain-text prompts into fully functional applications in seconds through a process widely known as "vibe coding."</p>
         <p>But as amazing as these platforms are, they all hit you with the exact same roadblock sooner or later: the dreaded paywall.</p>
         <p>Once your free credits run out, you're looking at spending $20 to $25 every single month just to keep building. If you are a hobbyist, a developer prototyping an idea, or a founder on a tight budget, that adds up fast.</p>
-        <p>Enter Brew AI—a fascinating, rising contender that is completely flipping the script on the freemium AI builder model. Let’s dive into how these heavyweights stack up and why the underdog might just steal the crown for budget-conscious creators.</p>
+        <p>Enter Brew AI—a fascinating, rising contender that is completely flipping the script on the freemium AI builder model. Let's dive into how these heavyweights stack up and why the underdog might just steal the crown for budget-conscious creators.</p>
         <h3>1. Lovable AI: The Premium Powerhouse</h3>
-        <p>Lovable is widely considered one of the most polished front-end tools on the market. It excels at taking complex, multi-step prompts and spinning up gorgeous, production-ready user interfaces. It’s incredibly smart, handles state management beautifully, and feels like magic.</p>
-        <p><strong>The Catch:</strong> At $25/month for their starting premium tier, it’s a heavy investment if you aren't monetizing your project yet. Their free tier gives you a taste, but you'll burn through it quickly on complex builds.</p>
+        <p>Lovable is widely considered one of the most polished front-end tools on the market. It excels at taking complex, multi-step prompts and spinning up gorgeous, production-ready user interfaces. It's incredibly smart, handles state management beautifully, and feels like magic.</p>
+        <p><strong>The Catch:</strong> At $25/month for their starting premium tier, it's a heavy investment if you aren't monetizing your project yet. Their free tier gives you a taste, but you'll burn through it quickly on complex builds.</p>
         <h3>2. Base44: The All-in-One Infrastructure</h3>
         <p>Base44 approaches vibe coding by giving you a zero-config backend right out of the box. While other platforms often require you to connect external tools like Supabase to store data, Base44 handles database schemas, user authentication, security scanning, and user logins internally.</p>
         <p><strong>The Catch:</strong> Base44 sets you back $20/month for their basic starter plan. More critically, it uses a strict credit system split between message credits for chatting with the AI and integration credits for when your app calls data. If your app gets caught in an AI bug loop, it can drain your entire monthly credit balance in an afternoon, locking your prototype until the next billing cycle.</p>
         <h3>3. Brew AI: The Complete Zero-Cost Disruptor</h3>
-        <p>While Lovable and Base44 are trying to lock you into monthly subscriptions and rigid credit limits, Brew AI is taking a radically different, user-first approach. It gives you premium features you’d normally have to pay for, completely free—no account required, no credit card, and no hidden API key costs.</p>
+        <p>While Lovable and Base44 are trying to lock you into monthly subscriptions and rigid credit limits, Brew AI is taking a radically different, user-first approach. It gives you premium features you'd normally have to pay for, completely free—no account required, no credit card, and no hidden API key costs.</p>
         <p>Brew AI operates as a lightning-fast, frontend-first builder powered by flexible engines like Agnes AI and Pollinations. It offers multi-file splitting, live previews, and robust asset management directly in your browser.</p>
         <p>Here is what makes Brew AI uniquely powerful compared to the corporate giants:</p>
         <ul>
@@ -913,11 +911,9 @@ function getSystemPrompt() {
     const p = S.projects.find(x => x.id === S.cur);
     if (!p) return prompt;
 
-    let filesContext = '\n\n# CURRENT FILES\nHere is the current state of all files in the project (truncated to 50000 chars to save tokens). Use this as context when making changes:\n';
+    let filesContext = '\n\n# PROJECT FILES\nYou are working in a multi-file environment. Below is a list of files in the current project. \nCRITICAL: You DO NOT have the content of these files yet. If you need to see the code inside a file to understand it or modify it, you MUST use the "read_file" tool first.\n\nFiles:\n';
     Object.keys(p.files).forEach(fname => {
-        const content = p.files[fname] || '';
-        const truncated = content.length > 50000 ? content.substring(0, 50000) + '\n... (truncated, file is ' + content.length + ' chars. Output the full file to update it.)' : content;
-        filesContext += `\n## File: ${fname}\n\`\`\`\n${truncated}\n\`\`\`\n`;
+        filesContext += `- ${fname}\n`;
     });
     prompt += filesContext;
 
@@ -1118,6 +1114,7 @@ function openEditor(id) {
     const p = S.projects.find(x => x.id === id); if (!p) return;
     S.cur = id; S.model = p.model; S.activeFile = p.activeFile || 'index.html'; S.tasks = [];
     document.getElementById('home-view').style.display = 'none';
+    document.querySelector('.top-nav').style.display = 'none';
     document.getElementById('editor-view').classList.add('active');
     document.getElementById('ed-title').textContent = p.name;
     document.getElementById('ms-lbl').textContent = p.model;
@@ -1137,7 +1134,7 @@ function openEditor(id) {
     }
 }
 
-function closeEditor() { S.gen = false; document.getElementById('editor-view').classList.remove('active'); document.getElementById('home-view').style.display = 'block'; S.cur = null; renderGrid(); }
+function closeEditor() { S.gen = false; document.getElementById('editor-view').classList.remove('active'); document.getElementById('home-view').style.display = 'block'; document.querySelector('.top-nav').style.display = 'flex'; S.cur = null; renderGrid(); }
 
 function switchView(v) {
     S.view = v;
@@ -2074,50 +2071,117 @@ window.selectMention = selectMention;
 function resolveAutoModel(messages) {
     const userMsg = messages.find(m => m.role === 'user');
     const text = userMsg ? (typeof userMsg.content === 'string' ? userMsg.content : JSON.stringify(userMsg.content)) : '';
-    if (/video|animation|animate/i.test(text)) return 'video';
-    if (/image|picture|photo|icon|logo|illustration/i.test(text)) return 'image';
-    if (text.length > 1000 || /complex|dashboard|admin|system|architecture|database/i.test(text)) return '2.0'; 
-    return '1.5';
+    if (/video|animation|animate/i.test(text)) return 'agnes-video-v2.0';
+    if (/image|picture|photo|icon|logo|illustration/i.test(text)) return 'agnes-image-2.1-flash';
+    return 'agnes-2.0-flash'; // Upgraded default to 2.0 to prevent 503 errors
 }
 
-async function callAI(messages, modelKey, tools) {
+async function callAI(messages, modelKey, tools, onChunk) {
     let actualModel = modelKey;
     let endpoint = API_URL;
     let apiKey = SITE_KEY;
-    let useProxy = true;
+    let useProxy = false;
+    
     if (modelKey === 'auto') actualModel = resolveAutoModel(messages);
-    if (modelKey.startsWith('openai') || actualModel.startsWith('openai')) {
+    let isPollinationsReq = modelKey.startsWith('openai') || actualModel.startsWith('openai');
+    
+    if (isPollinationsReq) {
         endpoint = POLLI_URL;
+        actualModel = 'openai-fast';
         apiKey = ''; 
-        useProxy = false;
+        useProxy = true; 
     }
-    const body = { model: actualModel, messages: [{role:'system', content: getSystemPrompt()}, ...messages], temperature: 0.7, stream: false, tools: tools, max_tokens: 30000 };
+    
+    const body = { 
+        model: actualModel, 
+        messages: [{role:'system', content: getSystemPrompt()}, ...messages], 
+        temperature: 0.7, 
+        stream: true, 
+        tools: tools, 
+        max_tokens: 20000 
+    };
+    
+    // Enable Thinking mode for Agnes AI to enhance coding capabilities
+    if (!isPollinationsReq) {
+        body.chat_template_kwargs = { enable_thinking: true };
+    }
+    
     const headers = { 'Content-Type':'application/json' };
     if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
-    try {
+
+    const doFetch = async (url, isFallback = false) => {
         const ctrl = new AbortController();
         abortCtrl = ctrl;
-        const timer = setTimeout(() => ctrl.abort(), 120000); 
-        const res = await fetch(endpoint, { signal: ctrl.signal, method:'POST', headers, body: JSON.stringify(body) });
-        clearTimeout(timer);
-        if (res.ok) {
-            const j = await res.json();
-            const choice = j.choices[0];
-            return { content: choice.message.content || '', toolCalls: choice.message.tool_calls || [], finishReason: choice.finish_reason };
+        let fetchBody = JSON.stringify(body);
+        let fetchHeaders = {...headers};
+        
+        if (isFallback) {
+            fetchBody = JSON.stringify({...body, model: 'openai-fast', chat_template_kwargs: undefined});
+            fetchHeaders = { 'Content-Type':'application/json' };
         }
-        throw new Error(`HTTP ${res.status}`);
+        
+        const res = await fetch(url, { signal: ctrl.signal, method:'POST', headers: fetchHeaders, body: fetchBody });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let content = '';
+        let toolCalls = [];
+        let finishReason = null;
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const chunk = decoder.decode(value);
+            const lines = chunk.split('\n');
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    const dataStr = line.substring(6).trim();
+                    if (dataStr === '[DONE]') break;
+                    try {
+                        const data = JSON.parse(dataStr);
+                        if (!data.choices || !data.choices[0]) continue;
+                        const delta = data.choices[0].delta;
+                        finishReason = data.choices[0].finish_reason;
+                        
+                        if (delta && delta.content) {
+                            content += delta.content;
+                            if (onChunk) onChunk(delta.content);
+                        }
+                        if (delta && delta.tool_calls) {
+                            delta.tool_calls.forEach(tc => {
+                                if (!toolCalls[tc.index]) toolCalls[tc.index] = { id: tc.id, function: { name: '', arguments: '' } };
+                                if (tc.id) toolCalls[tc.index].id = tc.id;
+                                if (tc.function.name) toolCalls[tc.index].function.name += tc.function.name;
+                                if (tc.function.arguments) toolCalls[tc.index].function.arguments += tc.function.arguments;
+                            });
+                        }
+                    } catch(e) {}
+                }
+            }
+        }
+        return { content, toolCalls: toolCalls.filter(Boolean), finishReason };
+    };
+
+    try {
+        return await doFetch(endpoint, false);
     } catch(e) {
         if (e.name === 'AbortError') throw new Error('Request aborted');
-        if (!useProxy) throw new Error('Network or CORS error');
-        try {
-            const res = await fetch(PROXY + encodeURIComponent(endpoint), { method:'POST', headers, body: JSON.stringify(body) });
-            if (res.ok) {
-                const j = await res.json();
-                const choice = j.choices[0];
-                return { content: choice.message.content || '', toolCalls: choice.message.tool_calls || [], finishReason: choice.finish_reason };
+        
+        // If Agnes fails (e.g., 503 Service Unavailable), fallback to Pollinations
+        if (!isPollinationsReq) {
+            console.warn('Agnes AI request failed (' + e.message + '), falling back to Pollinations openai-fast...');
+            try {
+                return await doFetch(POLLI_URL, true);
+            } catch (fallbackErr) {
+                if (fallbackErr.name === 'AbortError') throw new Error('Request aborted');
+                console.warn('Pollinations direct failed, trying proxy...');
+                return await doFetch(PROXY + encodeURIComponent(POLLI_URL), true);
             }
-            throw new Error(`Proxy HTTP ${res.status}`);
-        } catch(proxyErr) { throw new Error('Network or CORS error'); }
+        }
+        
+        console.warn('Direct request failed, trying proxy...');
+        return await doFetch(PROXY + encodeURIComponent(endpoint), false);
     }
 }
 
@@ -2245,11 +2309,6 @@ async function generate() {
     renderTasks();
     updateContextIndicator();
     
-    const md = addMsg('ai', '', true);
-    md.classList.add('thinking');
-    const statusLog = md.querySelector('.msg-bubble');
-    statusLog.innerHTML = '<div class="skeleton-line"></div><div class="skeleton-line" style="width:80%"></div><div class="skeleton-line" style="width:60%"></div><div class="msg-progress-bar"></div>';
-    
     let currentMessages = [...p.messages];
     p.history.push({ ts: Date.now(), files: JSON.parse(JSON.stringify(p.files)) });
     if (p.history.length > 10) p.history.shift();
@@ -2268,7 +2327,23 @@ async function generate() {
     
     try {
         while (true) {
-            const res = await callAI(currentMessages, p.model, tools);
+            const md = addMsg('ai', '', true);
+            md.classList.add('thinking');
+            const statusLog = md.querySelector('.msg-bubble');
+            statusLog.innerHTML = '<div class="skeleton-line"></div><div class="skeleton-line" style="width:80%"></div><div class="msg-progress-bar"></div>';
+            
+            let accumulatedContent = '';
+            const res = await callAI(currentMessages, p.model, tools, (chunk) => {
+                if (md.classList.contains('thinking')) {
+                    md.classList.remove('thinking');
+                    statusLog.innerHTML = '';
+                }
+                accumulatedContent += chunk;
+                statusLog.innerHTML = fmtAI(accumulatedContent);
+                const c = document.getElementById('chat-msgs');
+                c.scrollTop = c.scrollHeight;
+            });
+
             const choice = { role: 'assistant', content: res.content, tool_calls: res.toolCalls.length ? res.toolCalls : undefined };
             currentMessages.push(choice);
             p.messages = currentMessages;
@@ -2280,7 +2355,6 @@ async function generate() {
                     md.classList.remove('thinking');
                     statusLog.innerHTML = ''; 
                 }
-                if (choice.content) statusLog.innerHTML += fmtAI(choice.content);
                 if (res.finishReason === 'length') {
                     statusLog.innerHTML += '<br><span style="color:var(--warn)">⚠️ Cut off during tool call. Auto-retrying...</span>';
                     currentMessages.push({ role: 'user', content: 'You were cut off. Please try writing that file again.' });
@@ -2368,7 +2442,7 @@ async function generate() {
                 }
             } else {
                 md.classList.remove('thinking');
-                if (statusLog.querySelector('.skeleton-line')) statusLog.innerHTML = ''; 
+                if (statusLog.querySelector('.skeleton-line')) statusLog.innerHTML = fmtAI(accumulatedContent); 
                 if (res.finishReason === 'length') {
                     statusLog.innerHTML += '<br><span style="color:var(--warn)">⚠️ Token limit reached. Auto-continuing...</span>';
                     currentMessages.push({ role: 'user', content: 'Please continue exactly where you left off. Do not repeat yourself.' });
@@ -2376,7 +2450,6 @@ async function generate() {
                     saveProjects();
                     continue;
                 }
-                statusLog.innerHTML += choice.content ? fmtAI(choice.content) : "Done.";
                 S.tasks.forEach(t => t.done = true);
                 renderTasks();
                 const actions = document.createElement('div');
@@ -2389,12 +2462,17 @@ async function generate() {
             }
         }
     } catch(e) {
-        md.classList.remove('thinking');
-        if (e.message.includes('aborted')) {
-            statusLog.innerHTML = '<span style="color:var(--mt)">Generation stopped.</span>';
-        } else {
-            statusLog.innerHTML += `<br><span style="color:var(--dn)">Error: ${e.message}</span>`;
-            showContinueButton();
+        console.error(e);
+        const errMsgs = document.querySelectorAll('.msg.ai.thinking');
+        errMsgs.forEach(m => m.classList.remove('thinking'));
+        const lastBubble = document.querySelector('.msg.ai:last-child .msg-bubble');
+        if (lastBubble) {
+            if (e.message.includes('aborted')) {
+                lastBubble.innerHTML += '<br><span style="color:var(--mt)">Generation stopped.</span>';
+            } else {
+                lastBubble.innerHTML += `<br><span style="color:var(--dn)">Error: ${e.message}</span>`;
+                showContinueButton();
+            }
         }
     }
     S.gen = false;
