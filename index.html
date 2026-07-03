@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Brew AI</title>
+<title>Brew AI - Free AI Website Builder</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
@@ -53,21 +53,40 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 @keyframes scrollIdeas { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
 
 /* Custom Image Icon Styles */
-.home-logo { position: absolute; top: 24px; left: 24px; height: 40px; width: 40px; border-radius: 8px; object-fit: cover; z-index: 20; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
 .msg-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
-.ed-btn img, .ms-btn img, .pa-btn img, .ptab img, .msg-action-btn img, .chat-icon img, .file-tab img, .file-lock img, .file-del img, .modal-btn img, .ms-item img {
+.ed-btn img, .ms-btn img, .pa-btn img, .ptab img, .msg-action-btn img, .chat-icon img, .file-tab img, .file-lock img, .file-del img, .modal-btn img, .ms-item img, .nav-btn img {
     width: 18px; height: 18px; object-fit: contain; vertical-align: middle; display: inline-block;
 }
 .ms-item img { margin-right: 8px; }
 
-#home-view { position: absolute; inset: 0; overflow-y: auto; z-index: 10; background: var(--bg); }
-.hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
+/* Floating Navbar */
+.top-nav {
+    position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+    width: calc(100% - 32px); max-width: 900px;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 999px; padding: 8px 16px; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1); backdrop-filter: blur(10px);
+}
+.nav-logo { height: 32px; width: 32px; border-radius: 50%; object-fit: cover; }
+.nav-links { display: flex; gap: 4px; }
+.nav-link { padding: 8px 16px; border-radius: 999px; border: none; background: transparent; color: var(--mt); font-weight: 600; cursor: pointer; transition: 0.2s; font-family: 'Inter', sans-serif; font-size: 14px; }
+.nav-link:hover { color: var(--tx); background: var(--bg2); }
+.nav-link.active { background: var(--ac); color: #fff; }
+.nav-right { display: flex; gap: 8px; align-items: center; }
+.nav-btn { background: var(--bg2); border: 1px solid var(--border); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--tx); transition: 0.2s; }
+.nav-btn:hover { border-color: var(--ac); color: var(--ac); }
+.nav-cta { padding: 8px 20px; border-radius: 999px; background: var(--ac); color: #fff; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 14px; }
+.nav-cta:hover { background: var(--ac2); transform: translateY(-1px); }
+
+#home-view { position: absolute; inset: 0; overflow-y: auto; z-index: 10; background: var(--bg); padding-top: 80px; }
+.hero { min-height: calc(100vh - 80px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; position: relative; }
 .hero-bg { position: absolute; inset: 0; z-index: -1; overflow: hidden; background-image: url('sky.JPG'); background-size: cover; background-position: center; }
 .hero-bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 0%, var(--bg) 95%); }
 
 .hero-content { text-align: center; max-width: 760px; z-index: 1; width: 100%; }
 .hero-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 999px; color: var(--tx2); font-size: 12px; margin-bottom: 24px; backdrop-filter: blur(10px); }
-.hero-title { font-size: 3.5rem; font-weight: 800; color: #fff; margin-bottom: 16px; text-shadow: 0 2px 15px rgba(0,0,0,0.6); letter-spacing: -0.02em; }
+.hero-title { font-family: 'Playfair Display', serif; font-size: 4rem; font-weight: 800; color: #fff; margin-bottom: 16px; text-shadow: 0 2px 15px rgba(0,0,0,0.6); letter-spacing: -0.02em; }
 body.light .hero-title { color: #0f172a; text-shadow: 0 2px 15px rgba(255,255,255,0.6); }
 .hero-sub { color: #f1f5f9; font-size: 1.1rem; margin-bottom: 32px; font-weight: 400; text-shadow: 0 2px 10px rgba(0,0,0,0.4); }
 body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,0.5); }
@@ -81,13 +100,11 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
 .input-box input:not(:placeholder-shown) ~ .typing-overlay { opacity: 0; }
 .typing-overlay .cursor { width: 2px; height: 16px; background: var(--ac); margin-left: 2px; animation: blink 1s step-end infinite; }
 
-/* Model Selector Chip inside Input */
 .home-model-dd { position: relative; flex-shrink: 0; height: 100%; display: flex; align-items: center; border-right: 1px solid var(--border); padding-right: 6px; }
 .home-model-btn { display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; color: var(--tx2); font-size: 13px; cursor: pointer; transition: 0.2s; font-weight: 500; }
 .home-model-btn:hover { background: var(--bg3); border-color: var(--ac); color: var(--ac); }
 .home-model-btn i { font-size: 12px; }
 
-/* Idea Giver Auto-scroll Styles */
 .idea-giver-container { max-width: 680px; margin: 24px auto 0; height: 140px; overflow: hidden; mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%); position: relative; }
 .idea-giver-track { display: flex; flex-direction: column; gap: 8px; animation: scrollIdeas 20s linear infinite; }
 .idea-giver-container:hover .idea-giver-track { animation-play-state: paused; }
@@ -102,12 +119,13 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
 .btn-gen:hover .shine-effect { animation: shine 1.5s ease-out infinite; }
 .btn-gen svg { width: 16px; height: 16px; flex-shrink: 0; }
 
-.lib-toggle { display: flex; background: var(--bg2); padding: 4px; border-radius: 12px; margin-bottom: 24px; width: fit-content; margin-left: auto; margin-right: auto; border: 1px solid var(--border); }
-.lib-btn { padding: 8px 24px; border: none; background: none; cursor: pointer; border-radius: 8px; font-weight: 600; font-size: 14px; color: var(--mt); transition: 0.2s; display: flex; align-items: center; gap: 6px; }
-.lib-btn.active { background: var(--panel); color: var(--tx); box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+.page-content { max-width: 1200px; margin: 0 auto; padding: 60px 24px; }
+.page-title { font-family: 'Playfair Display', serif; font-size: 3rem; font-weight: 800; text-align: center; margin-bottom: 12px; color: var(--tx); }
+.page-subtitle { text-align: center; color: var(--mt); margin-bottom: 40px; font-size: 1.1rem; }
 
 .proj-section { padding: 0px 24px 60px; max-width: 1200px; margin: 0 auto; }
 .proj-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+.proj-header h2 { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--tx); }
 .proj-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
 .proj-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; cursor: pointer; transition: 0.2s; position: relative; overflow: hidden; }
 .proj-card:hover { border-color: var(--ac); transform: translateY(-2px); box-shadow: var(--shadow); }
@@ -117,8 +135,36 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
 .proj-del { position: absolute; top: 12px; right: 12px; color: var(--mt); opacity: 0; transition: 0.2s; cursor: pointer; background: var(--bg2); padding: 6px; border-radius: 6px; }
 .proj-card:hover .proj-del { opacity: 1; }
 
+.lib-toggle { display: flex; background: var(--bg2); padding: 4px; border-radius: 12px; margin-bottom: 24px; width: fit-content; margin-left: auto; margin-right: auto; border: 1px solid var(--border); }
+.lib-btn { padding: 8px 24px; border: none; background: none; cursor: pointer; border-radius: 8px; font-weight: 600; font-size: 14px; color: var(--mt); transition: 0.2s; display: flex; align-items: center; gap: 6px; }
+.lib-btn.active { background: var(--panel); color: var(--tx); box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+
+/* Blog Styles */
+.blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 24px; }
+.blog-card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; cursor: pointer; transition: 0.3s; }
+.blog-card:hover { transform: translateY(-4px); border-color: var(--ac); box-shadow: var(--shadow); }
+.blog-card-img { width: 100%; height: 200px; object-fit: cover; background: var(--bg2); }
+.blog-card-body { padding: 20px; }
+.blog-card-title { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; margin-bottom: 12px; color: var(--tx); line-height: 1.4; }
+.blog-card-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; font-size: 13px; color: var(--mt); }
+.blog-author { display: flex; align-items: center; gap: 6px; font-weight: 600; color: var(--tx2); }
+.blog-author-avatar { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+.blog-card-excerpt { font-size: 14px; color: var(--tx2); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+#blog-full-view { display: none; max-width: 800px; margin: 0 auto; padding: 40px 24px; }
+.blog-back-btn { padding: 8px 16px; background: var(--bg2); border: 1px solid var(--border); color: var(--tx); border-radius: 8px; cursor: pointer; margin-bottom: 24px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+.blog-back-btn:hover { border-color: var(--ac); color: var(--ac); }
+.blog-full-title { font-family: 'Playfair Display', serif; font-size: 2.5rem; font-weight: 800; line-height: 1.2; margin-bottom: 16px; color: var(--tx); }
+.blog-full-meta { display: flex; gap: 16px; align-items: center; margin-bottom: 24px; color: var(--mt); font-size: 14px; }
+.blog-full-img { width: 100%; max-height: 400px; object-fit: cover; border-radius: 12px; margin-bottom: 32px; }
+.blog-full-content { font-size: 16px; line-height: 1.8; color: var(--tx2); }
+.blog-full-content h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--tx); margin-top: 32px; margin-bottom: 12px; }
+.blog-full-content p { margin-bottom: 16px; }
+.blog-full-content ul { margin-bottom: 16px; padding-left: 20px; }
+.blog-full-content li { margin-bottom: 8px; }
+
 /* Comparison Graph Styles */
-.comparison-section { max-width: 800px; margin: 60px auto 40px; padding: 0 24px; text-align: center; }
+.comparison-section { max-width: 800px; margin: 0 auto 40px; padding: 0 24px; text-align: center; }
 .comp-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; display: flex; align-items: center; gap: 16px; transition: 0.2s; }
 .comp-card:hover { border-color: var(--ac); transform: translateY(-2px); box-shadow: var(--shadow); }
 .comp-card.brew-row { border-color: var(--ok); background: rgba(16, 185, 129, 0.05); }
@@ -133,15 +179,12 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
 .brew-row .comp-price { color: var(--ok); mix-blend-mode: normal; }
 
 /* Pricing Section Styles */
-.pricing-section { max-width: 1200px; margin: 40px auto 80px; padding: 0 24px; }
-.pricing-header { text-align: center; font-size: 2rem; font-weight: 800; margin-bottom: 12px; color: var(--tx); }
-.pricing-sub { text-align: center; color: var(--mt); margin-bottom: 40px; font-size: 1.1rem; }
 .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; max-width: 1000px; margin: 0 auto; }
 .price-card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 32px; text-align: center; transition: 0.2s; position: relative; display: flex; flex-direction: column; }
 .price-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: var(--ac); }
 .price-card.featured { border-color: var(--ac); box-shadow: 0 0 30px var(--acG); transform: scale(1.05); }
 .price-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--ac); color: #fff; padding: 4px 16px; border-radius: 999px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
-.price-name { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; color: var(--tx); }
+.price-name { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; color: var(--tx); }
 .price-cost { font-size: 3rem; font-weight: 800; margin-bottom: 8px; color: var(--tx); display: flex; justify-content: center; align-items: baseline; gap: 4px; }
 .price-cost span { font-size: 1rem; font-weight: 500; color: var(--mt); }
 .price-old { text-decoration: line-through; color: var(--dn); font-size: 2rem; opacity: 0.8; }
@@ -157,8 +200,6 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
 .price-btn.secondary:hover { background: var(--bg3); }
 
 /* FAQ Section Styles */
-.faq-section { max-width: 800px; margin: 40px auto 80px; padding: 0 24px; }
-.faq-header { text-align: center; font-size: 2rem; font-weight: 800; margin-bottom: 32px; color: var(--tx); }
 .faq-item { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; overflow: hidden; background: var(--panel); transition: border-color 0.2s; }
 .faq-item:hover { border-color: var(--ac); }
 .faq-q { width: 100%; text-align: left; padding: 18px 20px; background: transparent; border: none; color: var(--tx); font-size: 16px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; font-family: 'Inter', sans-serif; }
@@ -172,7 +213,7 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
 .ed-header { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--border); height: 60px; }
 .ed-btn { width: 40px; height: 40px; border-radius: 8px; background: transparent; border: 1px solid transparent; color: var(--tx2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: 0.2s; flex-shrink: 0; }
 .ed-btn:hover { background: var(--bg2); border-color: var(--border); }
-.ed-title { font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 8px; font-size: 16px; min-width: 0; }
+.ed-title { font-family: 'Playfair Display', serif; font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 8px; font-size: 18px; min-width: 0; }
 .ed-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
 .ms-dd { position: relative; flex-shrink: 0; }
 .ms-btn { padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg2); color: var(--tx); cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; height: 40px; }
@@ -185,10 +226,25 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
 .ed-body { flex: 1; display: flex; overflow: hidden; min-height: 0; }
 
 .chat-panel { width: 400px; min-width: 320px; display: flex; flex-direction: column; background: var(--panel); border-right: 1px solid var(--border); position: relative; }
+
+/* Context Indicator */
+.context-indicator {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 16px; background: var(--bg2); border-bottom: 1px solid var(--border);
+    font-size: 12px; color: var(--mt); flex-shrink: 0;
+}
+.ci-bar-bg { flex: 1; height: 6px; background: var(--bg3); border-radius: 4px; overflow: hidden; max-width: 100px; }
+.ci-bar-fill { height: 100%; background: var(--ok); transition: width 0.3s, background 0.3s; width: 0%; }
+.ci-bar-fill.warning { background: var(--warn); }
+.ci-bar-fill.danger { background: var(--dn); }
+.ci-text { white-space: nowrap; font-weight: 600; }
+.ci-btn { padding: 4px 10px; background: var(--panel); border: 1px solid var(--border); color: var(--tx2); border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px; transition: 0.2s; margin-left: auto; }
+.ci-btn:hover { background: var(--ac); color: #fff; border-color: var(--ac); }
+
 .chat-msgs { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
 .chat-welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; color: var(--mt); }
 .chat-welcome i { font-size: 28px; margin-bottom: 12px; color: var(--ac); }
-.chat-welcome h3 { color: var(--tx); margin-bottom: 6px; }
+.chat-welcome h3 { font-family: 'Playfair Display', serif; color: var(--tx); margin-bottom: 6px; }
 
 .msg { display: flex; gap: 10px; animation: fadeIn 0.3s; position: relative; }
 .msg.user { flex-direction: row-reverse; }
@@ -262,7 +318,6 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
 #asset-preview-container { flex: 1; display: none; align-items: center; justify-content: center; background: var(--bg2); overflow: hidden; padding: 20px; }
 #asset-preview-container img, #asset-preview-container video { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: var(--shadow); }
 
-/* Live Console Styles */
 .console-panel { height: 160px; background: var(--panel); border-top: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
 .console-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--mt); font-weight: 600; }
 .console-clear { background: transparent; border: none; color: var(--mt); cursor: pointer; font-size: 12px; }
@@ -311,7 +366,7 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
 .modal-overlay.show { display: flex; }
 .modal-box { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 24px; width: 100%; max-width: 500px; box-shadow: var(--shadow); max-height: 90vh; overflow-y: auto; }
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.modal-title { font-size: 18px; font-weight: 700; }
+.modal-title { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; }
 .modal-close { background: none; border: none; color: var(--mt); cursor: pointer; font-size: 24px; line-height: 1; }
 .modal-desc { font-size: 13px; color: var(--mt); margin-bottom: 16px; line-height: 1.5; }
 .modal-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--tx); font-family: 'Inter', sans-serif; font-size: 14px; margin-bottom: 12px; }
@@ -325,6 +380,10 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
 
 .mobile-tabs { display: none; }
 @media (max-width: 768px) {
+    .top-nav { padding: 6px 12px; }
+    .nav-link { padding: 6px 10px; font-size: 12px; }
+    .nav-cta { padding: 6px 12px; font-size: 12px; }
+    .nav-links { gap: 2px; }
     .chat-panel { width: 100%; }
     .prev-panel { display: none; }
     .ed-body.mobile-prev .chat-panel { display: none; }
@@ -351,7 +410,7 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
 </head>
 <body>
 
-<div id="toast" style="position:fixed;top:20px;right:20px;z-index:9999"></div>
+<div id="toast" style="position:fixed;top:80px;right:20px;z-index:9999"></div>
 
 <div class="modal-overlay" id="generic-modal">
     <div class="modal-box">
@@ -363,109 +422,129 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
     </div>
 </div>
 
-<!-- HOME -->
+<!-- FLOATING NAVBAR -->
+<nav class="top-nav">
+    <div class="nav-left">
+        <img src="brew.HEIC" class="nav-logo" alt="Brew Logo">
+    </div>
+    <div class="nav-links">
+        <button class="nav-link active" data-page="home">Home</button>
+        <button class="nav-link" data-page="blog">Blog</button>
+        <button class="nav-link" data-page="pricing">Pricing</button>
+        <button class="nav-link" data-page="faq">FAQ</button>
+    </div>
+    <div class="nav-right">
+        <button class="nav-btn" id="nav-theme-btn" title="Toggle Theme">
+            <img src="dark.HEIC" id="nav-theme-icon" alt="theme">
+        </button>
+        <button class="nav-cta" onclick="document.getElementById('home-view').scrollTo({top:0, behavior:'smooth'}); document.getElementById('hero-input').focus();">New Project</button>
+    </div>
+</nav>
+
 <div id="home-view">
-    <img src="brew.HEIC" class="home-logo" alt="Brew Logo">
-    <div class="hero">
-        <div class="hero-bg"></div>
-        <div class="hero-content">
-            <div class="hero-badge">Powered by Agnes AI & Pollinations</div>
-            <h1 class="hero-title">Brew AI</h1>
-            <p class="hero-sub">Lightning fast code generation with split files, live preview, and asset management.</p>
-            
-            <div class="input-box">
-                <!-- Model Selector inside Input -->
-                <div class="home-model-dd">
-                    <button class="home-model-btn" id="home-model-btn"><i class="fas fa-microchip"></i> <span id="home-ms-lbl">Auto</span> <i class="fas fa-chevron-down" style="font-size:10px"></i></button>
-                    <div class="ms-menu" id="home-ms-menu" style="bottom: 60px; top: auto; left: 0; right: auto; width: 250px;">
-                        <div class="ms-item active" data-model="auto">Auto (Smart Select)</div>
-                        <div class="ms-item" data-model="2.0">agnes-2.0-flash</div>
-                        <div class="ms-item" data-model="1.5">agnes-1.5-flash</div>
-                        <div class="ms-item" data-model="openai">Pollinations (OpenAI)</div>
-                        <div class="ms-item" data-model="openai-fast">Pollinations (Fast)</div>
-                        <div class="ms-item" data-model="openai-large">Pollinations (Large)</div>
-                        <div class="ms-item" data-model="qwen-coder">Pollinations (Qwen Coder)</div>
-                        <div class="ms-item" data-model="mistral">Pollinations (Mistral)</div>
-                        <div class="ms-item" data-model="claude-fast">Pollinations (Claude Fast)</div>
-                        <div class="ms-item" data-model="gemini-fast">Pollinations (Gemini Fast)</div>
-                        <div class="ms-item" data-model="video">agnes-video-v2.0</div>
-                        <div class="ms-item" data-model="image">agnes-image-2.1-flash</div>
+    <!-- HOME PAGE -->
+    <div id="page-home" class="page-content" style="display: block; padding: 0; max-width: 100%;">
+        <div class="hero">
+            <div class="hero-bg"></div>
+            <div class="hero-content">
+                <div class="hero-badge">Powered by Agnes AI & Pollinations</div>
+                <h1 class="hero-title">Brew AI</h1>
+                <p class="hero-sub">Lightning fast code generation with split files, live preview, and asset management.</p>
+                
+                <div class="input-box">
+                    <div class="home-model-dd">
+                        <button class="home-model-btn" id="home-model-btn"><i class="fas fa-microchip"></i> <span id="home-ms-lbl">Auto</span> <i class="fas fa-chevron-down" style="font-size:10px"></i></button>
+                        <div class="ms-menu" id="home-ms-menu" style="bottom: 60px; top: auto; left: 0; right: auto; width: 250px;">
+                            <div class="ms-item active" data-model="auto">Auto (Smart Select)</div>
+                            <div class="ms-item" data-model="2.0">agnes-2.0-flash</div>
+                            <div class="ms-item" data-model="1.5">agnes-1.5-flash</div>
+                            <div class="ms-item" data-model="openai">Pollinations (OpenAI)</div>
+                            <div class="ms-item" data-model="openai-fast">Pollinations (Fast)</div>
+                            <div class="ms-item" data-model="video">agnes-video-v2.0</div>
+                            <div class="ms-item" data-model="image">agnes-image-2.1-flash</div>
+                        </div>
+                    </div>
+                    <div class="typing-overlay" id="typing-overlay"><span id="typed-text"></span><span class="cursor"></span></div>
+                    <input type="text" id="hero-input" autocomplete="off" placeholder=" ">
+                    <button id="hero-submit" class="btn-gen">
+                        <div class="shine-effect"></div>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg>
+                        Generate
+                    </button>
+                </div>
+                
+                <div class="idea-giver-container">
+                    <div class="idea-giver-track" id="idea-giver-track"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="proj-section">
+            <div class="lib-toggle">
+                <button class="lib-btn active" id="tab-projects" onclick="switchLibView('projects')"><i class="fas fa-folder"></i> My Projects</button>
+                <button class="lib-btn" id="tab-templates" onclick="switchLibView('templates')"><i class="fas fa-layout-template"></i> Templates</button>
+            </div>
+            <div id="projects-view">
+                <div class="proj-header">
+                    <h2>Your Projects</h2>
+                    <div style="display:flex; gap:8px;">
+                        <button style="padding:10px 16px;border:1px solid var(--border);background:var(--panel);color:var(--tx);border-radius:8px;cursor:pointer" id="import-gh-btn"><i class="fab fa-github"></i> Import</button>
+                        <button style="padding:10px 16px;border:none;background:var(--ac);color:#fff;border-radius:8px;cursor:pointer" id="new-btn">New Project</button>
                     </div>
                 </div>
-                <div class="typing-overlay" id="typing-overlay"><span id="typed-text"></span><span class="cursor"></span></div>
-                <input type="text" id="hero-input" autocomplete="off" placeholder=" ">
-                <button id="hero-submit" class="btn-gen">
-                    <div class="shine-effect"></div>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg>
-                    Generate
-                </button>
+                <div class="proj-grid" id="proj-grid"></div>
             </div>
-            
-            <!-- AUTO-SCROLLING IDEA GIVER -->
-            <div class="idea-giver-container">
-                <div class="idea-giver-track" id="idea-giver-track"></div>
+            <div id="templates-view" style="display:none;">
+                <div class="proj-header"><h2>Verified Templates</h2></div>
+                <div class="proj-grid" id="tmpl-grid"></div>
             </div>
-        </div>
-    </div>
-    
-    <div class="proj-section">
-        <div class="lib-toggle">
-            <button class="lib-btn active" id="tab-projects" onclick="switchLibView('projects')"><i class="fas fa-folder"></i> My Projects</button>
-            <button class="lib-btn" id="tab-templates" onclick="switchLibView('templates')"><i class="fas fa-layout-template"></i> Templates</button>
-        </div>
-        <div id="projects-view">
-            <div class="proj-header">
-                <h2>Your Projects</h2>
-                <div style="display:flex; gap:8px;">
-                    <button style="padding:10px 16px;border:1px solid var(--border);background:var(--panel);color:var(--tx);border-radius:8px;cursor:pointer" id="import-gh-btn"><i class="fab fa-github"></i> Import</button>
-                    <button style="padding:10px 16px;border:none;background:var(--ac);color:#fff;border-radius:8px;cursor:pointer" id="new-btn">New Project</button>
-                </div>
-            </div>
-            <div class="proj-grid" id="proj-grid"></div>
-        </div>
-        <div id="templates-view" style="display:none;">
-            <div class="proj-header"><h2>Verified Templates</h2></div>
-            <div class="proj-grid" id="tmpl-grid"></div>
         </div>
     </div>
 
-    <!-- COMPARISON GRAPH SECTION -->
-    <div class="comparison-section">
-        <h2 class="pricing-header">Why Pay for Other AI Builders?</h2>
-        <p class="pricing-sub">Brew AI gives you premium features, completely free. Stop overpaying for AI website generation.</p>
+    <!-- BLOG PAGE -->
+    <div id="page-blog" class="page-content" style="display: none;">
+        <h1 class="page-title">Brew AI Blog</h1>
+        <p class="page-subtitle">Updates, insights, and comparisons from the team.</p>
         
-        <div class="comp-card brew-row">
-            <div class="comp-info"><img src="brew.HEIC" class="comp-logo"> <span class="comp-name">Brew AI</span></div>
-            <div class="comp-bar-container"><div class="comp-bar" style="width: 100%"></div><span class="comp-price">$0 (Free)</span></div>
-        </div>
-        <div class="comp-card">
-            <div class="comp-info"><img src="https://www.google.com/s2/favicons?domain=replit.com&sz=128" class="comp-logo"> <span class="comp-name">Replit</span></div>
-            <div class="comp-bar-container"><div class="comp-bar" style="width: 60%"></div><span class="comp-price">$15 /mo</span></div>
-        </div>
-        <div class="comp-card">
-            <div class="comp-info"><img src="https://www.google.com/s2/favicons?domain=bolt.new&sz=128" class="comp-logo"> <span class="comp-name">Bolt</span></div>
-            <div class="comp-bar-container"><div class="comp-bar" style="width: 80%"></div><span class="comp-price">$20 /mo</span></div>
-        </div>
-        <div class="comp-card">
-            <div class="comp-info"><img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/lovable-ai-icon.png" class="comp-logo"> <span class="comp-name">Lovable</span></div>
-            <div class="comp-bar-container"><div class="comp-bar" style="width: 100%"></div><span class="comp-price">$25 /mo</span></div>
-        </div>
-        <div class="comp-card">
-            <div class="comp-info"><img src="https://www.google.com/s2/favicons?domain=base44.com&sz=128" class="comp-logo"> <span class="comp-name">Base44</span></div>
-            <div class="comp-bar-container"><div class="comp-bar" style="width: 100%"></div><span class="comp-price">$25 /mo</span></div>
-        </div>
-        <div class="comp-card">
-            <div class="comp-info"><img src="https://www.google.com/s2/favicons?domain=floot.com&sz=128" class="comp-logo"> <span class="comp-name">Floot</span></div>
-            <div class="comp-bar-container"><div class="comp-bar" style="width: 100%"></div><span class="comp-price">$25 /mo</span></div>
-        </div>
+        <div class="blog-grid" id="blog-grid"></div>
     </div>
 
-    <!-- PRICING SECTION -->
-    <div class="pricing-section">
-        <h2 class="pricing-header">Simple, Transparent Pricing</h2>
-        <p class="pricing-sub">Everything is free for now. No hidden fees, no credit cards required.</p>
-        <div class="pricing-grid">
-            <!-- Free Plan -->
+    <!-- BLOG FULL VIEW -->
+    <div id="blog-full-view"></div>
+
+    <!-- PRICING & COMPARISON PAGE -->
+    <div id="page-pricing" class="page-content" style="display: none;">
+        <h1 class="page-title">Pricing & Comparison</h1>
+        <p class="page-subtitle">Stop overpaying for AI website generation. Brew AI gives you premium features, completely free.</p>
+        
+        <div class="comparison-section">
+            <div class="comp-card brew-row">
+                <div class="comp-info"><img src="brew.HEIC" class="comp-logo"> <span class="comp-name">Brew AI</span></div>
+                <div class="comp-bar-container"><div class="comp-bar" style="width: 100%"></div><span class="comp-price">$0 (Free)</span></div>
+            </div>
+            <div class="comp-card">
+                <div class="comp-info"><img src="https://www.google.com/s2/favicons?domain=replit.com&sz=128" class="comp-logo"> <span class="comp-name">Replit</span></div>
+                <div class="comp-bar-container"><div class="comp-bar" style="width: 60%"></div><span class="comp-price">$15 /mo</span></div>
+            </div>
+            <div class="comp-card">
+                <div class="comp-info"><img src="https://www.google.com/s2/favicons?domain=bolt.new&sz=128" class="comp-logo"> <span class="comp-name">Bolt</span></div>
+                <div class="comp-bar-container"><div class="comp-bar" style="width: 80%"></div><span class="comp-price">$20 /mo</span></div>
+            </div>
+            <div class="comp-card">
+                <div class="comp-info"><img src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/lovable-ai-icon.png" class="comp-logo"> <span class="comp-name">Lovable</span></div>
+                <div class="comp-bar-container"><div class="comp-bar" style="width: 100%"></div><span class="comp-price">$25 /mo</span></div>
+            </div>
+            <div class="comp-card">
+                <div class="comp-info"><img src="https://www.google.com/s2/favicons?domain=base44.com&sz=128" class="comp-logo"> <span class="comp-name">Base44</span></div>
+                <div class="comp-bar-container"><div class="comp-bar" style="width: 100%"></div><span class="comp-price">$25 /mo</span></div>
+            </div>
+            <div class="comp-card">
+                <div class="comp-info"><img src="https://www.google.com/s2/favicons?domain=floot.com&sz=128" class="comp-logo"> <span class="comp-name">Floot</span></div>
+                <div class="comp-bar-container"><div class="comp-bar" style="width: 100%"></div><span class="comp-price">$25 /mo</span></div>
+            </div>
+        </div>
+
+        <div class="pricing-grid" style="margin-top: 40px;">
             <div class="price-card featured">
                 <div class="price-badge">All Access</div>
                 <div class="price-name">Free</div>
@@ -480,10 +559,8 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
                     <li><i class="fas fa-check"></i> HTTP API Tester</li>
                     <li><i class="fas fa-check"></i> 100% Code Ownership</li>
                 </ul>
-                <button class="price-btn" onclick="document.getElementById('home-view').scrollTo({top:0, behavior:'smooth'}); document.getElementById('hero-input').focus();">Start Building</button>
+                <button class="price-btn" onclick="switchPage('home'); setTimeout(() => document.getElementById('hero-input').focus(), 100);">Start Building</button>
             </div>
-
-            <!-- Pro Plan -->
             <div class="price-card">
                 <div class="price-name">Pro</div>
                 <div class="price-cost"><span class="price-old">$25</span></div>
@@ -496,10 +573,8 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
                     <li><i class="fas fa-check"></i> Version History Restore</li>
                     <li><i class="fas fa-check"></i> SEO Optimization Tool</li>
                 </ul>
-                <button class="price-btn secondary" onclick="document.getElementById('home-view').scrollTo({top:0, behavior:'smooth'}); document.getElementById('hero-input').focus();">Get Free Access</button>
+                <button class="price-btn secondary" onclick="switchPage('home'); setTimeout(() => document.getElementById('hero-input').focus(), 100);">Get Free Access</button>
             </div>
-
-            <!-- Master Plan -->
             <div class="price-card">
                 <div class="price-name">Master</div>
                 <div class="price-cost"><span class="price-old">$70</span></div>
@@ -512,50 +587,44 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
                     <li><i class="fas fa-check"></i> Video Generation v2</li>
                     <li><i class="fas fa-check"></i> Team Collaboration (Soon)</li>
                 </ul>
-                <button class="price-btn secondary" onclick="document.getElementById('home-view').scrollTo({top:0, behavior:'smooth'}); document.getElementById('hero-input').focus();">Get Free Access</button>
+                <button class="price-btn secondary" onclick="switchPage('home'); setTimeout(() => document.getElementById('hero-input').focus(), 100);">Get Free Access</button>
             </div>
         </div>
     </div>
 
-    <!-- FAQ SECTION -->
-    <div class="faq-section">
-        <h2 class="faq-header">Frequently Asked Questions</h2>
+    <!-- FAQ PAGE -->
+    <div id="page-faq" class="page-content" style="display: none; max-width: 800px;">
+        <h1 class="page-title">Frequently Asked Questions</h1>
+        <p class="page-subtitle">Everything you need to know about Brew AI.</p>
         
         <div class="faq-item">
             <button class="faq-q">Is Brew Ai need to pay and how much? <i class="fas fa-chevron-down"></i></button>
             <div class="faq-a"><p>Our AI website builder is free for now, no any plan, no need sign up just go to our website and try it.</p></div>
         </div>
-
         <div class="faq-item">
             <button class="faq-q">Do I have to make an account/ How to make an accounts? <i class="fas fa-chevron-down"></i></button>
             <div class="faq-a"><p>No, our website doesn't have an account system.</p></div>
         </div>
-
         <div class="faq-item">
             <button class="faq-q">Why should I choose Brew Ai? <i class="fas fa-chevron-down"></i></button>
             <div class="faq-a"><p>Our AI website builder gives you 100% of your projects own, your project, you own it. Also we can import from GitHub and export to GitHub and one click export to GitHub pages, also it is free.</p></div>
         </div>
-
         <div class="faq-item">
             <button class="faq-q">Do you have built in ai for user projects? <i class="fas fa-chevron-down"></i></button>
             <div class="faq-a"><p>Yes, we have built in AI for user projects, you can use it for free.</p></div>
         </div>
-
         <div class="faq-item">
             <button class="faq-q">Can Brew Ai generate image or video? <i class="fas fa-chevron-down"></i></button>
             <div class="faq-a"><p>Yes, our AI can generate good looking images and videos and it can put it into the website too.</p></div>
         </div>
-
         <div class="faq-item">
             <button class="faq-q">Is Brew Ai safe to use? Will it steal my data? <i class="fas fa-chevron-down"></i></button>
             <div class="faq-a"><p>No, it will never. Our website is front-end only and it uses local system to store your project. If you want to, you can export to GitHub and import in another device.</p></div>
         </div>
-
         <div class="faq-item">
             <button class="faq-q">Do I have to bring my own api key to use Brew Ai? <i class="fas fa-chevron-down"></i></button>
             <div class="faq-a"><p>No, you don't have to. Our website has AI there, you don't have to use your own API key.</p></div>
         </div>
-
         <div class="faq-item">
             <button class="faq-q">How to get my project in another device? <i class="fas fa-chevron-down"></i></button>
             <div class="faq-a"><p>Since our website is frontend only, you can export your website to GitHub and use another device to import it again.</p></div>
@@ -577,11 +646,6 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
                 <div class="ms-item" data-model="1.5">agnes-1.5-flash</div>
                 <div class="ms-item" data-model="openai">Pollinations (OpenAI)</div>
                 <div class="ms-item" data-model="openai-fast">Pollinations (Fast)</div>
-                <div class="ms-item" data-model="openai-large">Pollinations (Large)</div>
-                <div class="ms-item" data-model="qwen-coder">Pollinations (Qwen Coder)</div>
-                <div class="ms-item" data-model="mistral">Pollinations (Mistral)</div>
-                <div class="ms-item" data-model="claude-fast">Pollinations (Claude Fast)</div>
-                <div class="ms-item" data-model="gemini-fast">Pollinations (Gemini Fast)</div>
                 <div class="ms-item" data-model="video">agnes-video-v2.0</div>
                 <div class="ms-item" data-model="image">agnes-image-2.1-flash</div>
             </div>
@@ -612,6 +676,15 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
 
     <div class="ed-body mobile-chat" id="ed-body">
         <div class="chat-panel">
+            <!-- CONTEXT INDICATOR -->
+            <div class="context-indicator">
+                <div class="ci-bar-bg"><div class="ci-bar-fill" id="ci-bar-fill"></div></div>
+                <span class="ci-text" id="ci-text">0% (0 / 128k)</span>
+                <button class="ci-btn" id="ci-new-chat" title="Start a new chat while keeping code & assets">
+                    <i class="fas fa-plus"></i> New Chat
+                </button>
+            </div>
+
             <div class="chat-msgs" id="chat-msgs"></div>
             <div class="continue-wrap" id="continue-wrap" style="padding: 0 16px 12px; display: none;">
                 <button class="continue-btn" style="width: 100%; padding: 10px; background: var(--warn); color: #000; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="continueGen()"><i class="fas fa-forward"></i> Continue Generation</button>
@@ -620,7 +693,6 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
                 <div class="chat-input-wrap">
                     <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask AI to build... (Use # to mention files)"></textarea>
                     <div class="chat-icons">
-                        <!-- Component Injector moved here -->
                         <div class="ms-dd">
                             <button class="chat-icon" id="btn-comp-inject" title="Insert Component"><i class="fas fa-shapes"></i></button>
                             <div class="ms-menu" id="comp-menu" style="bottom: 50px; right: 0; top: auto; width: 200px;">
@@ -674,8 +746,6 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
                     <div class="assets-view" id="assets-view"></div>
                     <div class="issues-view" id="issues-view"></div>
                 </div>
-                
-                <!-- Live Console -->
                 <div class="console-panel" id="console-panel">
                     <div class="console-header">
                         <span>Console Output</span>
@@ -696,25 +766,9 @@ const VID_API_URL = 'https://apihub.agnes-ai.com/v1/videos/generations';
 const SITE_KEY = 'sk-qZB4ieEv5UdIrYK3eEHAfdAv5xXYKLsVD7bAd9Kg7EQuDYF3';
 const PROJECT_KEY = 'sk-rWvCRyEKxFrHuuVaoQB1IwFoPXMGy6XQNQvpC3AhHl5kkNCE';
 const PROXY = 'https://corsproxy.io/?url=';
-
-// Pollinations API Config
 const POLLI_URL = 'https://gen.pollinations.ai/v1/chat/completions';
 const POLLI_IMG_URL = 'https://gen.pollinations.ai/image/';
-
-const MODELS = { 
-    'auto': 'agnes-2.0-flash', 
-    '2.0':'agnes-2.0-flash', 
-    '1.5':'agnes-1.5-flash', 
-    'video':'agnes-video-v2.0', 
-    'image':'agnes-image-2.1-flash',
-    'openai': 'openai',
-    'openai-fast': 'openai-fast',
-    'openai-large': 'openai-large',
-    'qwen-coder': 'qwen-coder',
-    'mistral': 'mistral',
-    'claude-fast': 'claude-fast',
-    'gemini-fast': 'gemini-fast'
-};
+const MODELS = { 'auto': 'agnes-2.0-flash', '2.0':'agnes-2.0-flash', '1.5':'agnes-1.5-flash', 'video':'agnes-video-v2.0', 'image':'agnes-image-2.1-flash', 'openai': 'openai', 'openai-fast': 'openai-fast' };
 
 const DEFAULT_DESIGN_MD = `# Design System\n\n## Aesthetics\nModern, sleek, and visually striking. NEVER use default browser styles.\n\n## Colors\nUse a sophisticated palette. Prefer dark themes (e.g., #0f172a background, #f1f5f9 text) with vibrant, glowing accents (indigo, violet, fuchsia). Use CSS variables.\n\n## Typography\nUse 'Inter' for sans-serif and 'JetBrains Mono' for code. Large, bold headings (clamp up to 4rem) with tight tracking. Muted, readable body text.\n\n## Layout\nGenerous whitespace (padding: 2rem+). Centered max-width containers (1200px). Fully responsive Flexbox/Grid.\n\n## Components\nBackgrounds should be subtle (rgba). Use 1px solid borders with low opacity. Border-radius 12px-16px. Use backdrop-filter: blur() for glassmorphism.\n\n## Interactions\nSmooth transitions (0.3s ease). Hover states should scale slightly (1.02) and increase glow/shadow.`;
 
@@ -795,6 +849,38 @@ const TEMPLATES = [
     { id: 't4', title: 'Snake Game', color: '#10b981', verified: true, author: 'Brew AI', prompt: 'Create a fully playable Snake game with score tracking and modern UI.' }
 ];
 
+const BLOG_POSTS = [
+    {
+        title: "Lovable vs. Base44 vs. Brew AI: The Battle for the Ultimate Free AI Builder",
+        author: "@BrewAi",
+        date: "July 2, 2026",
+        image: "blog1.PNG",
+        excerpt: "If you’ve been trying to build a web app or website lately, you’ve probably noticed that the AI coding space is moving at absolute warp speed. Tools like Lovable and Base44 have completely changed the game...",
+        content: `<p>If you’ve been trying to build a web app or website lately, you’ve probably noticed that the AI coding space is moving at absolute warp speed. Tools like Lovable and Base44 have completely changed the game, allowing anyone to turn plain-text prompts into fully functional applications in seconds through a process widely known as "vibe coding."</p>
+        <p>But as amazing as these platforms are, they all hit you with the exact same roadblock sooner or later: the dreaded paywall.</p>
+        <p>Once your free credits run out, you're looking at spending $20 to $25 every single month just to keep building. If you are a hobbyist, a developer prototyping an idea, or a founder on a tight budget, that adds up fast.</p>
+        <p>Enter Brew AI—a fascinating, rising contender that is completely flipping the script on the freemium AI builder model. Let’s dive into how these heavyweights stack up and why the underdog might just steal the crown for budget-conscious creators.</p>
+        <h3>1. Lovable AI: The Premium Powerhouse</h3>
+        <p>Lovable is widely considered one of the most polished front-end tools on the market. It excels at taking complex, multi-step prompts and spinning up gorgeous, production-ready user interfaces. It’s incredibly smart, handles state management beautifully, and feels like magic.</p>
+        <p><strong>The Catch:</strong> At $25/month for their starting premium tier, it’s a heavy investment if you aren't monetizing your project yet. Their free tier gives you a taste, but you'll burn through it quickly on complex builds.</p>
+        <h3>2. Base44: The All-in-One Infrastructure</h3>
+        <p>Base44 approaches vibe coding by giving you a zero-config backend right out of the box. While other platforms often require you to connect external tools like Supabase to store data, Base44 handles database schemas, user authentication, security scanning, and user logins internally.</p>
+        <p><strong>The Catch:</strong> Base44 sets you back $20/month for their basic starter plan. More critically, it uses a strict credit system split between message credits for chatting with the AI and integration credits for when your app calls data. If your app gets caught in an AI bug loop, it can drain your entire monthly credit balance in an afternoon, locking your prototype until the next billing cycle.</p>
+        <h3>3. Brew AI: The Complete Zero-Cost Disruptor</h3>
+        <p>While Lovable and Base44 are trying to lock you into monthly subscriptions and rigid credit limits, Brew AI is taking a radically different, user-first approach. It gives you premium features you’d normally have to pay for, completely free—no account required, no credit card, and no hidden API key costs.</p>
+        <p>Brew AI operates as a lightning-fast, frontend-first builder powered by flexible engines like Agnes AI and Pollinations. It offers multi-file splitting, live previews, and robust asset management directly in your browser.</p>
+        <p>Here is what makes Brew AI uniquely powerful compared to the corporate giants:</p>
+        <ul>
+            <li><strong>100% Free Pro Features:</strong> Features that other platforms gate behind $20 to $70/mo tiers—like version history restore, AI image/video generation, and automated GitHub PR creation—are currently entirely free on Brew.</li>
+            <li><strong>True Code Ownership:</strong> Unlike platforms that lock your data into a proprietary ecosystem, Brew integrates natively with GitHub. You can import existing repos, export your code instantly, or deploy to GitHub Pages with a single click.</li>
+            <li><strong>Privacy-First:</strong> With no mandatory account system and everything running locally in your browser workspace, your data stays strictly in your hands.</li>
+        </ul>
+        <h3>The Verdict: Which should you choose?</h3>
+        <p>If you have a large budget and need an instantly structured, built-in database without hooking up third-party services, Base44 offers an interesting environment.</p>
+        <p>However, if you want to build fast, retain 100% ownership of your code, and generate stunning, multimedia-rich sites without a monthly bill or credit limits hanging over your head, Brew AI is a breath of fresh air. It proves that you shouldn't have to overpay just to bring your digital ideas to life.</p>`
+    }
+];
+
 let S = { projects: [], cur: null, gen: false, model: 'auto', activeFile: 'index.html', view: 'prev', viewMode: 'editor', githubToken: localStorage.getItem('gh_token') || '', autoRefresh: true, zoom: 1, tasks: [] };
 let cm;
 let abortCtrl = null;
@@ -803,7 +889,7 @@ let mentionItems = [];
 let mentionIndex = 0;
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
-function toast(m) { const t = document.getElementById('toast'); const d = document.createElement('div'); d.style.cssText = 'padding:12px 18px;background:#fff;border:1px solid #ccc;border-radius:8px;box-shadow:0 8px 20px rgba(0,0,0,0.1);margin-bottom:8px;font-size:13px'; d.textContent = m; t.appendChild(d); setTimeout(() => d.remove(), 3000); }
+function toast(m) { const t = document.getElementById('toast'); const d = document.createElement('div'); d.style.cssText = 'padding:12px 18px;background:var(--panel);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow);margin-bottom:8px;font-size:13px;color:var(--tx)'; d.textContent = m; t.appendChild(d); setTimeout(() => d.remove(), 3000); }
 
 function saveProjects() { try { localStorage.setItem('cm_proj', JSON.stringify(S.projects)); } catch(e){} }
 function loadProjects() {
@@ -907,6 +993,60 @@ function switchLibView(view) {
     }
 }
 
+function renderBlog() {
+    const grid = document.getElementById('blog-grid');
+    grid.innerHTML = BLOG_POSTS.map((post, i) => `
+        <div class="blog-card" onclick="openBlogPost(${i})">
+            <img src="${post.image}" class="blog-card-img" alt="${post.title}">
+            <div class="blog-card-body">
+                <h2 class="blog-card-title">${post.title}</h2>
+                <div class="blog-card-meta">
+                    <span class="blog-author">
+                        <img src="brew.HEIC" class="blog-author-avatar"> ${post.author}
+                        <i class="fas fa-check-circle" style="color: var(--ac); font-size: 12px; margin-left: 2px;"></i>
+                    </span>
+                    <span class="blog-date">${post.date}</span>
+                </div>
+                <p class="blog-card-excerpt">${post.excerpt}</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+window.openBlogPost = function(index) {
+    const post = BLOG_POSTS[index];
+    const view = document.getElementById('blog-full-view');
+    document.getElementById('page-blog').style.display = 'none';
+    view.style.display = 'block';
+    view.innerHTML = `
+        <button class="blog-back-btn" onclick="closeBlogPost()"><i class="fas fa-arrow-left"></i> Back to Blog</button>
+        <h1 class="blog-full-title">${post.title}</h1>
+        <div class="blog-full-meta">
+            <span class="blog-author">
+                <img src="brew.HEIC" class="blog-author-avatar"> ${post.author}
+                <i class="fas fa-check-circle" style="color: var(--ac); font-size: 12px;"></i>
+            </span>
+            <span class="blog-date">${post.date}</span>
+        </div>
+        <img src="${post.image}" class="blog-full-img" alt="${post.title}">
+        <div class="blog-full-content">${post.content}</div>
+    `;
+    document.getElementById('home-view').scrollTo({top: 0, behavior: 'smooth'});
+}
+
+window.closeBlogPost = function() {
+    document.getElementById('blog-full-view').style.display = 'none';
+    document.getElementById('page-blog').style.display = 'block';
+}
+
+function switchPage(page) {
+    document.querySelectorAll('.nav-link').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+    document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
+    document.getElementById('page-' + page).style.display = 'block';
+    document.getElementById('blog-full-view').style.display = 'none';
+    document.getElementById('home-view').scrollTo({top: 0, behavior: 'smooth'});
+}
+
 function fmtAI(content) {
     if (!content) return '';
     let html = '';
@@ -958,23 +1098,17 @@ function markTaskDone(filename) {
             let taskText = S.tasks[i].text.toLowerCase();
             let fname = filename.toLowerCase();
             let ext = filename.split('.').pop().toLowerCase();
-            
             if (taskText.includes(fname) || taskText.includes(ext) || 
                 (ext === 'html' && (taskText.includes('html') || taskText.includes('structure') || taskText.includes('markup'))) ||
                 (ext === 'css' && (taskText.includes('css') || taskText.includes('style'))) ||
                 (ext === 'js' && (taskText.includes('js') || taskText.includes('javascript') || taskText.includes('script') || taskText.includes('logic')))) {
-                S.tasks[i].done = true;
-                found = true;
-                break;
+                S.tasks[i].done = true; found = true; break;
             }
         }
     }
     if (!found) {
         for (let i = 0; i < S.tasks.length; i++) {
-            if (!S.tasks[i].done) {
-                S.tasks[i].done = true;
-                break;
-            }
+            if (!S.tasks[i].done) { S.tasks[i].done = true; break; }
         }
     }
     renderTasks();
@@ -987,14 +1121,13 @@ function openEditor(id) {
     document.getElementById('editor-view').classList.add('active');
     document.getElementById('ed-title').textContent = p.name;
     document.getElementById('ms-lbl').textContent = p.model;
-    renderChat(); renderFiles(); renderTasks(); renderAssets(); renderIssues();
+    renderChat(); renderFiles(); renderTasks(); renderAssets(); renderIssues(); updateContextIndicator();
     
     if (cm) {
         cm.setValue('');
         cm.setOption('mode', 'htmlmixed');
         cm.refresh();
     }
-    
     loadFileToEditor();
     updatePreview();
     switchView('prev');
@@ -1018,9 +1151,7 @@ function switchView(v) {
         loadFileToEditor();
         setTimeout(() => { if (cm) cm.refresh(); }, 10);
     }
-    if (v === 'issues') {
-        renderIssues();
-    }
+    if (v === 'issues') renderIssues();
 }
 
 function renderChat() {
@@ -1030,7 +1161,6 @@ function renderChat() {
         c.innerHTML = `<div class="chat-welcome"><i class="fas fa-comments"></i><h3>Start Building</h3><p>Describe what you want to build.</p></div>`;
         return;
     }
-    
     p.messages.forEach((m, i) => {
         if (m.role === 'user') {
             if (typeof m.content === 'string') addMsg('user', m.content, false, i);
@@ -1050,9 +1180,7 @@ function renderChat() {
                     return '';
                 }).join('');
             }
-            
             const msgDiv = addMsg('ai', contentHtml + toolCallsHtml, false, i);
-            
             if (i === p.messages.length - 1 && !S.gen) {
                 const actions = document.createElement('div');
                 actions.className = 'msg-actions';
@@ -1073,10 +1201,8 @@ function addMsg(role, content, animate=true, msgIndex=-1) {
     const row = document.createElement('div');
     row.className = `msg ${role}`;
     if (!animate) row.style.animation = 'none';
-    
     const avSrc = role === 'ai' ? 'ai.HEIC' : (role === 'user' ? 'user.HEIC' : 'https://placehold.co/28x28?text=Tool');
     const avHtml = `<div class="msg-av"><img src="${avSrc}" alt="${role} avatar"></div>`;
-    
     row.innerHTML = `${avHtml}<div class="msg-bubble">${content}<div class="msg-progress-bar"></div></div>`;
     if(msgIndex >= 0) row.dataset.msgIndex = msgIndex;
     c.appendChild(row); c.scrollTop = c.scrollHeight; return row;
@@ -1107,7 +1233,6 @@ window.retryGen = function() {
 function renderFiles() {
     const p = S.projects.find(x => x.id === S.cur); if (!p) return;
     const bar = document.getElementById('files-bar'); bar.innerHTML = '';
-    
     Object.keys(p.files).forEach(f => {
         const t = document.createElement('div');
         const isLocked = p.lockedFiles.includes(f);
@@ -1118,7 +1243,6 @@ function renderFiles() {
         t.onclick = () => selectFile(f);
         bar.appendChild(t);
     });
-
     p.assets.filter(a => a.approved || a.isUserUpload).forEach(a => {
         const t = document.createElement('div');
         const isActive = a.id === S.activeFile;
@@ -1134,21 +1258,14 @@ function confirmDeleteFile(filename) {
     const modal = document.getElementById('generic-modal');
     const body = document.getElementById('generic-modal-body');
     document.getElementById('generic-modal-title').innerText = 'Delete File?';
-    
     body.innerHTML = `
         <p class="modal-desc">Are you sure you want to delete <strong>${filename}</strong>? This action cannot be undone.</p>
         <div style="display:flex; gap:8px; margin-top:16px;">
             <button class="modal-btn secondary" id="confirm-cancel" style="margin:0;">Cancel</button>
             <button class="modal-btn danger" id="confirm-yes" style="margin:0;">Delete</button>
-        </div>
-    `;
-    
+        </div>`;
     document.getElementById('confirm-cancel').onclick = () => modal.classList.remove('show');
-    document.getElementById('confirm-yes').onclick = () => {
-        deleteFile(filename);
-        modal.classList.remove('show');
-    };
-    
+    document.getElementById('confirm-yes').onclick = () => { deleteFile(filename); modal.classList.remove('show'); };
     modal.classList.add('show');
 }
 
@@ -1157,66 +1274,49 @@ function deleteFile(filename) {
     delete p.files[filename];
     const lockIdx = p.lockedFiles.indexOf(filename);
     if (lockIdx > -1) p.lockedFiles.splice(lockIdx, 1);
-    
     if (S.activeFile === filename) {
         S.activeFile = Object.keys(p.files)[0] || 'index.html';
         if (!p.files[S.activeFile]) p.files[S.activeFile] = '';
     }
-    saveProjects();
-    renderFiles();
-    loadFileToEditor();
-    updatePreview();
+    saveProjects(); renderFiles(); loadFileToEditor(); updatePreview(); updateContextIndicator();
     toast(`${filename} deleted.`);
 }
 
 function confirmDeleteAsset(id) {
     const p = S.projects.find(x => x.id === S.cur); if (!p) return;
-    const asset = p.assets.find(a => a.id === id);
-    if (!asset) return;
-
+    const asset = p.assets.find(a => a.id === id); if (!asset) return;
     const modal = document.getElementById('generic-modal');
     const body = document.getElementById('generic-modal-body');
     document.getElementById('generic-modal-title').innerText = 'Delete Asset?';
-    
     body.innerHTML = `
         <p class="modal-desc">Are you sure you want to delete <strong>${asset.name}</strong>? This action cannot be undone.</p>
         <div style="display:flex; gap:8px; margin-top:16px;">
             <button class="modal-btn secondary" id="confirm-cancel" style="margin:0;">Cancel</button>
             <button class="modal-btn danger" id="confirm-yes" style="margin:0;">Delete</button>
-        </div>
-    `;
-    
+        </div>`;
     document.getElementById('confirm-cancel').onclick = () => modal.classList.remove('show');
-    document.getElementById('confirm-yes').onclick = () => {
-        deleteAsset(id);
-        modal.classList.remove('show');
-    };
-    
+    document.getElementById('confirm-yes').onclick = () => { deleteAsset(id); modal.classList.remove('show'); };
     modal.classList.add('show');
 }
 
 function deleteAsset(id) {
     const p = S.projects.find(x => x.id === S.cur); if (!p) return;
     p.assets = p.assets.filter(a => a.id !== id);
-    
     if (S.activeFile === id) {
         S.activeFile = Object.keys(p.files)[0] || 'index.html';
         S.viewMode = 'editor';
     }
-    saveProjects();
-    renderFiles();
-    renderAssets();
-    loadFileToEditor();
+    saveProjects(); renderFiles(); renderAssets(); loadFileToEditor(); updateContextIndicator();
     toast(`Asset deleted.`);
 }
 
-function toggleLock(f) {
+window.toggleLock = function(f) {
     const p = S.projects.find(x => x.id === S.cur);
     const idx = p.lockedFiles.indexOf(f);
     if (idx > -1) p.lockedFiles.splice(idx, 1);
     else p.lockedFiles.push(f);
     saveProjects(); renderFiles();
-}
+};
 
 function selectFile(f) {
     if (cm && S.activeFile) { 
@@ -1248,36 +1348,29 @@ function loadFileToEditor() {
     const codeEditor = document.getElementById('code-editor');
     const applyBtn = document.getElementById('apply-btn');
     const assetContainer = document.getElementById('asset-preview-container');
-    
     const asset = p.assets.find(a => a.id === S.activeFile);
-    
     if (asset && S.viewMode === 'asset') {
         codeEditor.style.display = 'none';
         applyBtn.style.display = 'none';
         assetContainer.style.display = 'flex';
-        
         const img = document.getElementById('asset-preview-img');
         const vid = document.getElementById('asset-preview-vid');
         if (asset.type === 'image') {
             img.src = asset.url; img.style.display = 'block';
-            vid.style.display = 'none';
-            vid.pause();
+            vid.style.display = 'none'; vid.pause();
         } else {
             vid.src = asset.url; vid.style.display = 'block';
             img.style.display = 'none';
         }
         return;
     }
-    
     codeEditor.style.display = 'block';
     applyBtn.style.display = 'block';
     assetContainer.style.display = 'none';
-    
     const img = document.getElementById('asset-preview-img');
     const vid = document.getElementById('asset-preview-vid');
     img.src = ''; img.style.display = 'none';
     vid.src = ''; vid.style.display = 'none';
-    
     cm.setValue(p.files[S.activeFile] || '');
     let mode = 'htmlmixed';
     if (S.activeFile.endsWith('.css')) mode = 'css';
@@ -1291,8 +1384,6 @@ function loadFileToEditor() {
 function updatePreview() {
     if (!S.autoRefresh) return;
     const p = S.projects.find(x => x.id === S.cur); if (!p) return;
-    
-    // Console interceptor script
     const consoleScript = `
     <script>
     window.onerror = function(msg, url, line, col, error) {
@@ -1311,23 +1402,18 @@ function updatePreview() {
     window.addEventListener('unhandledrejection', function(event) {
         parent.postMessage({ type: 'console_error', text: 'Unhandled Promise Rejection: ' + (event.reason && event.reason.message ? event.reason.message : event.reason) }, '*');
     });
-    <\/script>
-    `;
-    
+    <\/script>`;
     const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">${consoleScript}<style>${p.files['style.css']||''}</style></head><body>${p.files['index.html']||''}<script>${p.files['script.js']||''}<\/script></body></html>`;
     document.getElementById('prev-frame').srcdoc = html;
 }
 
-// Live Console Logic
 window.addEventListener('message', (event) => {
     if (event.data && (event.data.type === 'console_log' || event.data.type === 'console_error')) {
         const body = document.getElementById('console-body');
         if (!body) return;
-        
         const line = document.createElement('div');
         line.className = `console-line ${event.data.type === 'console_error' ? 'error' : 'log'}`;
         line.textContent = event.data.text;
-        
         if (event.data.type === 'console_error') {
             const fixBtn = document.createElement('button');
             fixBtn.className = 'console-fix-btn';
@@ -1341,7 +1427,6 @@ window.addEventListener('message', (event) => {
             line.appendChild(document.createElement('br'));
             line.appendChild(fixBtn);
         }
-        
         body.appendChild(line);
         body.scrollTop = body.scrollHeight;
     }
@@ -1351,10 +1436,8 @@ function showHistory() {
     document.getElementById('generic-modal').classList.add('show'); 
     const p = S.projects.find(x => x.id === S.cur); 
     if (!p) return toast('No project open!');
-    
     const modalBody = document.getElementById('generic-modal-body');
     document.getElementById('generic-modal-title').innerText = 'Version History';
-    
     let html = '<div style="color:var(--mt);text-align:center;padding:20px;">No history yet. History is saved when the AI makes changes.</div>';
     if (p.history.length > 0) {
         html = '';
@@ -1365,20 +1448,19 @@ function showHistory() {
     modalBody.innerHTML = html;
 }
 
-function restoreVersion(i) {
+window.restoreVersion = function(i) {
     const p = S.projects.find(x => x.id === S.cur); if (!p) return;
     const snap = p.history[i];
     p.files = JSON.parse(JSON.stringify(snap.files));
-    saveProjects(); renderFiles(); loadFileToEditor(); updatePreview();
+    saveProjects(); renderFiles(); loadFileToEditor(); updatePreview(); updateContextIndicator();
     document.getElementById('generic-modal').classList.remove('show');
     toast('Version restored!');
-}
+};
 
 function renderAssets() {
     const p = S.projects.find(x => x.id === S.cur); if (!p) return;
     const view = document.getElementById('assets-view');
     view.innerHTML = '<button class="upload-btn" onclick="document.getElementById(\'asset-upload-input\').click()"><i class="fas fa-upload"></i> Upload Asset</button><input type="file" id="asset-upload-input" style="display:none" onchange="handleAssetUpload(event)">';
-    
     if (!p.assets || p.assets.length === 0) {
         view.innerHTML += '<div style="color:var(--mt);text-align:center;padding:40px;">No assets generated or uploaded yet.</div>';
         return;
@@ -1387,24 +1469,20 @@ function renderAssets() {
         const card = document.createElement('div');
         card.className = 'asset-card';
         card.dataset.assetId = asset.id;
-        
         let statusText = asset.isUserUpload ? '(Uploaded)' : (asset.approved ? '(Approved)' : '(Pending Approval)');
         let actionButtons = '';
         if (!asset.isUserUpload) {
             if (!asset.approved) {
-                actionButtons = `
-                    <div class="asset-actions">
-                        <button class="asset-btn approve" onclick="approveAsset('${asset.id}')"><i class="fas fa-check"></i> Approve</button>
-                        <button class="asset-btn redo" onclick="redoAsset('${asset.id}')"><i class="fas fa-redo"></i> Redo</button>
-                    </div>`;
+                actionButtons = `<div class="asset-actions">
+                    <button class="asset-btn approve" onclick="approveAsset('${asset.id}')"><i class="fas fa-check"></i> Approve</button>
+                    <button class="asset-btn redo" onclick="redoAsset('${asset.id}')"><i class="fas fa-redo"></i> Redo</button>
+                </div>`;
             } else {
-                actionButtons = `
-                    <div class="asset-actions">
-                        <button class="asset-btn redo" onclick="redoAsset('${asset.id}')"><i class="fas fa-redo"></i> Redo</button>
-                    </div>`;
+                actionButtons = `<div class="asset-actions">
+                    <button class="asset-btn redo" onclick="redoAsset('${asset.id}')"><i class="fas fa-redo"></i> Redo</button>
+                </div>`;
             }
         }
-
         card.innerHTML = `
             <div class="asset-preview">${asset.type === 'image' ? `<img src="${asset.url}" alt="${asset.name}">` : `<video src="${asset.url}" muted loop autoplay></video>`}</div>
             <div class="asset-info">
@@ -1412,8 +1490,7 @@ function renderAssets() {
                 <div class="asset-name">${asset.name}</div>
                 ${asset.prompt ? `<div class="asset-prompt">${asset.prompt}</div>` : ''}
                 ${actionButtons}
-            </div>
-        `;
+            </div>`;
         view.appendChild(card);
     });
 }
@@ -1423,11 +1500,8 @@ window.approveAsset = function(id) {
     if (!p) return;
     const asset = p.assets.find(a => a.id === id);
     if (!asset) return;
-    
     asset.approved = true;
-    saveProjects();
-    renderAssets();
-    renderFiles(); 
+    saveProjects(); renderAssets(); renderFiles(); 
     toast('Asset approved! It is now available in the Files tab.');
 };
 
@@ -1436,29 +1510,22 @@ window.redoAsset = async function(id) {
     if (!p) return;
     const asset = p.assets.find(a => a.id === id);
     if (!asset) return;
-
     const card = document.querySelector(`[data-asset-id="${id}"]`);
     if (card) {
         const preview = card.querySelector('.asset-preview');
         preview.innerHTML = '<div class="spinner" style="width:24px;height:24px;margin:0 auto;"></div>';
     }
-
     try {
         const newUrl = await generateAsset(asset.type, asset.prompt);
         const oldUrl = asset.url;
-        
         Object.keys(p.files).forEach(fname => {
             if (p.files[fname] && p.files[fname].includes(oldUrl)) {
                 p.files[fname] = p.files[fname].split(oldUrl).join(newUrl);
             }
         });
-        
         asset.url = newUrl;
         asset.approved = false; 
-        saveProjects();
-        renderAssets();
-        renderFiles();
-        updatePreview();
+        saveProjects(); renderAssets(); renderFiles(); updatePreview(); updateContextIndicator();
         if (S.view === 'code' && S.activeFile === id) loadFileToEditor();
         toast('Asset redone! Code updated automatically.');
     } catch (e) {
@@ -1477,7 +1544,7 @@ window.handleAssetUpload = function(event) {
         const type = file.type.startsWith('image') ? 'image' : 'video';
         const name = `Asset_${p.assets.length + 1}.${ext}`;
         p.assets.push({ id: uid(), name, type, url: e.target.result, isUserUpload: true, approved: true });
-        saveProjects(); renderAssets(); renderFiles();
+        saveProjects(); renderAssets(); renderFiles(); updateContextIndicator();
         toast(`${name} uploaded!`);
     };
     reader.readAsDataURL(file);
@@ -1486,30 +1553,24 @@ window.handleAssetUpload = function(event) {
 async function renderIssues() {
     const p = S.projects.find(x => x.id === S.cur); if (!p) return;
     const view = document.getElementById('issues-view');
-    
     if (!p.github || !p.github.owner || !p.github.repo) {
         view.innerHTML = '<div style="color:var(--mt);text-align:center;padding:40px;">No GitHub repository connected. Export your project to GitHub first to enable Issues & PRs management.</div>';
         return;
     }
-    
     if (!S.githubToken) {
         view.innerHTML = '<div style="color:var(--mt);text-align:center;padding:40px;">GitHub token required. Click the GitHub icon to connect.</div>';
         return;
     }
-    
     view.innerHTML = '<div style="text-align:center;padding:20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto;"></div> Loading issues & PRs...</div>';
-    
     try {
         const headers = { 'Authorization': `token ${S.githubToken}`, 'Accept': 'application/vnd.github+json' };
         const res = await fetch(`https://api.github.com/repos/${p.github.owner}/${p.github.repo}/issues?state=all&per_page=50`, { headers });
         if (!res.ok) throw new Error('Failed to fetch issues');
         const issues = await res.json();
-        
         if (issues.length === 0) {
             view.innerHTML = '<div style="color:var(--mt);text-align:center;padding:40px;">No issues or PRs found. Ask the AI to create one!</div>';
             return;
         }
-        
         view.innerHTML = issues.map(issue => {
             const isPR = issue.pull_request !== undefined;
             const state = issue.state;
@@ -1525,8 +1586,7 @@ async function renderIssues() {
                         <button class="issue-fix-btn" onclick="fixIssueWithAI(${issue.number}, '${issue.title.replace(/'/g, "\\'")}')"><i class="fas fa-wand-magic-sparkles"></i> Fix with AI</button>
                         ${!isPR && state === 'open' ? `<button class="issue-fix-btn" style="background:var(--ok)" onclick="closeIssueWithAI(${issue.number})"><i class="fas fa-check"></i> Close</button>` : ''}
                     </div>
-                </div>
-            `;
+                </div>`;
         }).join('');
     } catch(e) {
         view.innerHTML = `<div style="color:var(--dn);text-align:center;padding:40px;">Error: ${e.message}</div>`;
@@ -1559,30 +1619,21 @@ async function exportToGithub() {
     document.getElementById('generic-modal').classList.add('show'); 
     const p = S.projects.find(x => x.id === S.cur);
     if (!p) return toast('Open a project first!');
-    
     const modalBody = document.getElementById('generic-modal-body');
     document.getElementById('generic-modal-title').innerText = 'Export to GitHub';
-    
     if (S.githubToken) {
         modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Fetching repositories...</div>`;
-        
         const headers = { 'Authorization': `token ${S.githubToken}`, 'Accept': 'application/vnd.github+json' };
         const userRes = await fetch('https://api.github.com/user', { headers });
-        
         if(!userRes.ok) {
-            modalBody.innerHTML = `
-                <p style="color:var(--dn);text-align:center;margin-bottom:16px;">Error: Invalid or expired GitHub Token.</p>
-                <button class="modal-btn danger" onclick="logoutGithub()">Logout / Change Token</button>
-            `;
+            modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;margin-bottom:16px;">Error: Invalid or expired GitHub Token.</p>
+            <button class="modal-btn danger" onclick="logoutGithub()">Logout / Change Token</button>`;
             return;
         }
-        
         const owner = (await userRes.json()).login;
-
         const reposRes = await fetch(`https://api.github.com/user/repos?per_page=100&sort=updated`, { headers });
         const repos = reposRes.ok ? await reposRes.json() : [];
         const repoOptions = repos.map(r => `<option value="${r.name}">${r.name}</option>`).join('');
-
         const defaultRepoName = p.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
         modalBody.innerHTML = `
             <p class="modal-desc">Push "${p.name}" to GitHub. Select an existing repo or create a new one. Brew AI will be attributed as a co-author.</p>
@@ -1593,16 +1644,14 @@ async function exportToGithub() {
             <input type="text" class="modal-input" id="gh-repo-input" placeholder="New Repository Name" value="${defaultRepoName}">
             <button class="modal-btn gh" id="gh-push-btn"><img src="github.HEIC"> Push Code & Assets</button>
             <button class="modal-btn secondary" id="gh-deploy-btn"><img src="rocket.HEIC"> Deploy to GitHub Pages</button>
-            <button style="width:100%;margin-top:8px;background:transparent;color:var(--mt);border:1px solid var(--border);padding:10px;border-radius:8px;cursor:pointer;" onclick="logoutGithub()">Logout / Change Token</button>
-        `;
+            <button style="width:100%;margin-top:8px;background:transparent;color:var(--mt);border:1px solid var(--border);padding:10px;border-radius:8px;cursor:pointer;" onclick="logoutGithub()">Logout / Change Token</button>`;
         document.getElementById('gh-push-btn').onclick = () => startGithubPush(owner);
         document.getElementById('gh-deploy-btn').onclick = () => deployToGithubPages(owner);
     } else {
         modalBody.innerHTML = `
             <p class="modal-desc">To push code directly to GitHub, you need a Personal Access Token (PAT). <br><br><a href="https://github.com/settings/tokens/new?scopes=repo,workflow,admin:org,admin:repo_hook,gist,user,delete_repo,write:packages&description=BrewAI" target="_blank" style="color:var(--ac);">Click here to generate a token with all permissions on GitHub</a>.</p>
             <input type="password" class="modal-input" id="gh-token-input" placeholder="Paste your GitHub token here (ghp_...)">
-            <button class="modal-btn gh" id="gh-save-btn"><img src="github.HEIC"> Save Token & Continue</button>
-        `;
+            <button class="modal-btn gh" id="gh-save-btn"><img src="github.HEIC"> Save Token & Continue</button>`;
         document.getElementById('gh-save-btn').onclick = () => {
             const token = document.getElementById('gh-token-input').value.trim();
             if (!token) return toast('Token cannot be empty.');
@@ -1624,11 +1673,8 @@ function logoutGithub() {
     exportToGithub();
 }
 
-// Helper function to fetch asset and convert to base64 for GitHub
 async function urlToBase64(url) {
-    if (url.startsWith('data:')) {
-        return url.split(',')[1];
-    }
+    if (url.startsWith('data:')) return url.split(',')[1];
     try {
         const res = await fetch(url);
         if (!res.ok) throw new Error('Direct fetch failed');
@@ -1639,7 +1685,6 @@ async function urlToBase64(url) {
             reader.readAsDataURL(blob);
         });
     } catch (e) {
-        // Fallback to proxy
         const res = await fetch(PROXY + encodeURIComponent(url));
         if (!res.ok) throw new Error('Proxy fetch failed');
         const blob = await res.blob();
@@ -1657,13 +1702,10 @@ async function startGithubPush(owner) {
     const modalBody = document.getElementById('generic-modal-body');
     const selectVal = document.getElementById('gh-repo-select').value;
     const inputVal = document.getElementById('gh-repo-input').value.trim();
-    
     let repoName = selectVal === 'new' ? inputVal : selectVal;
     if(!repoName) return toast('Repository name is required.');
-
     const headers = { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' };
     const coAuthorTrailer = `\n\nGenerated with Brew AI\nCo-authored-by: Brew AI <noreply@brew.ai>`;
-
     modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Checking repository...</div>`;
     const checkRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}`, { headers });
     let repoExists = checkRes.ok;
@@ -1676,92 +1718,50 @@ async function startGithubPush(owner) {
         if (!createRes.ok) { modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error creating repo.</p>`; return; }
         repoExists = true;
     }
-
     p.github = { owner, repo: repoName };
     saveProjects();
-
     let remoteFiles = [];
     if (repoExists) {
         const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents`, { headers });
-        if (treeRes.ok) {
-            remoteFiles = await treeRes.json();
-        }
+        if (treeRes.ok) remoteFiles = await treeRes.json();
     }
     const remoteFileNames = remoteFiles.map(f => f.name);
-
-    // Push Text Files (Replace asset URLs with local filenames first)
     const approvedAssets = p.assets.filter(a => a.approved || a.isUserUpload);
     const files = Object.keys(p.files);
-    
     for (let i = 0; i < files.length; i++) {
         const filename = files[i];
         let content = p.files[filename];
-        
-        // Replace asset URLs with local filenames for the GitHub repo
         approvedAssets.forEach(a => {
-            if (content.includes(a.url)) {
-                content = content.split(a.url).join(a.name);
-            }
+            if (content.includes(a.url)) content = content.split(a.url).join(a.name);
         });
-
         modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Pushing files... (${i+1}/${files.length})<br>${filename}</div>`;
-        
         let sha = null;
         const fileCheckRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${encodeURIComponent(filename)}`, { headers });
-        if (fileCheckRes.ok) {
-            sha = (await fileCheckRes.json()).sha;
-        }
-
+        if (fileCheckRes.ok) sha = (await fileCheckRes.json()).sha;
         let commitMsg = `feat: add ${filename}`;
-        if (i === files.length - 1) {
-            commitMsg = `feat: update project files via Brew AI`;
-        }
-
+        if (i === files.length - 1) commitMsg = `feat: update project files via Brew AI`;
         const putRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${encodeURIComponent(filename)}`, {
             method: 'PUT', headers,
-            body: JSON.stringify({
-                message: `${commitMsg}${coAuthorTrailer}`,
-                content: btoa(unescape(encodeURIComponent(content))),
-                sha: sha,
-                branch: 'main'
-            })
+            body: JSON.stringify({ message: `${commitMsg}${coAuthorTrailer}`, content: btoa(unescape(encodeURIComponent(content))), sha: sha, branch: 'main' })
         });
-        if (!putRes.ok) { 
-            modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error pushing ${filename}.</p>`; 
-            return; 
-        }
+        if (!putRes.ok) { modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error pushing ${filename}.</p>`; return; }
     }
-
-    // Push Assets (Images/Videos)
     if (approvedAssets.length > 0) {
         for (let i = 0; i < approvedAssets.length; i++) {
             const asset = approvedAssets[i];
             modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Pushing assets... (${i+1}/${approvedAssets.length})<br>${asset.name}</div>`;
-            
             try {
                 const base64Content = await urlToBase64(asset.url);
                 let sha = null;
                 const fileCheckRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${encodeURIComponent(asset.name)}`, { headers });
-                if (fileCheckRes.ok) {
-                    sha = (await fileCheckRes.json()).sha;
-                }
-
+                if (fileCheckRes.ok) sha = (await fileCheckRes.json()).sha;
                 await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${encodeURIComponent(asset.name)}`, {
                     method: 'PUT', headers,
-                    body: JSON.stringify({
-                        message: `feat: add asset ${asset.name}${coAuthorTrailer}`,
-                        content: base64Content,
-                        sha: sha,
-                        branch: 'main'
-                    })
+                    body: JSON.stringify({ message: `feat: add asset ${asset.name}${coAuthorTrailer}`, content: base64Content, sha: sha, branch: 'main' })
                 });
-            } catch(e) {
-                console.error(`Failed to push asset ${asset.name}:`, e);
-            }
+            } catch(e) { console.error(`Failed to push asset ${asset.name}:`, e); }
         }
     }
-
-    // Generate README if it doesn't exist
     if (!remoteFileNames.includes('README.md')) {
         modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> AI is writing README.md...</div>`;
         let readmeContent = `# ${p.name}\n\nGenerated by Brew AI.`;
@@ -1772,31 +1772,23 @@ async function startGithubPush(owner) {
                 readmeContent = res.content;
                 if (!readmeContent.startsWith('#')) readmeContent = `# ${p.name}\n\n` + readmeContent;
             }
-        } catch(e) { /* fallback to basic readme */ }
-
+        } catch(e) { /* fallback */ }
         let sha = null;
         const readmeCheckRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/README.md`, { headers });
         if (readmeCheckRes.ok) { sha = (await readmeCheckRes.json()).sha; }
         await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/README.md`, {
             method: 'PUT', headers,
-            body: JSON.stringify({
-                message: `docs: add comprehensive README.md with setup instructions${coAuthorTrailer}`,
-                content: btoa(unescape(encodeURIComponent(readmeContent))),
-                sha: sha,
-                branch: 'main'
-            })
+            body: JSON.stringify({ message: `docs: add comprehensive README.md with setup instructions${coAuthorTrailer}`, content: btoa(unescape(encodeURIComponent(readmeContent))), sha: sha, branch: 'main' })
         });
     }
-
     modalBody.innerHTML = `
         <div style="text-align:center; padding: 20px;">
             <i class="fas fa-check-circle" style="font-size:32px;color:var(--ok);margin-bottom:12px;"></i>
-            <h3 style="margin-bottom:8px;">Successfully Pushed!</h3>
+            <h3 style="margin-bottom:8px;font-family:'Playfair Display',serif;">Successfully Pushed!</h3>
             <p style="color:var(--mt);margin-bottom:20px;">Your project and assets are now live on GitHub. Issues & PRs tab is now active.</p>
             <a href="https://github.com/${owner}/${repoName}" target="_blank" class="modal-btn gh" style="text-decoration:none;display:block;"><img src="github.HEIC"> Open Repository</a>
             <button class="modal-btn secondary" onclick="deployToGithubPages('${owner}', '${repoName}')"><img src="rocket.HEIC"> Deploy to GitHub Pages</button>
-        </div>
-    `;
+        </div>`;
     renderIssues();
 }
 
@@ -1805,50 +1797,38 @@ async function deployToGithubPages(owner, repoName) {
     const token = S.githubToken;
     const modalBody = document.getElementById('generic-modal-body');
     document.getElementById('generic-modal-title').innerText = 'Deploy to GitHub Pages';
-    
     modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Checking authentication...</div>`;
-    
     if (!token) {
         modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">No GitHub token found. Please click the GitHub icon (Export to GitHub) to connect your account first.</p>`;
         return;
     }
-
     if (!owner || !repoName) {
         modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Fetching your repositories...</div>`;
         const headers = { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' };
-        
         try {
             const userRes = await fetch('https://api.github.com/user', { headers });
             if(!userRes.ok) throw new Error('Invalid GitHub Token');
             owner = (await userRes.json()).login;
-            
             const reposRes = await fetch(`https://api.github.com/user/repos?per_page=100&sort=updated`, { headers });
             const repos = reposRes.ok ? await reposRes.json() : [];
             const repoOptions = repos.map(r => `<option value="${r.name}">${r.name}</option>`).join('');
-            
             modalBody.innerHTML = `
                 <p class="modal-desc">Select a repository to deploy to GitHub Pages.</p>
                 <select class="modal-select" id="gh-deploy-select">${repoOptions}</select>
-                <button class="modal-btn" style="background:var(--ok)" onclick="deployToGithubPages('${owner}', document.getElementById('gh-deploy-select').value)"><img src="rocket.HEIC"> Deploy Now</button>
-            `;
+                <button class="modal-btn" style="background:var(--ok)" onclick="deployToGithubPages('${owner}', document.getElementById('gh-deploy-select').value)"><img src="rocket.HEIC"> Deploy Now</button>`;
         } catch(e) {
-            modalBody.innerHTML = `
-                <p style="color:var(--dn);text-align:center;margin-bottom:16px;">Error fetching repos: ${e.message}</p>
-                <button class="modal-btn danger" onclick="logoutGithub()">Logout / Change Token</button>
-            `;
+            modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;margin-bottom:16px;">Error fetching repos: ${e.message}</p>
+            <button class="modal-btn danger" onclick="logoutGithub()">Logout / Change Token</button>`;
         }
         return;
     }
-
     modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Enabling GitHub Pages for ${repoName}...</div>`;
     const headers = { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' };
-    
     try {
         const createRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/pages`, {
             method: 'POST', headers,
             body: JSON.stringify({ source: { branch: 'main', path: '/' } })
         });
-        
         if (createRes.status === 409) {
             const updateRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/pages`, {
                 method: 'PUT', headers,
@@ -1859,16 +1839,14 @@ async function deployToGithubPages(owner, repoName) {
             const err = await createRes.json();
             throw new Error(err.message);
         }
-
         const deployUrl = `https://${owner}.github.io/${repoName}/`;
         modalBody.innerHTML = `
             <div style="text-align:center; padding: 20px;">
                 <i class="fas fa-rocket" style="font-size:32px;color:var(--ok);margin-bottom:12px;"></i>
-                <h3 style="margin-bottom:8px;">Deployment Initiated!</h3>
+                <h3 style="margin-bottom:8px;font-family:'Playfair Display',serif;">Deployment Initiated!</h3>
                 <p style="color:var(--mt);margin-bottom:20px;">It may take 1-2 minutes for GitHub to build your site.</p>
                 <a href="${deployUrl}" target="_blank" class="modal-btn" style="text-decoration:none;display:block;background:var(--ok)"><i class="fas fa-globe"></i> Visit Live Site</a>
-            </div>
-        `;
+            </div>`;
     } catch(e) {
         modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error deploying: ${e.message}</p>`;
     }
@@ -1878,7 +1856,6 @@ async function importFromGithub() {
     document.getElementById('generic-modal').classList.add('show'); 
     const modalBody = document.getElementById('generic-modal-body');
     document.getElementById('generic-modal-title').innerText = 'Import from GitHub';
-    
     if (!S.githubToken) {
         modalBody.innerHTML = `<p class="modal-desc">You need a GitHub token to import private repos, but you can try importing public ones without a token.</p>
             <input type="password" class="modal-input" id="gh-token-input" placeholder="Paste GitHub token (optional, for private repos)">
@@ -1892,9 +1869,7 @@ async function importFromGithub() {
             }
             importFromGithub();
         };
-        document.getElementById('gh-skip-btn').onclick = () => {
-            showImportInput();
-        };
+        document.getElementById('gh-skip-btn').onclick = () => showImportInput();
     } else {
         showImportInput();
     }
@@ -1905,8 +1880,7 @@ function showImportInput() {
     modalBody.innerHTML = `
         <p class="modal-desc">Paste the GitHub repository URL or "owner/repo" name to import.</p>
         <input type="text" class="modal-input" id="gh-import-input" placeholder="https://github.com/owner/repo OR owner/repo">
-        <button class="modal-btn gh" id="gh-import-btn"><img src="github.HEIC"> Import Repository</button>
-    `;
+        <button class="modal-btn gh" id="gh-import-btn"><img src="github.HEIC"> Import Repository</button>`;
     document.getElementById('gh-import-btn').onclick = startImportGithub;
 }
 
@@ -1914,7 +1888,6 @@ async function startImportGithub() {
     const inputVal = document.getElementById('gh-import-input').value.trim();
     const modalBody = document.getElementById('generic-modal-body');
     let owner, repo;
-    
     let cleanInput = inputVal.replace(/\.git$/, '').replace(/\/$/, '');
     if (cleanInput.includes('github.com/')) {
         const parts = cleanInput.split('github.com/')[1].split('/');
@@ -1923,16 +1896,11 @@ async function startImportGithub() {
         const parts = cleanInput.split('/');
         owner = parts[0]; repo = parts[1];
     }
-    
     if (!owner || !repo) return toast('Invalid URL or name. Use owner/repo format.');
-    
     modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Fetching repository contents...</div>`;
-    
     const headers = { 'Accept': 'application/vnd.github+json' };
     if (S.githubToken) headers['Authorization'] = `token ${S.githubToken}`;
-    
     const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents`;
-    
     try {
         let res;
         try {
@@ -1942,16 +1910,13 @@ async function startImportGithub() {
             res = await fetch(PROXY + encodeURIComponent(apiUrl), { headers });
             if (!res.ok) throw new Error(`Failed to fetch repo (Status: ${res.status}). You might be rate-limited.`);
         }
-
         const files = await res.json();
         const proj = createProj(`Imported: ${repo}`, S.model);
         proj.files = {}; 
         proj.github = { owner, repo };
-        
         for (const file of files) {
             if (file.type === 'file') {
                 modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Importing ${file.name}...</div>`;
-                
                 let fileRes;
                 try {
                     fileRes = await fetch(file.url, { headers });
@@ -1960,18 +1925,15 @@ async function startImportGithub() {
                     fileRes = await fetch(PROXY + encodeURIComponent(file.url), { headers });
                     if (!fileRes.ok) continue; 
                 }
-                
                 const fileData = await fileRes.json();
                 const content = decodeURIComponent(escape(atob(fileData.content.replace(/\n/g, ''))));
                 proj.files[file.name] = content;
             }
         }
-        
         if (!proj.files['index.html']) proj.files['index.html'] = '<!-- No index.html found in root -->';
         if (!proj.files['style.css']) proj.files['style.css'] = '';
         if (!proj.files['script.js']) proj.files['script.js'] = '';
         if (!proj.files['design.md']) proj.files['design.md'] = DEFAULT_DESIGN_MD;
-        
         saveProjects();
         document.getElementById('generic-modal').classList.remove('show');
         openEditor(proj.id);
@@ -1994,8 +1956,7 @@ function openHttpTester() {
             <button class="modal-btn" style="width:auto; margin:0;" onclick="sendHttpReq()"><i class="fas fa-paper-plane"></i></button>
         </div>
         <textarea id="http-body" class="modal-input" placeholder='Request Body (JSON): {"key": "value"}' style="height:80px; font-family:monospace;"></textarea>
-        <div id="http-response" style="margin-top:16px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px; min-height:100px; font-family:monospace; font-size:12px; white-space:pre-wrap; max-height:300px; overflow-y:auto;">Response will appear here...</div>
-    `;
+        <div id="http-response" style="margin-top:16px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px; min-height:100px; font-family:monospace; font-size:12px; white-space:pre-wrap; max-height:300px; overflow-y:auto;">Response will appear here...</div>`;
 }
 
 async function sendHttpReq() {
@@ -2004,7 +1965,6 @@ async function sendHttpReq() {
     const body = document.getElementById('http-body').value;
     const resDiv = document.getElementById('http-response');
     resDiv.innerText = 'Sending...';
-    
     try {
         const options = { method };
         if (body && method !== 'GET') {
@@ -2023,44 +1983,37 @@ function openSettings() {
     document.getElementById('generic-modal').classList.add('show');
     const modalBody = document.getElementById('generic-modal-body');
     document.getElementById('generic-modal-title').innerText = 'Settings';
-    
     modalBody.innerHTML = `
         <div style="margin-bottom: 20px; padding: 16px; background: var(--bg2); border-radius: 8px;">
-            <h4 style="margin-bottom: 8px;">Brew AI</h4>
+            <h4 style="margin-bottom: 8px; font-family: 'Playfair Display', serif; font-size: 18px;">Brew AI</h4>
             <p style="font-size: 13px; color: var(--mt);">Powered by Agnes AI & Pollinations. No credits or limits — generate freely.</p>
         </div>
-        
         <div style="margin-bottom: 20px;">
-            <h4 style="margin-bottom: 8px;">Project API Key</h4>
+            <h4 style="margin-bottom: 8px; font-family: 'Playfair Display', serif; font-size: 18px;">Project API Key</h4>
             <p style="font-size: 12px; color: var(--mt); margin-bottom: 8px;">When the AI builds an app that needs an API key, it uses the placeholder <code>{{SITE_API_KEY}}</code> in the code. The system auto-replaces this with the shared project key. No setup needed.</p>
             <div style="padding:10px;background:var(--bg2);border-radius:8px;font-family:monospace;font-size:12px;color:var(--mt);word-break:break-all;">sk-rWvC...kNCE (auto-injected)</div>
         </div>
-        
         <div style="margin-bottom: 20px;">
-            <h4 style="margin-bottom: 8px;">GitHub Token</h4>
+            <h4 style="margin-bottom: 8px; font-family: 'Playfair Display', serif; font-size: 18px;">GitHub Token</h4>
             <p style="font-size: 12px; color: var(--mt); margin-bottom: 8px;">${S.githubToken ? 'Token saved. Click logout in the GitHub modal to change.' : 'No token set. Click the GitHub icon to connect.'}</p>
         </div>
-        
-        <button class="modal-btn" onclick="document.getElementById('generic-modal').classList.remove('show')"><i class="fas fa-check"></i> Done</button>
-    `;
+        <button class="modal-btn" onclick="document.getElementById('generic-modal').classList.remove('show')"><i class="fas fa-check"></i> Done</button>`;
 }
 
 async function optimizeSeo() {
     const p = S.projects.find(x => x.id === S.cur);
     if (!p || !p.files['index.html']) return toast('No index.html found.');
-    
     toast('Optimizing SEO...');
     const res = await callAI([
         { role: 'system', content: 'You are an SEO expert. Analyze the provided HTML and return the FULL updated HTML with perfect SEO meta tags, Open Graph tags, Twitter cards, and structured data (JSON-LD) added to the <head>. Do not change the visible content.' },
         { role: 'user', content: p.files['index.html'] }
     ], S.model);
-    
     if (res.content) {
         let code = res.content;
         const m = code.match(/```html\n?([\s\S]*?)```/);
         if (m) code = m[1].trim();
         p.files['index.html'] = code;
-        saveProjects(); loadFileToEditor(); updatePreview();
+        saveProjects(); loadFileToEditor(); updatePreview(); updateContextIndicator();
         toast('SEO optimized successfully!');
     }
 }
@@ -2070,14 +2023,11 @@ function handleMentionInput(inputEl) {
     const cursorPos = inputEl.selectionStart;
     const textBeforeCursor = text.substring(0, cursorPos);
     const match = textBeforeCursor.match(/#([a-zA-Z0-9._-]*)$/);
-    
     if (match) {
         const query = match[1].toLowerCase();
         const p = S.projects.find(x => x.id === S.cur);
         if (!p) return;
-        
         mentionItems = Object.keys(p.files).filter(f => f.toLowerCase().includes(query));
-        
         if (mentionItems.length > 0) {
             mentionActive = true;
             mentionIndex = 0;
@@ -2085,7 +2035,6 @@ function handleMentionInput(inputEl) {
             return;
         }
     }
-    
     mentionActive = false;
     hideMentionDropdown();
 }
@@ -2095,14 +2044,11 @@ function renderMentionDropdown() {
     dropdown.innerHTML = mentionItems.map((item, i) => `
         <div class="mention-item ${i === mentionIndex ? 'active' : ''}" onclick="selectMention('${item}')">
             <i class="fas fa-file-code"></i> ${item}
-        </div>
-    `).join('');
+        </div>`).join('');
     dropdown.style.display = 'block';
 }
 
-function hideMentionDropdown() {
-    document.getElementById('mention-dropdown').style.display = 'none';
-}
+function hideMentionDropdown() { document.getElementById('mention-dropdown').style.display = 'none'; }
 
 function selectMention(filename) {
     const input = document.getElementById('chat-input');
@@ -2110,7 +2056,6 @@ function selectMention(filename) {
     const cursorPos = input.selectionStart;
     const textBeforeCursor = text.substring(0, cursorPos);
     const textAfterCursor = text.substring(cursorPos);
-    
     const match = textBeforeCursor.match(/#([a-zA-Z0-9._-]*)$/);
     if (match) {
         const newText = textBeforeCursor.substring(0, match.index) + `#${filename} ` + textAfterCursor;
@@ -2118,46 +2063,37 @@ function selectMention(filename) {
         const newPos = match.index + filename.length + 2;
         input.setSelectionRange(newPos, newPos);
     }
-    
     mentionActive = false;
     hideMentionDropdown();
     input.focus();
     document.getElementById('chat-send').disabled = !input.value.trim();
 }
 
-// Smart Auto Model Logic
+window.selectMention = selectMention;
+
 function resolveAutoModel(messages) {
     const userMsg = messages.find(m => m.role === 'user');
     const text = userMsg ? (typeof userMsg.content === 'string' ? userMsg.content : JSON.stringify(userMsg.content)) : '';
-    
     if (/video|animation|animate/i.test(text)) return 'video';
     if (/image|picture|photo|icon|logo|illustration/i.test(text)) return 'image';
     if (text.length > 1000 || /complex|dashboard|admin|system|architecture|database/i.test(text)) return '2.0'; 
-    return '1.5'; // Use 1.5 for simple tasks
+    return '1.5';
 }
 
-// Fast, proxy-free API Call
 async function callAI(messages, modelKey, tools) {
     let actualModel = modelKey;
     let endpoint = API_URL;
     let apiKey = SITE_KEY;
-    let useProxy = true; // Only use proxy for Agnes fallback
-    
-    if (modelKey === 'auto') {
-        actualModel = resolveAutoModel(messages);
-    }
-    
-    // Pollinations API setup (Direct fetch, NO PROXY for speed)
-    if (modelKey.startsWith('openai') || actualModel.startsWith('openai') || actualModel.includes('qwen') || actualModel.includes('mistral') || actualModel.includes('claude') || actualModel.includes('gemini')) {
+    let useProxy = true;
+    if (modelKey === 'auto') actualModel = resolveAutoModel(messages);
+    if (modelKey.startsWith('openai') || actualModel.startsWith('openai')) {
         endpoint = POLLI_URL;
         apiKey = ''; 
-        useProxy = false; // Pollinations is CORS-enabled, proxy slows it down 10x
+        useProxy = false;
     }
-
     const body = { model: actualModel, messages: [{role:'system', content: getSystemPrompt()}, ...messages], temperature: 0.7, stream: false, tools: tools, max_tokens: 30000 };
     const headers = { 'Content-Type':'application/json' };
     if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
-    
     try {
         const ctrl = new AbortController();
         abortCtrl = ctrl;
@@ -2173,8 +2109,6 @@ async function callAI(messages, modelKey, tools) {
     } catch(e) {
         if (e.name === 'AbortError') throw new Error('Request aborted');
         if (!useProxy) throw new Error('Network or CORS error');
-        
-        // Fallback to proxy ONLY for Agnes
         try {
             const res = await fetch(PROXY + encodeURIComponent(endpoint), { method:'POST', headers, body: JSON.stringify(body) });
             if (res.ok) {
@@ -2183,9 +2117,7 @@ async function callAI(messages, modelKey, tools) {
                 return { content: choice.message.content || '', toolCalls: choice.message.tool_calls || [], finishReason: choice.finish_reason };
             }
             throw new Error(`Proxy HTTP ${res.status}`);
-        } catch(proxyErr) {
-            throw new Error('Network or CORS error');
-        }
+        } catch(proxyErr) { throw new Error('Network or CORS error'); }
     }
 }
 
@@ -2228,36 +2160,26 @@ async function createGithubPR(title, body, headBranch, files) {
     const headers = { 'Authorization': `token ${S.githubToken}`, 'Accept': 'application/vnd.github+json' };
     const baseBranch = 'main';
     const branchName = headBranch || `ai-fix-${Date.now()}`;
-    
     const refRes = await fetch(`https://api.github.com/repos/${p.github.owner}/${p.github.repo}/git/refs/heads/${baseBranch}`, { headers });
     if (!refRes.ok) throw new Error('Failed to get base branch');
     const refData = await refRes.json();
     const baseSha = refData.object.sha;
-    
     const createBranchRes = await fetch(`https://api.github.com/repos/${p.github.owner}/${p.github.repo}/git/refs`, {
         method: 'POST', headers,
         body: JSON.stringify({ ref: `refs/heads/${branchName}`, sha: baseSha })
     });
     if (!createBranchRes.ok) throw new Error('Failed to create branch');
-    
     if (files && files.length > 0) {
         for (const file of files) {
             let sha = null;
             const fileCheckRes = await fetch(`https://api.github.com/repos/${p.github.owner}/${p.github.repo}/contents/${encodeURIComponent(file.filename)}?ref=${branchName}`, { headers });
             if (fileCheckRes.ok) { sha = (await fileCheckRes.json()).sha; }
-            
             await fetch(`https://api.github.com/repos/${p.github.owner}/${p.github.repo}/contents/${encodeURIComponent(file.filename)}`, {
                 method: 'PUT', headers,
-                body: JSON.stringify({
-                    message: `fix: ${file.filename} - ${title}`,
-                    content: btoa(unescape(encodeURIComponent(file.content))),
-                    sha: sha,
-                    branch: branchName
-                })
+                body: JSON.stringify({ message: `fix: ${file.filename} - ${title}`, content: btoa(unescape(encodeURIComponent(file.content))), sha: sha, branch: branchName })
             });
         }
     }
-    
     const prRes = await fetch(`https://api.github.com/repos/${p.github.owner}/${p.github.repo}/pulls`, {
         method: 'POST', headers,
         body: JSON.stringify({ title, body, head: branchName, base: baseBranch })
@@ -2293,32 +2215,35 @@ function replaceApiKeyPlaceholder(content) {
     return content.replace(/\{\{SITE_API_KEY\}\}/g, PROJECT_KEY);
 }
 
-// Typewriter effect for streaming feel
-function typeWriter(element, html, speed = 15) {
-    let i = 0;
-    element.innerHTML = '';
-    const interval = setInterval(() => {
-        if (i < html.length) {
-            element.innerHTML += html.charAt(i);
-            i++;
-            element.scrollTop = element.scrollHeight;
-            const chatMsgs = document.getElementById('chat-msgs');
-            if(chatMsgs) chatMsgs.scrollTop = chatMsgs.scrollHeight;
-        } else {
-            clearInterval(interval);
-        }
-    }, speed);
+function updateContextIndicator() {
+    const p = S.projects.find(x => x.id === S.cur); 
+    if (!p) return;
+    // Calculate approximate tokens (1 token ≈ 4 chars)
+    const text = JSON.stringify(p.messages) + JSON.stringify(p.files);
+    const tokens = Math.ceil(text.length / 4);
+    const maxTokens = 128000; // Standard context window for Flash models
+    const pct = Math.min(100, (tokens / maxTokens) * 100);
+    
+    const fill = document.getElementById('ci-bar-fill');
+    const textEl = document.getElementById('ci-text');
+    if(fill) {
+        fill.style.width = pct + '%';
+        fill.classList.remove('warning', 'danger');
+        if (pct >= 80) fill.classList.add('danger');
+        else if (pct >= 60) fill.classList.add('warning');
+    }
+    if(textEl) textEl.textContent = `${pct.toFixed(1)}% (${(tokens/1000).toFixed(1)}k / 128k)`;
 }
 
 async function generate() {
     const p = S.projects.find(x => x.id === S.cur);
     if (!p || S.gen) return;
-    
     S.gen = true;
     updateSendButton();
     hideContinueButton();
     S.tasks = []; 
     renderTasks();
+    updateContextIndicator();
     
     const md = addMsg('ai', '', true);
     md.classList.add('thinking');
@@ -2348,17 +2273,14 @@ async function generate() {
             currentMessages.push(choice);
             p.messages = currentMessages;
             saveProjects();
+            updateContextIndicator();
             
             if (choice.tool_calls && choice.tool_calls.length) {
                 if (md.classList.contains('thinking')) {
                     md.classList.remove('thinking');
                     statusLog.innerHTML = ''; 
                 }
-                if (choice.content) {
-                    // Use typewriter for tool calling context
-                    typeWriter(statusLog, fmtAI(choice.content));
-                }
-
+                if (choice.content) statusLog.innerHTML += fmtAI(choice.content);
                 if (res.finishReason === 'length') {
                     statusLog.innerHTML += '<br><span style="color:var(--warn)">⚠️ Cut off during tool call. Auto-retrying...</span>';
                     currentMessages.push({ role: 'user', content: 'You were cut off. Please try writing that file again.' });
@@ -2366,7 +2288,6 @@ async function generate() {
                     saveProjects();
                     continue;
                 }
-
                 for (const tc of choice.tool_calls) {
                     const toolMsg = { role: "tool", tool_call_id: tc.id, name: tc.function.name };
                     if (tc.function.name === 'write_file') {
@@ -2377,7 +2298,7 @@ async function generate() {
                         statusLog.appendChild(badge);
                         const finalContent = replaceApiKeyPlaceholder(args.content);
                         if (!p.lockedFiles.includes(args.filename)) p.files[args.filename] = finalContent;
-                        saveProjects(); updatePreview(); renderFiles();
+                        saveProjects(); updatePreview(); renderFiles(); updateContextIndicator();
                         if (S.view === 'code') loadFileToEditor();
                         toolMsg.content = "File written successfully. The {{SITE_API_KEY}} placeholder has been replaced with the real API key.";
                         badge.innerHTML = `<i class="fas fa-check-circle"></i> Wrote ${args.filename}`;
@@ -2388,7 +2309,6 @@ async function generate() {
                         badge.className = 'tool-badge read';
                         badge.innerHTML = `<div class="spinner"></div> Reading ${args.filename}...`;
                         statusLog.appendChild(badge);
-                        
                         const content = p.files[args.filename] || 'File not found.';
                         toolMsg.content = content;
                         badge.innerHTML = `<i class="fas fa-eye"></i> Read ${args.filename}`;
@@ -2402,7 +2322,7 @@ async function generate() {
                             const url = await generateAsset(args.type, args.prompt);
                             const name = `AI_${args.type === 'image' ? 'Image' : 'Video'}_${p.assets.length + 1}.${args.type === 'image' ? 'png' : 'mp4'}`;
                             p.assets.push({ id: uid(), name, type: args.type, url, prompt: args.prompt, isUserUpload: false, approved: false });
-                            saveProjects(); renderAssets();
+                            saveProjects(); renderAssets(); updateContextIndicator();
                             toolMsg.content = `Asset ${name} generated successfully. URL: ${url}. Use this exact URL in the code.`;
                             badge.innerHTML = `<i class="fas fa-check-circle"></i> Generated ${name}`;
                         } catch(e) {
@@ -2444,13 +2364,11 @@ async function generate() {
                     currentMessages.push(toolMsg);
                     p.messages = currentMessages;
                     saveProjects();
+                    updateContextIndicator();
                 }
             } else {
                 md.classList.remove('thinking');
-                if (statusLog.querySelector('.skeleton-line')) {
-                    statusLog.innerHTML = ''; 
-                }
-
+                if (statusLog.querySelector('.skeleton-line')) statusLog.innerHTML = ''; 
                 if (res.finishReason === 'length') {
                     statusLog.innerHTML += '<br><span style="color:var(--warn)">⚠️ Token limit reached. Auto-continuing...</span>';
                     currentMessages.push({ role: 'user', content: 'Please continue exactly where you left off. Do not repeat yourself.' });
@@ -2458,28 +2376,15 @@ async function generate() {
                     saveProjects();
                     continue;
                 }
-
-                // Use typewriter for final response
-                if (choice.content) {
-                    typeWriter(statusLog, fmtAI(choice.content));
-                } else {
-                    statusLog.innerHTML = "Done.";
-                }
-                
+                statusLog.innerHTML += choice.content ? fmtAI(choice.content) : "Done.";
                 S.tasks.forEach(t => t.done = true);
                 renderTasks();
-
-                // Delay adding actions slightly to not interrupt typewriter
-                setTimeout(() => {
-                    const actions = document.createElement('div');
-                    actions.className = 'msg-actions';
-                    actions.innerHTML = `
-                        <button class="msg-action-btn" onclick="copyMsg(${p.messages.length-1})"><img src="copy.HEIC"> Copy</button>
-                        <button class="msg-action-btn" onclick="retryGen()"><img src="retry.HEIC"> Retry</button>
-                    `;
-                    statusLog.appendChild(actions);
-                }, 500);
-                
+                const actions = document.createElement('div');
+                actions.className = 'msg-actions';
+                actions.innerHTML = `
+                    <button class="msg-action-btn" onclick="copyMsg(${p.messages.length-1})"><img src="copy.HEIC"> Copy</button>
+                    <button class="msg-action-btn" onclick="retryGen()"><img src="retry.HEIC"> Retry</button>`;
+                statusLog.appendChild(actions);
                 break;
             }
         }
@@ -2495,6 +2400,7 @@ async function generate() {
     S.gen = false;
     updateSendButton();
     saveProjects();
+    updateContextIndicator();
 }
 
 function updateSendButton() {
@@ -2510,7 +2416,7 @@ function updateSendButton() {
         btn.disabled = !document.getElementById('chat-input').value.trim();
         btn.onclick = () => {
             const inp = document.getElementById('chat-input'); const v = inp.value.trim(); if (!v || S.gen) return;
-            const p = S.projects.find(x => x.id === S.cur); p.messages.push({role:'user', content:v}); saveProjects(); addMsg('user', v);
+            const p = S.projects.find(x => x.id === S.cur); p.messages.push({role:'user', content:v}); saveProjects(); addMsg('user', v); updateContextIndicator();
             inp.value = ''; inp.style.height = 'auto'; document.getElementById('chat-send').disabled = true; generate();
         };
     }
@@ -2532,7 +2438,6 @@ function applyZoom() {
     document.getElementById('zoom-text').innerText = Math.round(S.zoom * 100) + '%';
 }
 
-// Helper to fetch asset as blob for ZIP
 async function urlToBlob(url) {
     if (url.startsWith('data:')) {
         const res = await fetch(url);
@@ -2549,51 +2454,66 @@ async function urlToBlob(url) {
     }
 }
 
+function toggleTheme() {
+    document.body.classList.toggle('light');
+    const isLight = document.body.classList.contains('light');
+    const navIcon = document.getElementById('nav-theme-icon');
+    const editorIcon = document.getElementById('theme-icon');
+    if(navIcon) navIcon.src = isLight ? 'dark.HEIC' : 'light.HEIC';
+    if(editorIcon) editorIcon.src = isLight ? 'dark.HEIC' : 'light.HEIC';
+    if (cm) cm.setOption('theme', isLight ? 'default' : 'material-darker');
+}
+
 function init() {
     try {
-        loadProjects(); renderGrid(); renderTemplates(); runTyping();
+        loadProjects(); renderGrid(); renderTemplates(); renderBlog(); runTyping();
         if (typeof CodeMirror !== 'undefined') {
             cm = CodeMirror.fromTextArea(document.getElementById('code-editor'), { lineNumbers: true, theme: 'material-darker', indentUnit: 2 });
         }
         
-        // FAQ Accordion Logic
+        // FAQ Accordion
         document.querySelectorAll('.faq-q').forEach(btn => {
             btn.onclick = () => {
                 const item = btn.parentElement;
-                document.querySelectorAll('.faq-item').forEach(i => {
-                    if (i !== item) i.classList.remove('active');
-                });
+                document.querySelectorAll('.faq-item').forEach(i => { if (i !== item) i.classList.remove('active'); });
                 item.classList.toggle('active');
             };
         });
 
-        // Idea Giver Auto-scroll Logic
-        const ideas = [
-            "Build a snake game", "Create a portfolio site", "Make a pricing table", "Build a calculator",
-            "Create a landing page for a SaaS", "Build a to-do list app", "Make a weather app UI", "Create a Pomodoro timer",
-            "Build a tip calculator", "Make a digital clock", "Create a quiz app", "Build a recipe card component",
-            "Make a blog layout", "Create a contact form", "Build a navbar with dropdown", "Make a footer component",
-            "Create a profile card", "Build a countdown timer", "Make a random quote generator", "Create a progress bar",
-            "Build an accordion FAQ", "Make a grid photo gallery", "Create a login form", "Build a product card",
-            "Make a testimonial slider", "Create a sticky header", "Build a search bar UI", "Make a modal popup",
-            "Create a notification badge", "Build a statistics dashboard", "Make a color palette generator",
-            "Create a typing speed test", "Build a memory match game", "Make a virtual keyboard UI", "Create a currency converter UI"
-        ];
+        // Idea Giver Auto-scroll
+        const ideas = ["Build a snake game", "Create a portfolio site", "Make a pricing table", "Build a calculator", "Create a landing page for a SaaS", "Build a to-do list app", "Make a weather app UI", "Create a Pomodoro timer", "Build a tip calculator", "Make a digital clock", "Create a quiz app", "Build a recipe card component", "Make a blog layout", "Create a contact form", "Build a navbar with dropdown", "Make a footer component", "Create a profile card", "Build a countdown timer", "Make a random quote generator", "Create a progress bar", "Build an accordion FAQ", "Make a grid photo gallery", "Create a login form", "Build a product card", "Make a testimonial slider", "Create a sticky header", "Build a search bar UI", "Make a modal popup", "Create a notification badge", "Build a statistics dashboard", "Make a color palette generator", "Create a typing speed test", "Build a memory match game", "Make a virtual keyboard UI", "Create a currency converter UI"];
         const ideaList = document.getElementById('idea-giver-track');
         if (ideaList) {
-            // Duplicate items for seamless loop
             const itemsHtml = ideas.map(idea => `<div class="idea-item" onclick="document.getElementById('hero-input').value='${idea}'; document.getElementById('hero-input').focus();"><i class="fas fa-arrow-right"></i> ${idea}</div>`).join('');
             ideaList.innerHTML = itemsHtml + itemsHtml; 
         }
         
+        // Nav Links Routing
+        document.querySelectorAll('.nav-link').forEach(btn => {
+            btn.onclick = () => switchPage(btn.dataset.page);
+        });
+
         document.getElementById('hero-submit').onclick = () => { const v = document.getElementById('hero-input').value.trim(); if (!v) return; openEditor(createProj(v).id); };
         document.getElementById('hero-input').addEventListener('keydown', e => { if (e.key === 'Enter') { const v = document.getElementById('hero-input').value.trim(); if (v) openEditor(createProj(v).id); } });
-        document.getElementById('new-btn').onclick = () => { document.getElementById('home-view').scrollTo({top:0, behavior:'smooth'}); document.getElementById('hero-input').focus(); };
+        document.getElementById('new-btn').onclick = () => { switchPage('home'); document.getElementById('home-view').scrollTo({top:0, behavior:'smooth'}); document.getElementById('hero-input').focus(); };
         document.getElementById('import-gh-btn').onclick = importFromGithub;
-        
         document.getElementById('back-btn').onclick = closeEditor;
         
-        // Dropdowns logic
+        // Theme Toggle Buttons
+        document.getElementById('nav-theme-btn').onclick = toggleTheme;
+        document.getElementById('btn-theme').onclick = toggleTheme;
+
+        // Context Indicator New Chat Button
+        document.getElementById('ci-new-chat').onclick = () => {
+            const p = S.projects.find(x => x.id === S.cur); if (!p) return;
+            if (S.gen) return toast('Wait for generation to finish.');
+            p.messages = []; // Clear chat memory to free up context
+            saveProjects();
+            renderChat();
+            updateContextIndicator();
+            toast('New chat started. Code & assets retained!');
+        };
+        
         const closeDropdowns = () => {
             document.getElementById('ms-menu').classList.remove('open');
             document.getElementById('more-menu').classList.remove('open');
@@ -2601,18 +2521,12 @@ function init() {
             document.getElementById('home-ms-menu').classList.remove('open');
         };
         
-        // Editor Model Picker
         document.getElementById('ms-btn').onclick = e => { e.stopPropagation(); closeDropdowns(); document.getElementById('ms-menu').classList.toggle('open'); };
-        // Home Model Picker
         document.getElementById('home-model-btn').onclick = e => { e.stopPropagation(); closeDropdowns(); document.getElementById('home-ms-menu').classList.toggle('open'); };
-        // Component Injector Picker
         document.getElementById('btn-comp-inject').onclick = e => { e.stopPropagation(); closeDropdowns(); document.getElementById('comp-menu').classList.toggle('open'); };
-        // More Tools Picker
         document.getElementById('btn-more').onclick = e => { e.stopPropagation(); closeDropdowns(); document.getElementById('more-menu').classList.toggle('open'); };
-        
         document.addEventListener('click', closeDropdowns);
         
-        // Model Selection Logic (Home & Editor)
         const modelItems = document.querySelectorAll('#ms-menu .ms-item, #home-ms-menu .ms-item');
         modelItems.forEach(o => o.onclick = e => { 
             e.stopPropagation(); 
@@ -2620,12 +2534,10 @@ function init() {
             S.model = o.dataset.model; 
             const p = S.projects.find(x => x.id === S.cur); 
             if (p) { p.model = S.model; saveProjects(); } 
-            // Update both labels if they exist
             if(document.getElementById('ms-lbl')) document.getElementById('ms-lbl').textContent = S.model;
             if(document.getElementById('home-ms-lbl')) document.getElementById('home-ms-lbl').textContent = S.model;
         });
 
-        // Component Injector Logic
         document.querySelectorAll('.comp-item').forEach(item => {
             item.onclick = (e) => {
                 e.stopPropagation();
@@ -2638,17 +2550,9 @@ function init() {
             };
         });
         
-        // Primary Actions
         document.getElementById('btn-github').onclick = exportToGithub;
         document.getElementById('btn-deploy').onclick = () => deployToGithubPages();
-        document.getElementById('btn-theme').onclick = () => { 
-            document.body.classList.toggle('light'); 
-            const isLight = document.body.classList.contains('light');
-            document.getElementById('theme-icon').src = 'dark.HEIC'; 
-            if (cm) cm.setOption('theme', isLight ? 'default' : 'material-darker'); 
-        };
         
-        // "More" Menu Actions
         document.getElementById('m-settings').onclick = (e) => { e.stopPropagation(); closeDropdowns(); openSettings(); };
         document.getElementById('m-tools').onclick = (e) => { e.stopPropagation(); closeDropdowns(); openHttpTester(); };
         document.getElementById('m-history').onclick = (e) => { e.stopPropagation(); closeDropdowns(); showHistory(); };
@@ -2659,18 +2563,14 @@ function init() {
             toast('Link copied!'); 
         };
         
-        // Offline ZIP Export Logic
         document.getElementById('m-zip').onclick = async (e) => { 
             e.stopPropagation(); closeDropdowns(); 
             if (typeof JSZip === 'undefined') return toast('ZIP library not loaded.');
-            
             const p = S.projects.find(x => x.id === S.cur); 
             const zip = new JSZip(); 
             const assetsFolder = zip.folder("assets");
             const approvedAssets = p.assets.filter(a => a.approved || a.isUserUpload);
-
             toast('Preparing offline ZIP... This may take a moment.');
-
             for (const asset of approvedAssets) {
                 try {
                     const blob = await urlToBlob(asset.url);
@@ -2679,10 +2579,8 @@ function init() {
                     console.error("Failed to fetch asset for ZIP:", asset.name, err);
                 }
             }
-
             Object.keys(p.files).forEach(f => { 
                 let content = p.files[f];
-                // Rewrite URLs to local paths
                 approvedAssets.forEach(a => {
                     if (content.includes(a.url)) {
                         content = content.split(a.url).join(`./assets/${a.name}`);
@@ -2690,7 +2588,6 @@ function init() {
                 });
                 zip.file(f, content); 
             }); 
-
             const blob = await zip.generateAsync({type:'blob'}); 
             const a = document.createElement('a'); 
             a.href = URL.createObjectURL(blob); 
@@ -2699,11 +2596,7 @@ function init() {
             toast('Offline ZIP downloaded!');
         };
 
-        // Console Clear Logic
-        document.getElementById('console-clear').onclick = () => {
-            document.getElementById('console-body').innerHTML = '';
-        };
-
+        document.getElementById('console-clear').onclick = () => { document.getElementById('console-body').innerHTML = ''; };
         document.querySelectorAll('.ptab').forEach(t => t.onclick = () => switchView(t.dataset.view));
         
         document.querySelectorAll('.mtab').forEach(t => t.onclick = () => {
@@ -2732,7 +2625,7 @@ function init() {
             if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if(!S.gen && this.value.trim()) { updateSendButton(); document.getElementById('chat-send').click(); } }
         });
         
-        document.getElementById('apply-btn').onclick = () => { const p = S.projects.find(x => x.id === S.cur); if (p && p.files[S.activeFile] !== undefined) { p.files[S.activeFile] = cm ? cm.getValue() : ''; saveProjects(); updatePreview(); toast('Applied!'); } };
+        document.getElementById('apply-btn').onclick = () => { const p = S.projects.find(x => x.id === S.cur); if (p && p.files[S.activeFile] !== undefined) { p.files[S.activeFile] = cm ? cm.getValue() : ''; saveProjects(); updatePreview(); updateContextIndicator(); toast('Applied!'); } };
         
         document.getElementById('zoom-in').onclick = () => { S.zoom = Math.min(2, S.zoom + 0.1); applyZoom(); };
         document.getElementById('zoom-out').onclick = () => { S.zoom = Math.max(0.5, S.zoom - 0.1); applyZoom(); };
