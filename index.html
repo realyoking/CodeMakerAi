@@ -1062,7 +1062,7 @@ function renderGrid() {
         </div>
     `).join('');
     g.querySelectorAll('.proj-card').forEach(c => c.onclick = e => { if(e.target.closest('.proj-del')) return; openEditor(c.dataset.id); });
-    g.querySelectorAll('[data-del]').forEach(b => b.onclick = e => { e.stopPropagation(); S.projects = S.projects.filter(p => p.id !== b.dataset	del); saveProjects(); renderGrid(); });
+    g.querySelectorAll('[data-del]').forEach(b => b.onclick = e => { e.stopPropagation(); S.projects = S.projects.filter(p => p.id !== b.dataset.del); saveProjects(); renderGrid(); });
 }
 
 function renderTemplates() {
@@ -3139,7 +3139,7 @@ function init() {
         
         document.getElementById('ms-btn').onclick = e => { e.stopPropagation(); closeDropdowns(); document.getElementById('ms-menu').classList.toggle('open'); };
         document.getElementById('home-model-btn').onclick = e => { e.stopPropagation(); closeDropdowns(); document.getElementById('home-ms-menu').classList.toggle('open'); };
-        document.getElementById('m-comp-inject').onclick = e => { e.stopPropagation(); closeDropdowns(); document.getElementById('comp-menu').classList.toggle('open'); };
+        document.getElementById('m-comp-inject').onclick = e => { e.stopPropagation(); document.getElementById('comp-menu').classList.toggle('open'); };
         document.getElementById('btn-more').onclick = e => { e.stopPropagation(); closeDropdowns(); document.getElementById('more-menu').classList.toggle('open'); };
         document.addEventListener('click', closeDropdowns);
         
