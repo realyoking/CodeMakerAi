@@ -839,10 +839,10 @@ const POLLI_URL = 'https://text.pollinations.ai/openai';
 // 5 Proxy Fallbacks for maximum stability
 const PROXY_BUILDERS = [
     (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    (url) => `https://corsproxy.github.io/?url=${encodeURIComponent(url)}`,
     (url) => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
     (url) => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
-    (url) => `https://thingproxy.freeboard.io/fetch/${url}`,
-    (url) => `https://cors.eu.org/${url}`
+    (url) => `https://thingproxy.freeboard.io/fetch/${url}`
 ];
 
 const DEFAULT_DESIGN_MD = `# Design System\n\n## Aesthetics\nModern, sleek, and visually striking. NEVER use default browser styles.\n\n## Colors\nUse a sophisticated palette. Prefer dark themes (e.g., #0f172a background, #f1f5f9 text) with vibrant, glowing accents (indigo, violet, fuchsia). Use CSS variables.\n\n## Typography\nUse 'Inter' for sans-serif and 'JetBrains Mono' for code. Large, bold headings (clamp up to 4rem) with tight tracking. Muted, readable body text.\n\n## Layout\nGenerous whitespace (padding: 2rem+). Centered max-width containers (1200px). Fully responsive Flexbox/Grid.\n\n## Components\nBackgrounds should be subtle (rgba). Use 1px solid borders with low opacity. Border-radius 12px-16px. Use backdrop-filter: blur() for glassmorphism.\n\n## Interactions\nSmooth transitions (0.3s ease). Hover states should scale slightly (1.02) and increase glow/shadow.`;
@@ -1062,7 +1062,7 @@ function renderGrid() {
         </div>
     `).join('');
     g.querySelectorAll('.proj-card').forEach(c => c.onclick = e => { if(e.target.closest('.proj-del')) return; openEditor(c.dataset.id); });
-    g.querySelectorAll('[data-del]').forEach(b => b.onclick = e => { e.stopPropagation(); S.projects = S.projects.filter(p => p.id !== b.dataset.del); saveProjects(); renderGrid(); });
+    g.querySelectorAll('[data-del]').forEach(b => b.onclick = e => { e.stopPropagation(); S.projects = S.projects.filter(p => p.id !== b.dataset	del); saveProjects(); renderGrid(); });
 }
 
 function renderTemplates() {
@@ -2451,16 +2451,23 @@ async function callAI(messages, modelKey, tools, onChunk) {
         let content = '';
         let toolCalls = [];
         let finishReason = null;
+        let buffer = ''; // Buffer to handle partial chunks
 
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
-            const chunk = decoder.decode(value);
-            const lines = chunk.split('\n');
+            
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop(); // Keep the last partial line in buffer
+
             for (const line of lines) {
                 if (line.startsWith('data: ')) {
                     const dataStr = line.substring(6).trim();
-                    if (dataStr === '[DONE]') break;
+                    if (dataStr === '[DONE]') {
+                        buffer = '';
+                        break;
+                    }
                     try {
                         const data = JSON.parse(dataStr);
                         if (!data.choices || !data.choices[0]) continue;
@@ -2479,7 +2486,9 @@ async function callAI(messages, modelKey, tools, onChunk) {
                                 if (tc.function.arguments) toolCalls[tc.index].function.arguments += tc.function.arguments;
                             });
                         }
-                    } catch(e) {}
+                    } catch(e) {
+                        // Ignore JSON parse errors for partial chunks
+                    }
                 }
             }
         }
