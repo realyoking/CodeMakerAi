@@ -834,9 +834,16 @@ const IMG_API_URL = 'https://apihub.agnes-ai.com/v1/images/generations';
 const VID_API_URL = 'https://apihub.agnes-ai.com/v1/videos/generations';
 const SITE_KEY = 'sk-qZB4ieEv5UdIrYK3eEHAfdAv5xXYKLsVD7bAd9Kg7EQuDYF3';
 const PROJECT_KEY = 'sk-rWvCRyEKxFrHuuVaoQB1IwFoPXMGy6XQNQvpC3AhHl5kkNCE';
-const PROXY = 'https://corsproxy.io/?url=';
-const POLLI_URL = 'https://text.pollinations.ai/v1/chat/completions';
-const POLLI_IMG_URL = 'https://gen.pollinations.ai/image/';
+const POLLI_URL = 'https://text.pollinations.ai/openai';
+
+// 5 Proxy Fallbacks for maximum stability
+const PROXY_BUILDERS = [
+    (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    (url) => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
+    (url) => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
+    (url) => `https://thingproxy.freeboard.io/fetch/${url}`,
+    (url) => `https://cors.eu.org/${url}`
+];
 
 const DEFAULT_DESIGN_MD = `# Design System\n\n## Aesthetics\nModern, sleek, and visually striking. NEVER use default browser styles.\n\n## Colors\nUse a sophisticated palette. Prefer dark themes (e.g., #0f172a background, #f1f5f9 text) with vibrant, glowing accents (indigo, violet, fuchsia). Use CSS variables.\n\n## Typography\nUse 'Inter' for sans-serif and 'JetBrains Mono' for code. Large, bold headings (clamp up to 4rem) with tight tracking. Muted, readable body text.\n\n## Layout\nGenerous whitespace (padding: 2rem+). Centered max-width containers (1200px). Fully responsive Flexbox/Grid.\n\n## Components\nBackgrounds should be subtle (rgba). Use 1px solid borders with low opacity. Border-radius 12px-16px. Use backdrop-filter: blur() for glassmorphism.\n\n## Interactions\nSmooth transitions (0.3s ease). Hover states should scale slightly (1.02) and increase glow/shadow.`;
 
@@ -1786,25 +1793,31 @@ function logoutGithub() {
 
 async function urlToBase64(url) {
     if (url.startsWith('data:')) return url.split(',')[1];
+    const tryFetchBlob = async (targetUrl) => {
+        const res = await fetch(targetUrl);
+        if (!res.ok) throw new Error('Fetch failed');
+        const blob = await res.blob();
+        return await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result.split(',')[1]);
+            reader.readAsDataURL(blob);
+        });
+    };
+
     try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('Direct fetch failed');
-        const blob = await res.blob();
-        return await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result.split(',')[1]);
-            reader.readAsDataURL(blob);
-        });
+        return await tryFetchBlob(url);
     } catch (e) {
-        const res = await fetch(PROXY + encodeURIComponent(url));
-        if (!res.ok) throw new Error('Proxy fetch failed');
-        const blob = await res.blob();
-        return await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result.split(',')[1]);
-            reader.readAsDataURL(blob);
-        });
+        console.warn('Direct fetch failed for base64, trying proxies...');
     }
+
+    for (let i = 0; i < PROXY_BUILDERS.length; i++) {
+        try {
+            return await tryFetchBlob(PROXY_BUILDERS[i](url));
+        } catch (e) {
+            console.warn(`Proxy ${i} failed for base64`);
+        }
+    }
+    throw new Error('Failed to fetch and convert URL to base64');
 }
 
 async function startGithubPush(owner) {
@@ -2020,15 +2033,32 @@ async function startImportGithub() {
     const headers = { 'Accept': 'application/vnd.github+json' };
     if (S.githubToken) headers['Authorization'] = `token ${S.githubToken}`;
     const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents`;
+    
+    const tryFetchApi = async (url) => {
+        const res = await fetch(url, { headers });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res;
+    };
+
+    let res;
     try {
-        let res;
-        try {
-            res = await fetch(apiUrl, { headers });
-            if (!res.ok) throw new Error(`Direct failed: ${res.status}`);
-        } catch (directErr) {
-            res = await fetch(PROXY + encodeURIComponent(apiUrl), { headers });
-            if (!res.ok) throw new Error(`Failed to fetch repo (Status: ${res.status}). You might be rate-limited.`);
+        res = await tryFetchApi(apiUrl);
+    } catch (directErr) {
+        let fetched = false;
+        for (let i = 0; i < PROXY_BUILDERS.length; i++) {
+            try {
+                res = await tryFetchApi(PROXY_BUILDERS[i](apiUrl));
+                fetched = true;
+                break;
+            } catch(e) {}
         }
+        if (!fetched) {
+            modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error: Failed to fetch repo. You might be rate-limited.</p>`;
+            return;
+        }
+    }
+
+    try {
         const files = await res.json();
         const proj = createProj(`Imported: ${repo}`, S.model);
         proj.files = {}; 
@@ -2036,13 +2066,20 @@ async function startImportGithub() {
         for (const file of files) {
             if (file.type === 'file') {
                 modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Importing ${file.name}...</div>`;
+                
                 let fileRes;
                 try {
-                    fileRes = await fetch(file.url, { headers });
-                    if (!fileRes.ok) throw new Error(`Direct failed: ${fileRes.status}`);
+                    fileRes = await tryFetchApi(file.url);
                 } catch (directErr) {
-                    fileRes = await fetch(PROXY + encodeURIComponent(file.url), { headers });
-                    if (!fileRes.ok) continue; 
+                    let fetched = false;
+                    for (let i = 0; i < PROXY_BUILDERS.length; i++) {
+                        try {
+                            fileRes = await tryFetchApi(PROXY_BUILDERS[i](file.url));
+                            fetched = true;
+                            break;
+                        } catch(e) {}
+                    }
+                    if (!fetched) continue; 
                 }
                 const fileData = await fileRes.json();
                 const content = decodeURIComponent(escape(atob(fileData.content.replace(/\n/g, ''))));
@@ -2395,7 +2432,7 @@ async function callAI(messages, modelKey, tools, onChunk) {
     const headers = { 'Content-Type':'application/json' };
     if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
 
-    const doFetch = async (url, isFallback = false) => {
+    const tryFetch = async (url, isFallback) => {
         const ctrl = new AbortController();
         abortCtrl = ctrl;
         let fetchBody = JSON.stringify(body);
@@ -2449,31 +2486,48 @@ async function callAI(messages, modelKey, tools, onChunk) {
         return { content, toolCalls: toolCalls.filter(Boolean), finishReason };
     };
 
+    // 1. Try Direct
     try {
-        return await doFetch(endpoint, false);
+        return await tryFetch(endpoint, false);
     } catch(e) {
         if (e.name === 'AbortError') throw new Error('Request aborted');
+        console.warn(`Direct request to ${endpoint} failed: ${e.message}`);
+    }
 
-        if (!isPollinationsReq) {
-            console.warn('Agnes direct failed (' + e.message + '), trying proxy...');
-            try {
-                return await doFetch(PROXY + encodeURIComponent(endpoint), false);
-            } catch(proxyErr) {
-                if (proxyErr.name === 'AbortError') throw new Error('Request aborted');
-                console.warn('Agnes proxy failed (' + proxyErr.message + '), falling back to Pollinations...');
-                try {
-                    return await doFetch(POLLI_URL, true);
-                } catch (fallbackErr) {
-                    if (fallbackErr.name === 'AbortError') throw new Error('Request aborted');
-                    console.warn('Pollinations direct failed, trying proxy...');
-                    return await doFetch(PROXY + encodeURIComponent(POLLI_URL), true);
-                }
-            }
+    // 2. Try Proxies
+    for (let i = 0; i < PROXY_BUILDERS.length; i++) {
+        try {
+            console.log(`Trying proxy ${i + 1}...`);
+            return await tryFetch(PROXY_BUILDERS[i](endpoint), false);
+        } catch(e) {
+            if (e.name === 'AbortError') throw new Error('Request aborted');
+            console.warn(`Proxy ${i + 1} failed: ${e.message}`);
+        }
+    }
+
+    // 3. If it wasn't Pollinations already, fallback to Pollinations Direct
+    if (!isPollinationsReq) {
+        console.warn('All Agnes routes failed. Falling back to Pollinations direct...');
+        try {
+            return await tryFetch(POLLI_URL, true);
+        } catch(e) {
+            if (e.name === 'AbortError') throw new Error('Request aborted');
+            console.warn(`Pollinations direct failed: ${e.message}`);
         }
 
-        console.warn('Pollinations direct failed, trying proxy...');
-        return await doFetch(PROXY + encodeURIComponent(endpoint), false);
+        // 4. Try Proxies for Pollinations
+        for (let i = 0; i < PROXY_BUILDERS.length; i++) {
+            try {
+                console.log(`Trying Pollinations proxy ${i + 1}...`);
+                return await tryFetch(PROXY_BUILDERS[i](POLLI_URL), true);
+            } catch(e) {
+                if (e.name === 'AbortError') throw new Error('Request aborted');
+                console.warn(`Pollinations proxy ${i + 1} failed: ${e.message}`);
+            }
+        }
     }
+
+    throw new Error('All API endpoints and proxies failed.');
 }
 
 async function generateAsset(type, prompt) {
@@ -2481,7 +2535,7 @@ async function generateAsset(type, prompt) {
     if (type === 'image') {
         const body = JSON.stringify({ model: 'agnes-image-2.0-flash', prompt: prompt, n: 1, size: '1024x1024' });
         let res;
-        try { res = await fetch(IMG_API_URL, { method: 'POST', headers, body }); if (!res.ok) throw new Error(); } catch (e) { res = await fetch(PROXY + encodeURIComponent(IMG_API_URL), { method: 'POST', headers, body }); }
+        try { res = await fetch(IMG_API_URL, { method: 'POST', headers, body }); if (!res.ok) throw new Error(); } catch (e) { res = await fetch(PROXY_BUILDERS[0](IMG_API_URL), { method: 'POST', headers, body }); }
         if (!res || !res.ok) throw new Error('Image API failed');
         const data = await res.json();
         if (data.data && data.data[0]) return data.data[0].url || `data:image/png;base64,${data.data[0].b64_json}`;
@@ -2489,7 +2543,7 @@ async function generateAsset(type, prompt) {
     } else {
         const body = JSON.stringify({ model: 'agnes-video-v2.0', prompt: prompt });
         let res;
-        try { res = await fetch(VID_API_URL, { method: 'POST', headers, body }); if (!res.ok) throw new Error(); } catch (e) { res = await fetch(PROXY + encodeURIComponent(VID_API_URL), { method: 'POST', headers, body }); }
+        try { res = await fetch(VID_API_URL, { method: 'POST', headers, body }); if (!res.ok) throw new Error(); } catch (e) { res = await fetch(PROXY_BUILDERS[0](VID_API_URL), { method: 'POST', headers, body }); }
         if (!res || !res.ok) throw new Error('Video API failed');
         const data = await res.json();
         if (data.data && data.data[0] && data.data[0].url) return data.data[0].url;
@@ -2928,7 +2982,7 @@ async function urlToBlob(url) {
         if (!res.ok) throw new Error('Direct fetch failed');
         return await res.blob();
     } catch (e) {
-        const res = await fetch(PROXY + encodeURIComponent(url));
+        const res = await fetch(PROXY_BUILDERS[0](url));
         if (!res.ok) throw new Error('Proxy fetch failed');
         return await res.blob();
     }
