@@ -230,7 +230,7 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
 .ms-item:hover { background: var(--bg2); }
 .ms-item.active { background: var(--acG); color: var(--ac); }
 
-.ed-body { flex: 1; display: flex; overflow: hidden; min-height: 0; }
+.ed-body { flex: 1; display: flex; overflow: hidden; min-height: 0; position: relative; }
 
 .chat-panel { width: 400px; min-width: 320px; display: flex; flex-direction: column; background: var(--panel); border-right: 1px solid var(--border); position: relative; }
 
@@ -413,6 +413,60 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
     .comp-bar-container { height: 28px; }
     .comp-price { font-size: 12px; }
     .home-model-dd { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding-bottom: 6px; padding-right: 0; }
+}
+
+/* Voice Mode UI (Gemini Style) */
+#voice-mode-ui {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: var(--bg);
+    z-index: 500;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+}
+#voice-mode-ui.active { display: flex; }
+#voice-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--tx);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+#voice-close:hover { background: var(--dn); border-color: var(--dn); }
+#voice-visualizer {
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+}
+#voice-caption {
+    color: var(--tx);
+    font-size: 1.5rem;
+    margin-top: 40px;
+    max-width: 600px;
+    min-height: 50px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+#voice-status {
+    color: var(--mt);
+    font-size: 1rem;
+    margin-top: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 </style>
 </head>
@@ -762,6 +816,14 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
                 </div>
             </div>
         </div>
+
+        <!-- VOICE MODE UI -->
+        <div id="voice-mode-ui">
+            <button id="voice-close"><i class="fas fa-times"></i></button>
+            <canvas id="voice-visualizer" width="240" height="240"></canvas>
+            <div id="voice-caption">Tap the mic to start</div>
+            <div id="voice-status">Idle</div>
+        </div>
     </div>
 </div>
 
@@ -921,6 +983,8 @@ let mentionItems = [];
 let mentionIndex = 0;
 let recognition = null;
 let synth = window.speechSynthesis;
+let audioCtx = null;
+let voiceAnimId = null;
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
 function toast(m) { const t = document.getElementById('toast'); const d = document.createElement('div'); d.style.cssText = 'padding:12px 18px;background:var(--panel);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow);margin-bottom:8px;font-size:13px;color:var(--tx)'; d.textContent = m; t.appendChild(d); setTimeout(() => d.remove(), 3000); }
@@ -1155,7 +1219,6 @@ function openEditor(id) {
     document.getElementById('ed-title').textContent = p.name;
     document.getElementById('ms-lbl').textContent = getModelLabel(p.model);
     
-    // Update active states for dropdown
     document.querySelectorAll('#ms-menu .ms-item').forEach(item => {
         if (item.dataset.model === p.model) item.classList.add('active');
         else item.classList.remove('active');
@@ -1427,8 +1490,6 @@ function loadFileToEditor() {
 function updatePreview() {
     if (!S.autoRefresh) return;
     const p = S.projects.find(x => x.id === S.cur); if (!p) return;
-    
-    // Check if Babel is used for React/JSX/TSX compilation
     const hasBabel = (p.files['index.html'] || '').includes('babel.min.js');
     const scriptType = hasBabel ? 'type="text/babel"' : '';
     const scriptTag = `<script ${scriptType}>${p.files['script.js']||''}<\/script>`;
@@ -2129,20 +2190,93 @@ function selectMention(filename) {
 
 window.selectMention = selectMention;
 
-// --- VOICE AGENT LOGIC ---
+// --- VOICE MODE LOGIC (GEMINI STYLE) ---
+function playBeep(freq, duration) {
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let oscillator = audioCtx.createOscillator();
+    let gainNode = audioCtx.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.type = 'sine';
+    oscillator.frequency.value = freq;
+    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    oscillator.start(audioCtx.currentTime);
+    oscillator.stop(audioCtx.currentTime + duration);
+}
+
+function drawStrands(ctx, t, intensity) {
+    const w = ctx.canvas.width;
+    const h = ctx.canvas.height;
+    ctx.clearRect(0, 0, w, h);
+    const colors = ["#F97316", "#7C3AED", "#06B6D4"];
+    const speed = 0.5 + intensity * 2;
+    const amplitude = 30 + intensity * 40;
+    const count = 4;
+    
+    ctx.globalCompositeOperation = 'lighter';
+    
+    for(let i=0; i<count; i++) {
+        ctx.beginPath();
+        ctx.lineWidth = 4 + intensity * 2;
+        ctx.strokeStyle = colors[i % colors.length];
+        ctx.shadowBlur = 25;
+        ctx.shadowColor = colors[i % colors.length];
+        
+        for(let x=0; x<=w; x+=2) {
+            const phase = i * 1.7;
+            const freq = (0.01 + i * 0.005);
+            let y = h/2 + Math.sin(x * freq + t * speed + phase) * amplitude 
+                  + Math.sin(x * freq * 1.1 - t * speed * 0.7 + phase * 1.7) * amplitude * 0.4;
+            if(x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+}
+
+function animateVoiceVisualizer() {
+    const canvas = document.getElementById('voice-visualizer');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let t = 0;
+    function loop() {
+        if (!S.voiceMode) {
+            cancelAnimationFrame(voiceAnimId);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            return;
+        }
+        t += 0.05;
+        let intensity = S.gen ? 1 : 0.2;
+        drawStrands(ctx, t, intensity);
+        voiceAnimId = requestAnimationFrame(loop);
+    }
+    loop();
+}
+
 function toggleVoiceMode() {
     if (!('webkitSpeechRecognition' in window)) return toast('Voice recognition not supported in this browser.');
     S.voiceMode = !S.voiceMode;
+    const ui = document.getElementById('voice-mode-ui');
     const btn = document.getElementById('btn-voice');
+    const caption = document.getElementById('voice-caption');
+    const status = document.getElementById('voice-status');
+    
     if (S.voiceMode) {
+        ui.classList.add('active');
         btn.classList.add('voice-active');
-        toast('Voice mode activated. Speak now.');
+        status.innerText = 'Listening...';
+        caption.innerText = 'Speak now';
+        playBeep(800, 0.1);
+        animateVoiceVisualizer();
         startListening();
     } else {
+        ui.classList.remove('active');
         btn.classList.remove('voice-active');
         if (synth) synth.cancel();
         if (recognition) recognition.stop();
-        toast('Voice mode deactivated.');
+        playBeep(400, 0.1);
     }
 }
 
@@ -2150,6 +2284,7 @@ function startListening() {
     if (!recognition || !S.voiceMode || S.gen) return;
     try {
         recognition.start();
+        document.getElementById('voice-status').innerText = 'Listening...';
     } catch(e) {}
 }
 
@@ -2158,8 +2293,14 @@ function speakText(text) {
     synth.cancel();
     const cleanText = text.replace(/```[\s\S]*?```/g, ' code block ').replace(/[*#>`]/g, '');
     const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.onstart = () => {
+        document.getElementById('voice-status').innerText = 'AI Speaking...';
+        playBeep(600, 0.1);
+    };
     utterance.onend = () => {
         if (S.voiceMode && !S.gen) {
+            document.getElementById('voice-status').innerText = 'Listening...';
+            playBeep(800, 0.1);
             setTimeout(() => startListening(), 500);
         }
     };
@@ -2174,7 +2315,7 @@ async function summarizeChat(p) {
         model: resolveModelName(S.model),
         messages: [
             { role: 'system', content: 'You are a helpful summarizer. Read the following conversation. Summarize the key decisions, tech stack, file structure, and current state of the project into a concise markdown document. Output ONLY the markdown.' },
-            ...p.messages.slice(-12)
+            ...p.messages.slice(-10) 
         ],
         temperature: 0.3,
         stream: false
@@ -2247,7 +2388,6 @@ async function callAI(messages, modelKey, tools, onChunk) {
         max_tokens: 20000
     };
 
-    // Enable Thinking mode for Agnes AI
     if (!isPollinationsReq) {
         body.chat_template_kwargs = { enable_thinking: true };
     }
@@ -2477,7 +2617,6 @@ async function generate() {
     renderTasks();
     updateContextIndicator();
     
-    // Update UI to show which model Auto selected
     if (p.model === 'auto') {
         const actualModel = resolveAutoModel([...p.messages]);
         document.getElementById('ms-lbl').textContent = `[Auto] ${actualModel}`;
@@ -2519,6 +2658,7 @@ async function generate() {
                 }
                 accumulatedContent += chunk;
                 statusLog.innerHTML = fmtAI(accumulatedContent);
+                if (S.voiceMode) document.getElementById('voice-caption').innerText = accumulatedContent;
                 const c = document.getElementById('chat-msgs');
                 c.scrollTop = c.scrollHeight;
             });
@@ -2550,7 +2690,6 @@ async function generate() {
                         badge.innerHTML = `<div class="spinner"></div> Writing ${args.filename}...`;
                         statusLog.appendChild(badge);
 
-                        // High-Impact Action Check
                         let isHighImpact = false;
                         if (!S.fullAccess && p.files[args.filename]) {
                             const oldLen = p.files[args.filename].length;
@@ -2578,7 +2717,6 @@ async function generate() {
                             badge.innerHTML = `<i class="fas fa-check-circle"></i> Wrote ${args.filename}`;
                             markTaskDone(args.filename);
 
-                            // Lovable-style Plan Pause
                             if (args.filename === 'plan.md' && currentMessages.length <= 3) {
                                 statusLog.innerHTML += '<br><span style="color:var(--ac)">📋 Plan generated! Review it in the Files tab, then click Continue to proceed with coding.</span>';
                                 if (S.voiceMode) speakText("I have created a plan. Please review it in the Files tab, then click Continue to proceed with coding.");
@@ -2718,8 +2856,8 @@ async function generate() {
                     <button class="msg-action-btn" onclick="retryGen()"><img src="retry.HEIC"> Retry</button>`;
                 statusLog.appendChild(actions);
                 
-                // Voice Agent TTS
                 if (S.voiceMode && accumulatedContent) {
+                    document.getElementById('voice-caption').innerText = accumulatedContent;
                     speakText(accumulatedContent);
                 }
                 break;
@@ -2808,7 +2946,6 @@ function toggleTheme() {
 
 function init() {
     try {
-        // Global Image Error Handler for broken images (like HEIC in Chrome)
         document.addEventListener('error', (e) => {
             const target = e.target;
             if (target && target.tagName === 'IMG') {
@@ -2824,27 +2961,43 @@ function init() {
             cm = CodeMirror.fromTextArea(document.getElementById('code-editor'), { lineNumbers: true, theme: 'material-darker', indentUnit: 2 });
         }
 
-        // Init Speech Recognition
         if ('webkitSpeechRecognition' in window) {
             recognition = new webkitSpeechRecognition();
             recognition.continuous = false;
-            recognition.interimResults = false;
+            recognition.interimResults = true;
             recognition.lang = 'en-US';
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                const inp = document.getElementById('chat-input');
-                inp.value = transcript;
-                inp.dispatchEvent(new Event('input'));
-                document.getElementById('chat-send').click();
+            recognition.onstart = () => {
+                document.getElementById('voice-status').innerText = 'Listening...';
+                playBeep(800, 0.05);
             };
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                let finalTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+                document.getElementById('voice-caption').innerText = finalTranscript || interimTranscript;
+                if (finalTranscript) {
+                    const inp = document.getElementById('chat-input');
+                    inp.value = finalTranscript;
+                    inp.dispatchEvent(new Event('input'));
+                    document.getElementById('chat-send').click();
+                }
+            };
+            recognition.onerror = (event) => {
+                document.getElementById('voice-status').innerText = 'Error: ' + event.error;
+            }
             recognition.onend = () => {
                 if (S.voiceMode && !S.gen) {
-                    setTimeout(() => startListening(), 500);
+                    document.getElementById('voice-status').innerText = 'Idle';
                 }
             };
         }
         
-        // FAQ Accordion
         document.querySelectorAll('.faq-q').forEach(btn => {
             btn.onclick = () => {
                 const item = btn.parentElement;
@@ -2853,7 +3006,6 @@ function init() {
             };
         });
 
-        // Idea Giver Auto-scroll
         const ideas = ["Build a snake game", "Create a portfolio site", "Make a pricing table", "Build a calculator", "Create a landing page for a SaaS", "Build a to-do list app", "Make a weather app UI", "Create a Pomodoro timer", "Build a tip calculator", "Make a digital clock", "Create a quiz app", "Build a recipe card component", "Make a blog layout", "Create a contact form", "Build a navbar with dropdown", "Make a footer component", "Create a profile card", "Build a countdown timer", "Make a random quote generator", "Create a progress bar", "Build an accordion FAQ", "Make a grid photo gallery", "Create a login form", "Build a product card", "Make a testimonial slider", "Create a sticky header", "Build a search bar UI", "Make a modal popup", "Create a notification badge", "Build a statistics dashboard", "Make a color palette generator", "Create a typing speed test", "Build a memory match game", "Make a virtual keyboard UI", "Create a currency converter UI"];
         const ideaList = document.getElementById('idea-giver-track');
         if (ideaList) {
@@ -2861,7 +3013,6 @@ function init() {
             ideaList.innerHTML = itemsHtml + itemsHtml; 
         }
         
-        // Nav Links Routing
         document.querySelectorAll('.nav-link').forEach(btn => {
             btn.onclick = () => switchPage(btn.dataset.page);
         });
@@ -2872,11 +3023,9 @@ function init() {
         document.getElementById('import-gh-btn').onclick = importFromGithub;
         document.getElementById('back-btn').onclick = closeEditor;
         
-        // Theme Toggle Buttons
         document.getElementById('nav-theme-btn').onclick = toggleTheme;
         document.getElementById('btn-theme').onclick = toggleTheme;
 
-        // Safe Mode / Full Access Toggle
         document.getElementById('ci-safe-mode').onclick = () => {
             S.fullAccess = !S.fullAccess;
             const lbl = document.getElementById('sm-lbl');
@@ -2892,15 +3041,13 @@ function init() {
             }
         };
 
-        // Voice Mode Toggle
         document.getElementById('btn-voice').onclick = toggleVoiceMode;
+        document.getElementById('voice-close').onclick = toggleVoiceMode;
 
-        // Context Indicator New Chat Button with Memory Summarizer
         document.getElementById('ci-new-chat').onclick = async () => {
             const p = S.projects.find(x => x.id === S.cur); if (!p) return;
             if (S.gen) return toast('Wait for generation to finish.');
 
-            // 1. Summarize if there's history
             if (p.messages.length > 2) {
                 const btn = document.getElementById('ci-new-chat');
                 const oldHtml = btn.innerHTML;
@@ -2913,7 +3060,6 @@ function init() {
                 btn.disabled = false;
             }
 
-            // 2. Clear messages and start new chat
             p.messages = [{ role: 'user', content: 'I started a new chat. Please read memory.md to remember our project context.' }];
             saveProjects();
             renderChat();
@@ -2942,13 +3088,11 @@ function init() {
             const p = S.projects.find(x => x.id === S.cur); 
             if (p) { p.model = S.model; saveProjects(); } 
             
-            // Update active classes
             document.querySelectorAll('#ms-menu .ms-item, #home-ms-menu .ms-item').forEach(item => {
                 if (item.dataset.model === S.model) item.classList.add('active');
                 else item.classList.remove('active');
             });
 
-            // Update labels
             const labelText = getModelLabel(S.model);
             if(document.getElementById('ms-lbl')) document.getElementById('ms-lbl').textContent = labelText;
             if(document.getElementById('home-ms-lbl')) document.getElementById('home-ms-lbl').textContent = labelText;
