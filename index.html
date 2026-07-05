@@ -299,6 +299,40 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
 .mention-item i { color: var(--mt); }
 .mention-item:hover, .mention-item.active { background: var(--acG); color: var(--ac); }
 
+/* Suggestion Buttons */
+#suggestions-wrap {
+    padding: 0 16px 12px;
+    display: none;
+}
+#suggestion-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.suggestion-btn {
+    text-align: left;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--tx2);
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.2s;
+}
+.suggestion-btn:hover {
+    border-color: var(--ac);
+    color: var(--ac);
+    transform: translateX(2px);
+}
+.suggestion-btn i {
+    color: var(--ac);
+    font-size: 14px;
+}
+
 .prev-panel { flex: 1; display: flex; flex-direction: column; background: var(--bg2); min-width: 0; min-height: 0; }
 .prev-tabs { display: flex; align-items: center; padding: 0 12px; background: var(--panel); border-bottom: 1px solid var(--border); height: 46px; gap: 4px; }
 .ptab { padding: 10px 14px; border: none; background: none; color: var(--mt); font-size: 14px; cursor: pointer; border-bottom: 2px solid transparent; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
@@ -760,6 +794,9 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
             <div class="continue-wrap" id="continue-wrap" style="padding: 0 16px 12px; display: none;">
                 <button class="continue-btn" style="width: 100%; padding: 10px; background: var(--warn); color: #000; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="continueGen()"><i class="fas fa-forward"></i> Continue Generation</button>
             </div>
+            <div id="suggestions-wrap">
+                <div id="suggestion-buttons"></div>
+            </div>
             <div class="chat-input-area">
                 <div class="chat-input-wrap">
                     <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask AI to build... (Use # to mention files)"></textarea>
@@ -836,13 +873,8 @@ const SITE_KEY = 'sk-qZB4ieEv5UdIrYK3eEHAfdAv5xXYKLsVD7bAd9Kg7EQuDYF3';
 const PROJECT_KEY = 'sk-rWvCRyEKxFrHuuVaoQB1IwFoPXMGy6XQNQvpC3AhHl5kkNCE';
 const POLLI_URL = 'https://text.pollinations.ai/openai';
 
-// 4 Stable CORS Proxies
-const PROXY_BUILDERS = [
-    (url) => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
-    (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-    (url) => `https://api.codetabs.com/v1/proxy/?quest=${encodeURIComponent(url)}`,
-    (url) => `https://thingproxy.freeboard.io/fetch/${url}`
-];
+// Primary CORS proxy that supports streaming
+const PROXY_URL = 'https://corsproxy.io/?url=';
 
 const DEFAULT_DESIGN_MD = `# Design System\n\n## Aesthetics\nModern, sleek, and visually striking. NEVER use default browser styles.\n\n## Colors\nUse a sophisticated palette. Prefer dark themes (e.g., #0f172a background, #f1f5f9 text) with vibrant, glowing accents (indigo, violet, fuchsia). Use CSS variables.\n\n## Typography\nUse 'Inter' for sans-serif and 'JetBrains Mono' for code. Large, bold headings (clamp up to 4rem) with tight tracking. Muted, readable body text.\n\n## Layout\nGenerous whitespace (padding: 2rem+). Centered max-width containers (1200px). Fully responsive Flexbox/Grid.\n\n## Components\nBackgrounds should be subtle (rgba). Use 1px solid borders with low opacity. Border-radius 12px-16px. Use backdrop-filter: blur() for glassmorphism.\n\n## Interactions\nSmooth transitions (0.3s ease). Hover states should scale slightly (1.02) and increase glow/shadow.`;
 
@@ -1792,31 +1824,25 @@ function logoutGithub() {
 
 async function urlToBase64(url) {
     if (url.startsWith('data:')) return url.split(',')[1];
-    const tryFetchBlob = async (targetUrl) => {
-        const res = await fetch(targetUrl);
-        if (!res.ok) throw new Error('Fetch failed');
+    try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Direct fetch failed');
         const blob = await res.blob();
         return await new Promise((resolve) => {
             const reader = new FileReader();
             reader.onloadend = () => resolve(reader.result.split(',')[1]);
             reader.readAsDataURL(blob);
         });
-    };
-
-    try {
-        return await tryFetchBlob(url);
     } catch (e) {
-        console.warn('Direct fetch failed for base64, trying proxies...');
+        const res = await fetch(PROXY_URL + encodeURIComponent(url));
+        if (!res.ok) throw new Error('Proxy fetch failed');
+        const blob = await res.blob();
+        return await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result.split(',')[1]);
+            reader.readAsDataURL(blob);
+        });
     }
-
-    for (let i = 0; i < PROXY_BUILDERS.length; i++) {
-        try {
-            return await tryFetchBlob(PROXY_BUILDERS[i](url));
-        } catch (e) {
-            console.warn(`Proxy ${i} failed for base64`);
-        }
-    }
-    throw new Error('Failed to fetch and convert URL to base64');
 }
 
 async function startGithubPush(owner) {
@@ -2043,15 +2069,9 @@ async function startImportGithub() {
     try {
         res = await tryFetchApi(apiUrl);
     } catch (directErr) {
-        let fetched = false;
-        for (let i = 0; i < PROXY_BUILDERS.length; i++) {
-            try {
-                res = await tryFetchApi(PROXY_BUILDERS[i](apiUrl));
-                fetched = true;
-                break;
-            } catch(e) {}
-        }
-        if (!fetched) {
+        try {
+            res = await tryFetchApi(PROXY_URL + encodeURIComponent(apiUrl));
+        } catch(e) {
             modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error: Failed to fetch repo. You might be rate-limited.</p>`;
             return;
         }
@@ -2070,15 +2090,9 @@ async function startImportGithub() {
                 try {
                     fileRes = await tryFetchApi(file.url);
                 } catch (directErr) {
-                    let fetched = false;
-                    for (let i = 0; i < PROXY_BUILDERS.length; i++) {
-                        try {
-                            fileRes = await tryFetchApi(PROXY_BUILDERS[i](file.url));
-                            fetched = true;
-                            break;
-                        } catch(e) {}
-                    }
-                    if (!fetched) continue; 
+                    try {
+                        fileRes = await tryFetchApi(PROXY_URL + encodeURIComponent(file.url));
+                    } catch(e) { continue; }
                 }
                 const fileData = await fileRes.json();
                 const content = decodeURIComponent(escape(atob(fileData.content.replace(/\n/g, ''))));
@@ -2343,6 +2357,75 @@ function speakText(text) {
     synth.speak(utterance);
 }
 
+// --- AI NEXT STEPS SUGGESTION ---
+async function generateNextSteps() {
+    const p = S.projects.find(x => x.id === S.cur);
+    if (!p) return;
+    
+    const wrap = document.getElementById('suggestions-wrap');
+    const btnContainer = document.getElementById('suggestion-buttons');
+    wrap.style.display = 'none'; 
+    
+    const userReq = p.messages[0].content;
+    const files = Object.keys(p.files).join(', ');
+    const prompt = `You are a product manager AI. The user just built a project with the prompt: "${userReq}". The project has these files: ${files}. Suggest 3 concise, actionable next features to improve this project. Output ONLY a valid JSON array of 3 short strings. Example: ["Add a dark mode toggle", "Implement a search bar", "Add scroll animations"]`;
+    
+    const body = {
+        model: 'openai-fast',
+        messages: [{ role: 'user', content: prompt }],
+        stream: false
+    };
+    
+    let data;
+    try {
+        const res = await fetch(POLLI_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        if (!res.ok) throw new Error('Pollinations failed');
+        data = await res.json();
+    } catch (e) {
+        try {
+            const res = await fetch(API_URL, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SITE_KEY}` }, 
+                body: JSON.stringify({ ...body, model: 'agnes-2.0-flash' }) 
+            });
+            if (!res.ok) throw new Error('Agnes failed');
+            data = await res.json();
+        } catch (e2) {
+            return; // Silently fail
+        }
+    }
+    
+    if (data && data.choices && data.choices[0]) {
+        const content = data.choices[0].message.content;
+        let ideas = [];
+        try {
+            const match = content.match(/\[[\s\S]*\]/);
+            if (match) {
+                ideas = JSON.parse(match[0]);
+            } else {
+                ideas = content.split('\n').filter(l => l.match(/^\d+\./)).map(l => l.replace(/^\d+\.\s*/, ''));
+            }
+        } catch(e) {}
+        
+        if (ideas.length > 0) {
+            btnContainer.innerHTML = ideas.slice(0, 3).map(idea => `
+                <button class="suggestion-btn" onclick="useSuggestion('${idea.replace(/'/g, "\\'")}')">
+                    <i class="fas fa-lightbulb"></i> ${idea}
+                </button>
+            `).join('');
+            wrap.style.display = 'block';
+        }
+    }
+}
+
+window.useSuggestion = function(text) {
+    const inp = document.getElementById('chat-input');
+    inp.value = text;
+    inp.dispatchEvent(new Event('input'));
+    document.getElementById('chat-send').click();
+    document.getElementById('suggestions-wrap').style.display = 'none';
+};
+
 // --- MEMORY SUMMARIZER ---
 async function summarizeChat(p) {
     toast('Summarizing chat to memory.md...');
@@ -2420,9 +2503,12 @@ async function callAI(messages, modelKey, tools, onChunk) {
         messages: [{role:'system', content: getSystemPrompt()}, ...messages],
         temperature: 0.7,
         stream: true,
-        tools: tools,
         max_tokens: 20000
     };
+    
+    if (tools && tools.length > 0) {
+        body.tools = tools;
+    }
 
     if (!isPollinationsReq) {
         body.chat_template_kwargs = { enable_thinking: true };
@@ -2450,7 +2536,7 @@ async function callAI(messages, modelKey, tools, onChunk) {
         let content = '';
         let toolCalls = [];
         let finishReason = null;
-        let buffer = ''; // SSE Buffer to handle split chunks
+        let buffer = ''; // Smart SSE Buffer
 
         const processLine = (line) => {
             const trimmed = line.trim();
@@ -2486,16 +2572,11 @@ async function callAI(messages, modelKey, tools, onChunk) {
         while (true) {
             const { done, value } = await reader.read();
             if (done) {
-                // Process any remaining data in buffer
-                if (buffer.trim()) {
-                    processLine(buffer);
-                }
+                if (buffer.trim()) processLine(buffer);
                 break;
             }
             
             buffer += decoder.decode(value, { stream: true });
-            
-            // Split by newline, but keep the last partial line in buffer
             let lines = buffer.split('\n');
             buffer = lines.pop(); 
             
@@ -2510,44 +2591,24 @@ async function callAI(messages, modelKey, tools, onChunk) {
     };
 
     // 1. Try Direct Agnes
-    try {
-        return await tryFetch(endpoint, false);
-    } catch (e) {
-        if (e.name === 'AbortError') throw new Error('Request aborted');
-        console.warn(`Direct Agnes failed: ${e.message}`);
-    }
+    try { return await tryFetch(endpoint, false); } 
+    catch (e) { if (e.name === 'AbortError') throw e; console.warn(`Direct Agnes failed: ${e.message}`); }
 
-    // 2. Try Agnes via Proxies
-    for (let i = 0; i < PROXY_BUILDERS.length; i++) {
-        try {
-            return await tryFetch(PROXY_BUILDERS[i](endpoint), false);
-        } catch (e) {
-            if (e.name === 'AbortError') throw new Error('Request aborted');
-            console.warn(`Agnes Proxy ${i} failed: ${e.message}`);
-        }
-    }
+    // 2. Try Agnes via corsproxy.io (Streaming Supported)
+    try { return await tryFetch(PROXY_URL + encodeURIComponent(endpoint), false); } 
+    catch (e) { if (e.name === 'AbortError') throw e; console.warn(`Agnes Proxy failed: ${e.message}`); }
 
-    // 3. Try Direct Pollinations
+    // 3. Try Direct Pollinations (Native CORS Supported)
     if (!isPollinationsReq) {
-        try {
-            return await tryFetch(POLLI_URL, true);
-        } catch (e) {
-            if (e.name === 'AbortError') throw new Error('Request aborted');
-            console.warn(`Direct Pollinations failed: ${e.message}`);
-        }
+        try { return await tryFetch(POLLI_URL, true); } 
+        catch (e) { if (e.name === 'AbortError') throw e; console.warn(`Direct Pollinations failed: ${e.message}`); }
 
-        // 4. Try Pollinations via Proxies
-        for (let i = 0; i < PROXY_BUILDERS.length; i++) {
-            try {
-                return await tryFetch(PROXY_BUILDERS[i](POLLI_URL), true);
-            } catch (e) {
-                if (e.name === 'AbortError') throw new Error('Request aborted');
-                console.warn(`Pollinations Proxy ${i} failed: ${e.message}`);
-            }
-        }
+        // 4. Try Pollinations via corsproxy.io
+        try { return await tryFetch(PROXY_URL + encodeURIComponent(POLLI_URL), true); } 
+        catch (e) { if (e.name === 'AbortError') throw e; console.warn(`Pollinations Proxy failed: ${e.message}`); }
     }
 
-    throw new Error('Network error or all proxies failed. Check connection.');
+    throw new Error('All API endpoints failed.');
 }
 
 async function generateAsset(type, prompt) {
@@ -2555,7 +2616,7 @@ async function generateAsset(type, prompt) {
     if (type === 'image') {
         const body = JSON.stringify({ model: 'agnes-image-2.0-flash', prompt: prompt, n: 1, size: '1024x1024' });
         let res;
-        try { res = await fetch(IMG_API_URL, { method: 'POST', headers, body }); if (!res.ok) throw new Error(); } catch (e) { res = await fetch(PROXY_BUILDERS[0](IMG_API_URL), { method: 'POST', headers, body }); }
+        try { res = await fetch(IMG_API_URL, { method: 'POST', headers, body }); if (!res.ok) throw new Error(); } catch (e) { res = await fetch(PROXY_URL + encodeURIComponent(IMG_API_URL), { method: 'POST', headers, body }); }
         if (!res || !res.ok) throw new Error('Image API failed');
         const data = await res.json();
         if (data.data && data.data[0]) return data.data[0].url || `data:image/png;base64,${data.data[0].b64_json}`;
@@ -2563,7 +2624,7 @@ async function generateAsset(type, prompt) {
     } else {
         const body = JSON.stringify({ model: 'agnes-video-v2.0', prompt: prompt });
         let res;
-        try { res = await fetch(VID_API_URL, { method: 'POST', headers, body }); if (!res.ok) throw new Error(); } catch (e) { res = await fetch(PROXY_BUILDERS[0](VID_API_URL), { method: 'POST', headers, body }); }
+        try { res = await fetch(VID_API_URL, { method: 'POST', headers, body }); if (!res.ok) throw new Error(); } catch (e) { res = await fetch(PROXY_URL + encodeURIComponent(VID_API_URL), { method: 'POST', headers, body }); }
         if (!res || !res.ok) throw new Error('Video API failed');
         const data = await res.json();
         if (data.data && data.data[0] && data.data[0].url) return data.data[0].url;
@@ -2687,6 +2748,7 @@ async function generate() {
     S.gen = true;
     updateSendButton();
     hideContinueButton();
+    document.getElementById('suggestions-wrap').style.display = 'none';
     S.tasks = []; 
     renderTasks();
     updateContextIndicator();
@@ -2717,6 +2779,7 @@ async function generate() {
         tools.push({ type: "function", function: { name: "create_github_pr", description: "Create a GitHub pull request with file changes in the connected repository.", parameters: { type: "object", properties: { title: { type: "string" }, body: { type: "string" }, headBranch: { type: "string" }, files: { type: "array", items: { type: "object", properties: { filename: { type: "string" }, content: { type: "string" } } } } }, required: ["title", "body"] } } });
     }
     
+    let aborted = false;
     try {
         while (true) {
             const md = addMsg('ai', '', true);
@@ -2938,12 +3001,13 @@ async function generate() {
             }
         }
     } catch(e) {
+        aborted = e.message.includes('aborted');
         console.error(e);
         const errMsgs = document.querySelectorAll('.msg.ai.thinking');
         errMsgs.forEach(m => m.classList.remove('thinking'));
         const lastBubble = document.querySelector('.msg.ai:last-child .msg-bubble');
         if (lastBubble) {
-            if (e.message.includes('aborted')) {
+            if (aborted) {
                 lastBubble.innerHTML += '<br><span style="color:var(--mt)">Generation stopped.</span>';
             } else {
                 lastBubble.innerHTML += `<br><span style="color:var(--dn)">Error: ${e.message}</span>`;
@@ -2955,6 +3019,10 @@ async function generate() {
     updateSendButton();
     saveProjects();
     updateContextIndicator();
+    
+    if (!aborted) {
+        generateNextSteps();
+    }
 }
 
 function updateSendButton() {
@@ -3002,7 +3070,7 @@ async function urlToBlob(url) {
         if (!res.ok) throw new Error('Direct fetch failed');
         return await res.blob();
     } catch (e) {
-        const res = await fetch(PROXY_BUILDERS[0](url));
+        const res = await fetch(PROXY_URL + encodeURIComponent(url));
         if (!res.ok) throw new Error('Proxy fetch failed');
         return await res.blob();
     }
