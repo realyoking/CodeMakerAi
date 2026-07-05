@@ -59,6 +59,15 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tx)
 }
 .ms-item img { margin-right: 8px; }
 
+/* Broken Image Fallback Style */
+.broken-img-fallback {
+    object-fit: contain !important;
+    padding: 4px;
+    opacity: 0.5;
+    background: var(--bg3);
+    border-radius: 4px;
+}
+
 /* Floating Navbar */
 .top-nav {
     position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
@@ -238,6 +247,7 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
 .ci-text { white-space: nowrap; font-weight: 600; }
 .ci-btn { padding: 4px 10px; background: var(--panel); border: 1px solid var(--border); color: var(--tx2); border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 4px; transition: 0.2s; margin-left: auto; }
 .ci-btn:hover { background: var(--ac); color: #fff; border-color: var(--ac); }
+.ci-btn.active { background: var(--warn); color: #000; border-color: var(--warn); }
 
 .chat-msgs { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
 .chat-welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; color: var(--mt); }
@@ -279,6 +289,7 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
 .chat-icons { display: flex; gap: 4px; position: relative; }
 .chat-icon { width: 36px; height: 36px; border: none; background: transparent; color: var(--mt); cursor: pointer; border-radius: 8px; display:flex; align-items:center; justify-content:center; font-size: 16px; }
 .chat-icon:hover { color: var(--ac); background: var(--bg3); }
+.voice-active { color: var(--dn) !important; animation: pulse 1.5s infinite; }
 .chat-send { width: 40px; height: 40px; border: none; background: var(--ac); color: #fff; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.3s; font-size: 16px; }
 .chat-send.stop { background: var(--dn); }
 .chat-send:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -656,6 +667,17 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
                     <div class="ms-item" id="m-history"><img src="version.HEIC"> Version History</div>
                     <div class="ms-item" id="m-share"><img src="share.HEIC"> Share Project</div>
                     <div class="ms-item" id="m-zip"><img src="download.PNG"> Download ZIP (Offline)</div>
+                    <div class="ms-dd" style="position: relative; width: 100%;">
+                        <div class="ms-item" id="m-comp-inject" style="width: 100%;"> <i class="fas fa-shapes" style="margin-right: 8px;"></i> Insert Component</div>
+                        <div class="ms-menu" id="comp-menu" style="top: 0; left: -200px; right: auto; width: 200px; margin-top: 0;">
+                            <div class="ms-item comp-item" data-comp="Navbar"><i class="fas fa-bars"></i> Navbar</div>
+                            <div class="ms-item comp-item" data-comp="Hero Section"><i class="fas fa-star"></i> Hero Section</div>
+                            <div class="ms-item comp-item" data-comp="Pricing Table"><i class="fas fa-tags"></i> Pricing Table</div>
+                            <div class="ms-item comp-item" data-comp="Footer"><i class="fas fa-shoe-prints"></i> Footer</div>
+                            <div class="ms-item comp-item" data-comp="Contact Form"><i class="fas fa-envelope"></i> Contact Form</div>
+                            <div class="ms-item comp-item" data-comp="Testimonial Slider"><i class="fas fa-comments"></i> Testimonials</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -672,8 +694,11 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
             <div class="context-indicator">
                 <div class="ci-bar-bg"><div class="ci-bar-fill" id="ci-bar-fill"></div></div>
                 <span class="ci-text" id="ci-text">0% (0 / 128k)</span>
+                <button class="ci-btn active" id="ci-safe-mode" title="Toggle Safe Mode (Require approval for destructive actions)">
+                    <i class="fas fa-shield-halved"></i> <span id="sm-lbl">Safe</span>
+                </button>
                 <button class="ci-btn" id="ci-new-chat" title="Start a new chat while keeping code & assets">
-                    <i class="fas fa-plus"></i> New Chat
+                    <i class="fas fa-plus"></i> New
                 </button>
             </div>
 
@@ -685,17 +710,7 @@ body.light .hero-sub { color: #334155; text-shadow: 0 2px 10px rgba(255,255,255,
                 <div class="chat-input-wrap">
                     <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask AI to build... (Use # to mention files)"></textarea>
                     <div class="chat-icons">
-                        <div class="ms-dd">
-                            <button class="chat-icon" id="btn-comp-inject" title="Insert Component"><i class="fas fa-shapes"></i></button>
-                            <div class="ms-menu" id="comp-menu" style="bottom: 50px; right: 0; top: auto; width: 200px;">
-                                <div class="ms-item comp-item" data-comp="Navbar"><i class="fas fa-bars"></i> Navbar</div>
-                                <div class="ms-item comp-item" data-comp="Hero Section"><i class="fas fa-star"></i> Hero Section</div>
-                                <div class="ms-item comp-item" data-comp="Pricing Table"><i class="fas fa-tags"></i> Pricing Table</div>
-                                <div class="ms-item comp-item" data-comp="Footer"><i class="fas fa-shoe-prints"></i> Footer</div>
-                                <div class="ms-item comp-item" data-comp="Contact Form"><i class="fas fa-envelope"></i> Contact Form</div>
-                                <div class="ms-item comp-item" data-comp="Testimonial Slider"><i class="fas fa-comments"></i> Testimonials</div>
-                            </div>
-                        </div>
+                        <button class="chat-icon" id="btn-voice" title="Voice Mode"><i class="fas fa-microphone"></i></button>
                         <button class="chat-icon" id="btn-enhance" title="Enhance Prompt"><img src="magic.HEIC"></button>
                     </div>
                     <button class="chat-send" id="chat-send" disabled><i class="fas fa-arrow-up"></i></button>
@@ -763,7 +778,7 @@ const POLLI_IMG_URL = 'https://gen.pollinations.ai/image/';
 
 const DEFAULT_DESIGN_MD = `# Design System\n\n## Aesthetics\nModern, sleek, and visually striking. NEVER use default browser styles.\n\n## Colors\nUse a sophisticated palette. Prefer dark themes (e.g., #0f172a background, #f1f5f9 text) with vibrant, glowing accents (indigo, violet, fuchsia). Use CSS variables.\n\n## Typography\nUse 'Inter' for sans-serif and 'JetBrains Mono' for code. Large, bold headings (clamp up to 4rem) with tight tracking. Muted, readable body text.\n\n## Layout\nGenerous whitespace (padding: 2rem+). Centered max-width containers (1200px). Fully responsive Flexbox/Grid.\n\n## Components\nBackgrounds should be subtle (rgba). Use 1px solid borders with low opacity. Border-radius 12px-16px. Use backdrop-filter: blur() for glassmorphism.\n\n## Interactions\nSmooth transitions (0.3s ease). Hover states should scale slightly (1.02) and increase glow/shadow.`;
 
-const SP = `You are CodeMaker AI, an autonomous coding agent.
+const SP = `You are CodeMaker AI, an autonomous coding agent and voice assistant.
 
 CRITICAL RULE: You MUST output the FULL code for all files. Do NOT truncate.
 To prevent timeouts, you MUST use the 'write_file' tool to write code. DO NOT output code in markdown blocks.
@@ -777,23 +792,37 @@ You have access to:
 - 'read_file': Get the content of a file.
 - 'write_file': Save content to a file.
 - 'generate_asset': Create images or videos.
+- 'list_github_repos': Fetch user's GitHub repositories.
+- 'export_to_github': Push code to a specific repo.
+- 'deploy_github_pages': Deploy a repo to GitHub Pages.
 - 'create_github_issue/pr': Manage connected repositories.
 
 # PERFORMANCE & CONCISENESS (CRITICAL)
 Be fast and concise. Do NOT write long explanations in the chat. Output the brief task list, then immediately use the tool. No fluff.
 
-# TASK PLANNING & EXECUTION
-1. Output a brief markdown checklist of your plan using EXACTLY "- [ ] " in the chat. 
-   CRITICAL: Do NOT include this task list inside the generated files. It should ONLY be in your chat message.
-2. You MUST write ONLY ONE FILE PER RESPONSE. Call the 'write_file' tool for one file, and then STOP. 
-   The system will automatically save it and prompt you to write the next file. 
-   NEVER write multiple files in a single response, as it will cause a token limit cutoff.
-3. When writing a file, output the COMPLETE content of that file. Do not use placeholders like 'rest of code'.
+# VOICE AGENT CAPABILITIES
+If the user is using voice mode, keep your responses concise and conversational. You can proactively ask clarifying questions if you need more information before proceeding with a task (e.g., "What colors do you want?"). If a deployment fails, inform the user and ask if they want you to fix it.
 
-# FILE SYSTEM
+# GITHUB VIA CHAT
+The user can ask you to export code to GitHub or deploy to GitHub Pages via chat. 
+- If they don't specify a repo, use 'list_github_repos' to get their repos and ask them which one to use.
+- Use 'export_to_github' with 'repo_name' and 'create_new' (boolean).
+- Use 'deploy_github_pages' with 'repo_name' to deploy.
+
+# TASK PLANNING & EXECUTION (LOVABLE STYLE)
+1. **Plan.md**: If this is a new project or a major feature request, your FIRST action must be to use the 'write_file' tool to create or update a file named 'plan.md'. 
+   In 'plan.md', detail:
+   - Project Overview & Goal
+   - Tech Stack (Vanilla JS, React, TypeScript, etc.)
+   - File Structure
+   - Step-by-Step Implementation Plan
+2. **Pause After Plan**: After writing 'plan.md', STOP generating. Output "I have created a plan. Please review plan.md and type 'continue' to proceed." and wait.
+3. **Execution**: Once the user says continue, proceed to implement the files one by one. You MUST write ONLY ONE FILE PER RESPONSE. Call the 'write_file' tool for one file, and then STOP. The system will automatically prompt you for the next file.
+
+# FILE SYSTEM & TECH STACK
 You can create ANY file type (e.g., index.html, style.css, script.js, App.tsx, main.py, db.json, design.md).
-If the user asks for a web app, ensure you write standard web files (index.html, style.css, script.js) for the live preview to work.
-If the user mentions a file using #filename, focus your modifications on that specific file.
+- **Vanilla Web**: If building a standard web app, write index.html, style.css, script.js. The system automatically injects style.css and script.js into the preview.
+- **React/TypeScript**: You ARE ALLOWED to use React, JSX, or TypeScript if you believe it's a better architecture. If you do, you MUST include React, ReactDOM, and Babel Standalone CDNs in the `<head>` of `index.html`. Write your React/TSX code in `script.js` (or a `.tsx` file that you read and inline), and the system will automatically detect Babel and execute it correctly. Do not use `<script type="module" src="...">` for local files, as the preview environment does not serve them. Inline everything or use CDNs.
 
 # DESIGN SYSTEM (design.md)
 You MUST strictly follow the design rules specified in the project's 'design.md' file. If the user asks for a design change, update the 'design.md' file using the 'write_file' tool.
@@ -878,12 +907,14 @@ const BLOG_POSTS = [
     }
 ];
 
-let S = { projects: [], cur: null, gen: false, model: 'auto', activeFile: 'index.html', view: 'prev', viewMode: 'editor', githubToken: localStorage.getItem('gh_token') || '', autoRefresh: true, zoom: 1, tasks: [] };
+let S = { projects: [], cur: null, gen: false, model: 'auto', activeFile: 'index.html', view: 'prev', viewMode: 'editor', githubToken: localStorage.getItem('gh_token') || '', autoRefresh: true, zoom: 1, tasks: [], fullAccess: false, voiceMode: false };
 let cm;
 let abortCtrl = null;
 let mentionActive = false;
 let mentionItems = [];
 let mentionIndex = 0;
+let recognition = null;
+let synth = window.speechSynthesis;
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
 function toast(m) { const t = document.getElementById('toast'); const d = document.createElement('div'); d.style.cssText = 'padding:12px 18px;background:var(--panel);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow);margin-bottom:8px;font-size:13px;color:var(--tx)'; d.textContent = m; t.appendChild(d); setTimeout(() => d.remove(), 3000); }
@@ -1177,6 +1208,9 @@ function renderChat() {
                         if (tc.function.name === 'write_file') return `<div class="tool-badge write"><i class="fas fa-check-circle"></i> Wrote ${args.filename}</div>`;
                         if (tc.function.name === 'read_file') return `<div class="tool-badge read"><i class="fas fa-eye"></i> Read ${args.filename}</div>`;
                         if (tc.function.name === 'generate_asset') return `<div class="tool-badge asset"><i class="fas fa-check-circle"></i> Generated ${args.type}</div>`;
+                        if (tc.function.name === 'list_github_repos') return `<div class="tool-badge issue"><i class="fas fa-check-circle"></i> Fetched Repos</div>`;
+                        if (tc.function.name === 'export_to_github') return `<div class="tool-badge issue"><i class="fas fa-check-circle"></i> Exported to ${args.repo_name}</div>`;
+                        if (tc.function.name === 'deploy_github_pages') return `<div class="tool-badge pr"><i class="fas fa-check-circle"></i> Deployed ${args.repo_name}</div>`;
                         if (tc.function.name === 'create_github_issue') return `<div class="tool-badge issue"><i class="fas fa-check-circle"></i> Created Issue: ${args.title}</div>`;
                         if (tc.function.name === 'create_github_pr') return `<div class="tool-badge pr"><i class="fas fa-check-circle"></i> Created PR: ${args.title}</div>`;
                     } catch(e) {}
@@ -1387,6 +1421,12 @@ function loadFileToEditor() {
 function updatePreview() {
     if (!S.autoRefresh) return;
     const p = S.projects.find(x => x.id === S.cur); if (!p) return;
+    
+    // Check if Babel is used for React/JSX/TSX compilation
+    const hasBabel = (p.files['index.html'] || '').includes('babel.min.js');
+    const scriptType = hasBabel ? 'type="text/babel"' : '';
+    const scriptTag = `<script ${scriptType}>${p.files['script.js']||''}<\/script>`;
+    
     const consoleScript = `
     <script>
     window.onerror = function(msg, url, line, col, error) {
@@ -1406,7 +1446,7 @@ function updatePreview() {
         parent.postMessage({ type: 'console_error', text: 'Unhandled Promise Rejection: ' + (event.reason && event.reason.message ? event.reason.message : event.reason) }, '*');
     });
     <\/script>`;
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">${consoleScript}<style>${p.files['style.css']||''}</style></head><body>${p.files['index.html']||''}<script>${p.files['script.js']||''}<\/script></body></html>`;
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">${consoleScript}<style>${p.files['style.css']||''}</style></head><body>${p.files['index.html']||''}${scriptTag}</body></html>`;
     document.getElementById('prev-frame').srcdoc = html;
 }
 
@@ -1618,6 +1658,7 @@ window.closeIssueWithAI = async function(issueNum) {
     } catch(e) { toast('Error closing issue.'); }
 };
 
+// --- UI GitHub Export (Buttons) ---
 async function exportToGithub() {
     document.getElementById('generic-modal').classList.add('show'); 
     const p = S.projects.find(x => x.id === S.cur);
@@ -1707,92 +1748,113 @@ async function startGithubPush(owner) {
     const inputVal = document.getElementById('gh-repo-input').value.trim();
     let repoName = selectVal === 'new' ? inputVal : selectVal;
     if(!repoName) return toast('Repository name is required.');
-    const headers = { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' };
-    const coAuthorTrailer = `\n\nGenerated with Brew AI\nCo-authored-by: Brew AI <noreply@brew.ai>`;
-    modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Checking repository...</div>`;
+    
+    const result = await toolExportToGithub(repoName, selectVal === 'new');
+    if (result.startsWith("Error")) {
+        modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">${result}</p>`;
+    } else {
+        modalBody.innerHTML = `
+            <div style="text-align:center; padding: 20px;">
+                <i class="fas fa-check-circle" style="font-size:32px;color:var(--ok);margin-bottom:12px;"></i>
+                <h3 style="margin-bottom:8px;font-family:'Playfair Display',serif;">Successfully Pushed!</h3>
+                <p style="color:var(--mt);margin-bottom:20px;">Your project and assets are now live on GitHub. Issues & PRs tab is now active.</p>
+                <a href="https://github.com/${owner}/${repoName}" target="_blank" class="modal-btn gh" style="text-decoration:none;display:block;"><img src="github.HEIC"> Open Repository</a>
+                <button class="modal-btn secondary" onclick="deployToGithubPages('${owner}', '${repoName}')"><img src="rocket.HEIC"> Deploy to GitHub Pages</button>
+            </div>`;
+        renderIssues();
+    }
+}
+
+// --- Programmatic GitHub Tools for AI ---
+async function toolExportToGithub(repoName, createNew) {
+    const p = S.projects.find(x => x.id === S.cur);
+    if (!S.githubToken) return "Error: GitHub token not set. Please click the GitHub icon to connect.";
+    const headers = { 'Authorization': `token ${S.githubToken}`, 'Accept': 'application/vnd.github+json' };
+    const userRes = await fetch('https://api.github.com/user', { headers });
+    if(!userRes.ok) return "Error: Invalid GitHub token.";
+    const owner = (await userRes.json()).login;
+    
     const checkRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}`, { headers });
     let repoExists = checkRes.ok;
-    if (checkRes.status === 404) {
-        modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Creating repository...</div>`;
+    
+    if (createNew) {
+        if (repoExists) return `Error: Repository ${repoName} already exists.`;
         const createRes = await fetch('https://api.github.com/user/repos', {
             method: 'POST', headers,
             body: JSON.stringify({ name: repoName, description: 'Generated by Brew AI', private: false })
         });
-        if (!createRes.ok) { modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error creating repo.</p>`; return; }
+        if (!createRes.ok) return "Error: Failed to create new repo.";
         repoExists = true;
+    } else {
+        if (!repoExists) return `Error: Repository ${repoName} does not exist.`;
     }
+    
     p.github = { owner, repo: repoName };
     saveProjects();
-    let remoteFiles = [];
-    if (repoExists) {
-        const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents`, { headers });
-        if (treeRes.ok) remoteFiles = await treeRes.json();
-    }
-    const remoteFileNames = remoteFiles.map(f => f.name);
+    
+    const coAuthorTrailer = `\n\nGenerated with Brew AI\nCo-authored-by: Brew AI <noreply@brew.ai>`;
     const approvedAssets = p.assets.filter(a => a.approved || a.isUserUpload);
     const files = Object.keys(p.files);
+    
     for (let i = 0; i < files.length; i++) {
         const filename = files[i];
         let content = p.files[filename];
         approvedAssets.forEach(a => {
             if (content.includes(a.url)) content = content.split(a.url).join(a.name);
         });
-        modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Pushing files... (${i+1}/${files.length})<br>${filename}</div>`;
         let sha = null;
         const fileCheckRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${encodeURIComponent(filename)}`, { headers });
         if (fileCheckRes.ok) sha = (await fileCheckRes.json()).sha;
-        let commitMsg = `feat: add ${filename}`;
-        if (i === files.length - 1) commitMsg = `feat: update project files via Brew AI`;
         const putRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${encodeURIComponent(filename)}`, {
             method: 'PUT', headers,
-            body: JSON.stringify({ message: `${commitMsg}${coAuthorTrailer}`, content: btoa(unescape(encodeURIComponent(content))), sha: sha, branch: 'main' })
+            body: JSON.stringify({ message: `feat: add ${filename}${coAuthorTrailer}`, content: btoa(unescape(encodeURIComponent(content))), sha: sha, branch: 'main' })
         });
-        if (!putRes.ok) { modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error pushing ${filename}.</p>`; return; }
+        if (!putRes.ok) return `Error pushing file ${filename}.`;
     }
-    if (approvedAssets.length > 0) {
-        for (let i = 0; i < approvedAssets.length; i++) {
-            const asset = approvedAssets[i];
-            modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Pushing assets... (${i+1}/${approvedAssets.length})<br>${asset.name}</div>`;
-            try {
-                const base64Content = await urlToBase64(asset.url);
-                let sha = null;
-                const fileCheckRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${encodeURIComponent(asset.name)}`, { headers });
-                if (fileCheckRes.ok) sha = (await fileCheckRes.json()).sha;
-                await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${encodeURIComponent(asset.name)}`, {
-                    method: 'PUT', headers,
-                    body: JSON.stringify({ message: `feat: add asset ${asset.name}${coAuthorTrailer}`, content: base64Content, sha: sha, branch: 'main' })
-                });
-            } catch(e) { console.error(`Failed to push asset ${asset.name}:`, e); }
-        }
-    }
-    if (!remoteFileNames.includes('README.md')) {
-        modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> AI is writing README.md...</div>`;
-        let readmeContent = `# ${p.name}\n\nGenerated by Brew AI.`;
+    
+    for (let i = 0; i < approvedAssets.length; i++) {
+        const asset = approvedAssets[i];
         try {
-            const filesConcat = Object.keys(p.files).map(f => 'File: ' + f + '\n\`\`\`\n' + p.files[f] + '\n\`\`\`\n').join('\n').substring(0, 3000);
-            const res = await callAI([{ role: 'system', content: 'Write a professional GitHub README.md in pure markdown. Include title, description, features, and how to run.' }, { role: 'user', content: 'Project Name: ' + p.name + '\nInitial Prompt: ' + p.messages[0].content + '\nCode Files:\n' + filesConcat }], S.model);
-            if (res.content) {
-                readmeContent = res.content;
-                if (!readmeContent.startsWith('#')) readmeContent = `# ${p.name}\n\n` + readmeContent;
-            }
-        } catch(e) { /* fallback */ }
-        let sha = null;
-        const readmeCheckRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/README.md`, { headers });
-        if (readmeCheckRes.ok) { sha = (await readmeCheckRes.json()).sha; }
-        await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/README.md`, {
-            method: 'PUT', headers,
-            body: JSON.stringify({ message: `docs: add comprehensive README.md with setup instructions${coAuthorTrailer}`, content: btoa(unescape(encodeURIComponent(readmeContent))), sha: sha, branch: 'main' })
-        });
+            const base64Content = await urlToBase64(asset.url);
+            let sha = null;
+            const fileCheckRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${encodeURIComponent(asset.name)}`, { headers });
+            if (fileCheckRes.ok) sha = (await fileCheckRes.json()).sha;
+            await fetch(`https://api.github.com/repos/${owner}/${repoName}/contents/${encodeURIComponent(asset.name)}`, {
+                method: 'PUT', headers,
+                body: JSON.stringify({ message: `feat: add asset ${asset.name}${coAuthorTrailer}`, content: base64Content, sha: sha, branch: 'main' })
+            });
+        } catch(e) {}
     }
-    modalBody.innerHTML = `
-        <div style="text-align:center; padding: 20px;">
-            <i class="fas fa-check-circle" style="font-size:32px;color:var(--ok);margin-bottom:12px;"></i>
-            <h3 style="margin-bottom:8px;font-family:'Playfair Display',serif;">Successfully Pushed!</h3>
-            <p style="color:var(--mt);margin-bottom:20px;">Your project and assets are now live on GitHub. Issues & PRs tab is now active.</p>
-            <a href="https://github.com/${owner}/${repoName}" target="_blank" class="modal-btn gh" style="text-decoration:none;display:block;"><img src="github.HEIC"> Open Repository</a>
-            <button class="modal-btn secondary" onclick="deployToGithubPages('${owner}', '${repoName}')"><img src="rocket.HEIC"> Deploy to GitHub Pages</button>
-        </div>`;
-    renderIssues();
+    return `Successfully pushed all files to https://github.com/${owner}/${repoName}`;
+}
+
+async function toolDeployToGithubPages(repoName) {
+    if (!S.githubToken) return "Error: GitHub token not set.";
+    const headers = { 'Authorization': `token ${S.githubToken}`, 'Accept': 'application/vnd.github+json' };
+    const userRes = await fetch('https://api.github.com/user', { headers });
+    if(!userRes.ok) return "Error: Invalid token.";
+    const owner = (await userRes.json()).login;
+    
+    try {
+        const createRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/pages`, {
+            method: 'POST', headers,
+            body: JSON.stringify({ source: { branch: 'main', path: '/' } })
+        });
+        if (createRes.status === 409) {
+            const updateRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/pages`, {
+                method: 'PUT', headers,
+                body: JSON.stringify({ source: { branch: 'main', path: '/' } })
+            });
+            if(!updateRes.ok) return "Error: Failed to update Pages settings.";
+        } else if (!createRes.ok) {
+            const err = await createRes.json();
+            return `Error deploying: ${err.message}`;
+        }
+        const deployUrl = `https://${owner}.github.io/${repoName}/`;
+        return `Deployment initiated successfully! It may take 1-2 minutes to build. Live URL: ${deployUrl}`;
+    } catch(e) {
+        return `Error deploying: ${e.message}`;
+    }
 }
 
 async function deployToGithubPages(owner, repoName) {
@@ -1826,22 +1888,11 @@ async function deployToGithubPages(owner, repoName) {
         return;
     }
     modalBody.innerHTML = `<div style="text-align:center; padding: 20px;"><div class="spinner" style="width:24px;height:24px;margin:0 auto 12px;"></div> Enabling GitHub Pages for ${repoName}...</div>`;
-    const headers = { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github+json' };
-    try {
-        const createRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/pages`, {
-            method: 'POST', headers,
-            body: JSON.stringify({ source: { branch: 'main', path: '/' } })
-        });
-        if (createRes.status === 409) {
-            const updateRes = await fetch(`https://api.github.com/repos/${owner}/${repoName}/pages`, {
-                method: 'PUT', headers,
-                body: JSON.stringify({ source: { branch: 'main', path: '/' } })
-            });
-            if(!updateRes.ok) throw new Error('Failed to update Pages settings.');
-        } else if (!createRes.ok) {
-            const err = await createRes.json();
-            throw new Error(err.message);
-        }
+    
+    const result = await toolDeployToGithubPages(repoName);
+    if (result.startsWith("Error")) {
+        modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">${result}</p>`;
+    } else {
         const deployUrl = `https://${owner}.github.io/${repoName}/`;
         modalBody.innerHTML = `
             <div style="text-align:center; padding: 20px;">
@@ -1850,8 +1901,6 @@ async function deployToGithubPages(owner, repoName) {
                 <p style="color:var(--mt);margin-bottom:20px;">It may take 1-2 minutes for GitHub to build your site.</p>
                 <a href="${deployUrl}" target="_blank" class="modal-btn" style="text-decoration:none;display:block;background:var(--ok)"><i class="fas fa-globe"></i> Visit Live Site</a>
             </div>`;
-    } catch(e) {
-        modalBody.innerHTML = `<p style="color:var(--dn);text-align:center;">Error deploying: ${e.message}</p>`;
     }
 }
 
@@ -2073,6 +2122,43 @@ function selectMention(filename) {
 }
 
 window.selectMention = selectMention;
+
+// --- VOICE AGENT LOGIC ---
+function toggleVoiceMode() {
+    if (!('webkitSpeechRecognition' in window)) return toast('Voice recognition not supported in this browser.');
+    S.voiceMode = !S.voiceMode;
+    const btn = document.getElementById('btn-voice');
+    if (S.voiceMode) {
+        btn.classList.add('voice-active');
+        toast('Voice mode activated. Speak now.');
+        startListening();
+    } else {
+        btn.classList.remove('voice-active');
+        if (synth) synth.cancel();
+        if (recognition) recognition.stop();
+        toast('Voice mode deactivated.');
+    }
+}
+
+function startListening() {
+    if (!recognition || !S.voiceMode || S.gen) return;
+    try {
+        recognition.start();
+    } catch(e) {}
+}
+
+function speakText(text) {
+    if (!S.voiceMode || !synth) return;
+    synth.cancel();
+    const cleanText = text.replace(/```[\s\S]*?```/g, ' code block ').replace(/[*#>`]/g, '');
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.onend = () => {
+        if (S.voiceMode && !S.gen) {
+            setTimeout(() => startListening(), 500);
+        }
+    };
+    synth.speak(utterance);
+}
 
 // --- MODEL RESOLUTION & MAPPING ---
 function resolveModelName(key) {
@@ -2327,6 +2413,24 @@ function updateContextIndicator() {
     if(textEl) textEl.textContent = `${pct.toFixed(1)}% (${(tokens/1000).toFixed(1)}k / 128k)`;
 }
 
+// --- APPROVAL SYSTEM ---
+function askForApproval(title, desc) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('generic-modal');
+        const body = document.getElementById('generic-modal-body');
+        document.getElementById('generic-modal-title').innerText = title;
+        body.innerHTML = `
+            <p class="modal-desc">${desc}</p>
+            <div style="display:flex; gap:8px; margin-top:16px;">
+                <button class="modal-btn secondary" id="approve-cancel" style="margin:0;">Deny</button>
+                <button class="modal-btn" id="approve-yes" style="margin:0; background: var(--ok);">Approve</button>
+            </div>`;
+        modal.classList.add('show');
+        document.getElementById('approve-cancel').onclick = () => { modal.classList.remove('show'); resolve(false); };
+        document.getElementById('approve-yes').onclick = () => { modal.classList.remove('show'); resolve(true); };
+    });
+}
+
 async function generate() {
     const p = S.projects.find(x => x.id === S.cur);
     if (!p || S.gen) return;
@@ -2337,6 +2441,14 @@ async function generate() {
     renderTasks();
     updateContextIndicator();
     
+    // Update UI to show which model Auto selected
+    if (p.model === 'auto') {
+        const actualModel = resolveAutoModel([...p.messages]);
+        document.getElementById('ms-lbl').textContent = `[Auto] ${actualModel}`;
+    } else {
+        document.getElementById('ms-lbl').textContent = getModelLabel(p.model);
+    }
+    
     let currentMessages = [...p.messages];
     p.history.push({ ts: Date.now(), files: JSON.parse(JSON.stringify(p.files)) });
     if (p.history.length > 10) p.history.shift();
@@ -2345,7 +2457,10 @@ async function generate() {
     const tools = [
         { type: "function", function: { name: "write_file", description: "Write file content. ONLY WRITE ONE FILE PER RESPONSE.", parameters: { type: "object", properties: { filename: { type: "string" }, content: { type: "string" } }, required: ["filename", "content"] } } },
         { type: "function", function: { name: "read_file", description: "Read the full content of a specific file in the project.", parameters: { type: "object", properties: { filename: { type: "string" } }, required: ["filename"] } } },
-        { type: "function", function: { name: "generate_asset", description: "Generate an image or video asset. Use this when the user asks for an image, picture, photo, icon, logo, or video. NEVER use SVG placeholders.", parameters: { type: "object", properties: { type: { type: "string", enum: ["image", "video"] }, prompt: { type: "string" } }, required: ["type", "prompt"] } } }
+        { type: "function", function: { name: "generate_asset", description: "Generate an image or video asset. Use this when the user asks for an image, picture, photo, icon, logo, or video. NEVER use SVG placeholders.", parameters: { type: "object", properties: { type: { type: "string", enum: ["image", "video"] }, prompt: { type: "string" } }, required: ["type", "prompt"] } } },
+        { type: "function", function: { name: "list_github_repos", description: "Fetch a list of the user's GitHub repositories." } },
+        { type: "function", function: { name: "export_to_github", description: "Push the current project files to a GitHub repository.", parameters: { type: "object", properties: { repo_name: { type: "string" }, create_new: { type: "boolean" } }, required: ["repo_name", "create_new"] } } },
+        { type: "function", function: { name: "deploy_github_pages", description: "Enable GitHub Pages for a specific repository.", parameters: { type: "object", properties: { repo_name: { type: "string" } }, required: ["repo_name"] } } }
     ];
     
     if (p.github && p.github.owner && p.github.repo && S.githubToken) {
@@ -2398,13 +2513,47 @@ async function generate() {
                         badge.className = 'tool-badge write';
                         badge.innerHTML = `<div class="spinner"></div> Writing ${args.filename}...`;
                         statusLog.appendChild(badge);
-                        const finalContent = replaceApiKeyPlaceholder(args.content);
-                        if (!p.lockedFiles.includes(args.filename)) p.files[args.filename] = finalContent;
-                        saveProjects(); updatePreview(); renderFiles(); updateContextIndicator();
-                        if (S.view === 'code') loadFileToEditor();
-                        toolMsg.content = "File written successfully. The {{SITE_API_KEY}} placeholder has been replaced with the real API key.";
-                        badge.innerHTML = `<i class="fas fa-check-circle"></i> Wrote ${args.filename}`;
-                        markTaskDone(args.filename);
+
+                        // High-Impact Action Check
+                        let isHighImpact = false;
+                        if (!S.fullAccess && p.files[args.filename]) {
+                            const oldLen = p.files[args.filename].length;
+                            const newLen = args.content.length;
+                            if (oldLen > 500 && newLen < 50) {
+                                isHighImpact = true;
+                            }
+                        }
+
+                        let approved = true;
+                        if (isHighImpact) {
+                            badge.innerHTML = `<i class="fas fa-shield-halved"></i> Waiting for approval...`;
+                            approved = await askForApproval('Approve File Overwrite?', `The AI is attempting to overwrite <strong>${args.filename}</strong> with significantly less content (possibly deleting code).`);
+                        }
+
+                        if (!approved) {
+                            toolMsg.content = "User denied the request to overwrite this file. Please do not overwrite files unless necessary.";
+                            badge.innerHTML = `<i class="fas fa-times-circle"></i> Denied Overwrite`;
+                        } else {
+                            const finalContent = replaceApiKeyPlaceholder(args.content);
+                            if (!p.lockedFiles.includes(args.filename)) p.files[args.filename] = finalContent;
+                            saveProjects(); updatePreview(); renderFiles(); updateContextIndicator();
+                            if (S.view === 'code') loadFileToEditor();
+                            toolMsg.content = "File written successfully. The {{SITE_API_KEY}} placeholder has been replaced with the real API key.";
+                            badge.innerHTML = `<i class="fas fa-check-circle"></i> Wrote ${args.filename}`;
+                            markTaskDone(args.filename);
+
+                            // Lovable-style Plan Pause
+                            if (args.filename === 'plan.md' && currentMessages.length <= 3) {
+                                statusLog.innerHTML += '<br><span style="color:var(--ac)">📋 Plan generated! Review it in the Files tab, then click Continue to proceed with coding.</span>';
+                                if (S.voiceMode) speakText("I have created a plan. Please review it in the Files tab, then click Continue to proceed with coding.");
+                                showContinueButton();
+                                currentMessages.push(toolMsg);
+                                p.messages = currentMessages;
+                                saveProjects();
+                                updateContextIndicator();
+                                break; 
+                            }
+                        }
                     } else if (tc.function.name === 'read_file') {
                         const args = JSON.parse(tc.function.arguments);
                         const badge = document.createElement('div');
@@ -2431,6 +2580,45 @@ async function generate() {
                             toolMsg.content = "Failed to generate asset.";
                             badge.innerHTML = `<i class="fas fa-times-circle"></i> Failed to generate`;
                         }
+                    } else if (tc.function.name === 'list_github_repos') {
+                        const badge = document.createElement('div');
+                        badge.className = 'tool-badge issue';
+                        badge.innerHTML = `<div class="spinner"></div> Fetching repos...`;
+                        statusLog.appendChild(badge);
+                        if (!S.githubToken) {
+                            toolMsg.content = "GitHub not connected. Please click the GitHub icon to connect.";
+                            badge.innerHTML = `<i class="fas fa-times-circle"></i> Not Connected`;
+                        } else {
+                            const headers = { 'Authorization': `token ${S.githubToken}`, 'Accept': 'application/vnd.github+json' };
+                            const userRes = await fetch('https://api.github.com/user', { headers });
+                            if(!userRes.ok) {
+                                toolMsg.content = "Invalid GitHub token.";
+                                badge.innerHTML = `<i class="fas fa-times-circle"></i> Invalid Token`;
+                            } else {
+                                const reposRes = await fetch(`https://api.github.com/user/repos?per_page=100&sort=updated`, { headers });
+                                const repos = await reposRes.json();
+                                toolMsg.content = "User repositories:\n" + repos.map(r => r.name).join('\n');
+                                badge.innerHTML = `<i class="fas fa-check-circle"></i> Fetched Repos`;
+                            }
+                        }
+                    } else if (tc.function.name === 'export_to_github') {
+                        const args = JSON.parse(tc.function.arguments);
+                        const badge = document.createElement('div');
+                        badge.className = 'tool-badge issue';
+                        badge.innerHTML = `<div class="spinner"></div> Exporting to ${args.repo_name}...`;
+                        statusLog.appendChild(badge);
+                        const result = await toolExportToGithub(args.repo_name, args.create_new);
+                        toolMsg.content = result;
+                        badge.innerHTML = result.startsWith("Error") ? `<i class="fas fa-times-circle"></i> Export Failed` : `<i class="fas fa-check-circle"></i> Exported`;
+                    } else if (tc.function.name === 'deploy_github_pages') {
+                        const args = JSON.parse(tc.function.arguments);
+                        const badge = document.createElement('div');
+                        badge.className = 'tool-badge pr';
+                        badge.innerHTML = `<div class="spinner"></div> Deploying ${args.repo_name}...`;
+                        statusLog.appendChild(badge);
+                        const result = await toolDeployToGithubPages(args.repo_name);
+                        toolMsg.content = result;
+                        badge.innerHTML = result.startsWith("Error") ? `<i class="fas fa-times-circle"></i> Deploy Failed` : `<i class="fas fa-check-circle"></i> Deployed`;
                     } else if (tc.function.name === 'create_github_issue') {
                         const args = JSON.parse(tc.function.arguments);
                         const badge = document.createElement('div');
@@ -2463,10 +2651,17 @@ async function generate() {
                             badge.innerHTML = `<i class="fas fa-times-circle"></i> Failed to create PR`;
                         }
                     }
-                    currentMessages.push(toolMsg);
-                    p.messages = currentMessages;
-                    saveProjects();
-                    updateContextIndicator();
+                    
+                    if (toolMsg.content) {
+                        currentMessages.push(toolMsg);
+                        p.messages = currentMessages;
+                        saveProjects();
+                        updateContextIndicator();
+                    }
+                }
+                
+                if (document.getElementById('continue-wrap').style.display === 'block') {
+                    break;
                 }
             } else {
                 md.classList.remove('thinking');
@@ -2486,6 +2681,11 @@ async function generate() {
                     <button class="msg-action-btn" onclick="copyMsg(${p.messages.length-1})"><img src="copy.HEIC"> Copy</button>
                     <button class="msg-action-btn" onclick="retryGen()"><img src="retry.HEIC"> Retry</button>`;
                 statusLog.appendChild(actions);
+                
+                // Voice Agent TTS
+                if (S.voiceMode && accumulatedContent) {
+                    speakText(accumulatedContent);
+                }
                 break;
             }
         }
@@ -2572,9 +2772,40 @@ function toggleTheme() {
 
 function init() {
     try {
+        // Global Image Error Handler for broken images (like HEIC in Chrome)
+        document.addEventListener('error', (e) => {
+            const target = e.target;
+            if (target && target.tagName === 'IMG') {
+                if (target.dataset.fallbackApplied) return;
+                target.dataset.fallbackApplied = 'true';
+                target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Ccircle cx='9' cy='9' r='2'%3E%3C/circle%3E%3Cpath d='m21 15-3.5-3.5L9 20'%3E%3C/path%3E%3C/svg%3E";
+                target.classList.add('broken-img-fallback');
+            }
+        }, true);
+
         loadProjects(); renderGrid(); renderTemplates(); renderBlog(); runTyping();
         if (typeof CodeMirror !== 'undefined') {
             cm = CodeMirror.fromTextArea(document.getElementById('code-editor'), { lineNumbers: true, theme: 'material-darker', indentUnit: 2 });
+        }
+
+        // Init Speech Recognition
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                const inp = document.getElementById('chat-input');
+                inp.value = transcript;
+                inp.dispatchEvent(new Event('input'));
+                document.getElementById('chat-send').click();
+            };
+            recognition.onend = () => {
+                if (S.voiceMode && !S.gen) {
+                    setTimeout(() => startListening(), 500);
+                }
+            };
         }
         
         // FAQ Accordion
@@ -2609,6 +2840,25 @@ function init() {
         document.getElementById('nav-theme-btn').onclick = toggleTheme;
         document.getElementById('btn-theme').onclick = toggleTheme;
 
+        // Safe Mode / Full Access Toggle
+        document.getElementById('ci-safe-mode').onclick = () => {
+            S.fullAccess = !S.fullAccess;
+            const lbl = document.getElementById('sm-lbl');
+            const btn = document.getElementById('ci-safe-mode');
+            if (S.fullAccess) {
+                lbl.textContent = 'Full Access';
+                btn.classList.remove('active');
+                toast('Full Access enabled. AI can modify files without asking.');
+            } else {
+                lbl.textContent = 'Safe';
+                btn.classList.add('active');
+                toast('Safe Mode enabled. AI will ask before destructive actions.');
+            }
+        };
+
+        // Voice Mode Toggle
+        document.getElementById('btn-voice').onclick = toggleVoiceMode;
+
         // Context Indicator New Chat Button
         document.getElementById('ci-new-chat').onclick = () => {
             const p = S.projects.find(x => x.id === S.cur); if (!p) return;
@@ -2629,7 +2879,7 @@ function init() {
         
         document.getElementById('ms-btn').onclick = e => { e.stopPropagation(); closeDropdowns(); document.getElementById('ms-menu').classList.toggle('open'); };
         document.getElementById('home-model-btn').onclick = e => { e.stopPropagation(); closeDropdowns(); document.getElementById('home-ms-menu').classList.toggle('open'); };
-        document.getElementById('btn-comp-inject').onclick = e => { e.stopPropagation(); closeDropdowns(); document.getElementById('comp-menu').classList.toggle('open'); };
+        document.getElementById('m-comp-inject').onclick = e => { e.stopPropagation(); closeDropdowns(); document.getElementById('comp-menu').classList.toggle('open'); };
         document.getElementById('btn-more').onclick = e => { e.stopPropagation(); closeDropdowns(); document.getElementById('more-menu').classList.toggle('open'); };
         document.addEventListener('click', closeDropdowns);
         
