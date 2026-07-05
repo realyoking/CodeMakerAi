@@ -783,6 +783,12 @@ const SP = `You are CodeMaker AI, an autonomous coding agent and voice assistant
 CRITICAL RULE: You MUST output the FULL code for all files. Do NOT truncate.
 To prevent timeouts, you MUST use the 'write_file' tool to write code. DO NOT output code in markdown blocks.
 
+# MEMORY MANAGEMENT
+You have access to a file called 'memory.md'.
+- When the user starts a new chat, they will tell you to read 'memory.md'. Your FIRST action must be to use 'read_file' to read 'memory.md' to restore your memory of the project's architecture, files, and current state.
+- If 'memory.md' is empty or doesn't exist, acknowledge it's a new project and proceed normally.
+- When you complete a major milestone, fix a complex bug, or finish a task, you SHOULD use 'write_file' to update 'memory.md' with the current project state, file list, and key decisions. This ensures you don't lose context in future chats.
+
 # TOOL USAGE & STRATEGY (CRITICAL)
 1. **Analyze First**: You only have the file NAMES initially. If you need to see or modify a file, you MUST use 'read_file' first.
 2. **One Tool at a Time**: Output a brief thought about your plan, then call the tool.
@@ -822,7 +828,7 @@ The user can ask you to export code to GitHub or deploy to GitHub Pages via chat
 # FILE SYSTEM & TECH STACK
 You can create ANY file type (e.g., index.html, style.css, script.js, App.tsx, main.py, db.json, design.md).
 - **Vanilla Web**: If building a standard web app, write index.html, style.css, script.js. The system automatically injects style.css and script.js into the preview.
-- **React/TypeScript**: You ARE ALLOWED to use React, JSX, or TypeScript if you believe it's a better architecture. If you do, you MUST include React, ReactDOM, and Babel Standalone CDNs in the `<head>` of `index.html`. Write your React/TSX code in `script.js` (or a `.tsx` file that you read and inline), and the system will automatically detect Babel and execute it correctly. Do not use `<script type="module" src="...">` for local files, as the preview environment does not serve them. Inline everything or use CDNs.
+- **React/TypeScript**: You ARE ALLOWED to use React, JSX, or TypeScript if you believe it's a better architecture. If you do, you MUST include React, ReactDOM, and Babel Standalone CDNs in the \`<head>\` of \`index.html\`. Write your React/TSX code in \`script.js\` (or a \`.tsx\` file that you read and inline), and the system will automatically detect Babel and execute it correctly. Do not use \`<script type="module" src="...">\` for local files, as the preview environment does not serve them. Inline everything or use CDNs.
 
 # DESIGN SYSTEM (design.md)
 You MUST strictly follow the design rules specified in the project's 'design.md' file. If the user asks for a design change, update the 'design.md' file using the 'write_file' tool.
@@ -969,7 +975,7 @@ function getSystemPrompt() {
 }
 
 function createProj(prompt, model) {
-    const p = { id: uid(), name: prompt.length > 40 ? prompt.substring(0,37)+'...' : prompt, model: model || S.model, messages: [{role:'user', content:prompt}], files: {'index.html':'', 'style.css':'', 'script.js':'', 'design.md': DEFAULT_DESIGN_MD}, assets: [], history: [], lockedFiles: [], github: null, activeFile: 'index.html', ts: Date.now() };
+    const p = { id: uid(), name: prompt.length > 40 ? prompt.substring(0,37)+'...' : prompt, model: model || S.model, messages: [{role:'user', content:prompt}], files: {'index.html':'', 'style.css':'', 'script.js':'', 'design.md': DEFAULT_DESIGN_MD, 'memory.md': ''}, assets: [], history: [], lockedFiles: [], github: null, activeFile: 'index.html', ts: Date.now() };
     S.projects.unshift(p); saveProjects(); return p;
 }
 
@@ -2160,6 +2166,36 @@ function speakText(text) {
     synth.speak(utterance);
 }
 
+// --- MEMORY SUMMARIZER ---
+async function summarizeChat(p) {
+    toast('Summarizing chat to memory.md...');
+    const headers = { 'Content-Type':'application/json', 'Authorization': `Bearer ${SITE_KEY}` };
+    const body = {
+        model: resolveModelName(S.model),
+        messages: [
+            { role: 'system', content: 'You are a helpful summarizer. Read the following conversation. Summarize the key decisions, tech stack, file structure, and current state of the project into a concise markdown document. Output ONLY the markdown.' },
+            ...p.messages.slice(-12)
+        ],
+        temperature: 0.3,
+        stream: false
+    };
+    try {
+        const res = await fetch(API_URL, { method:'POST', headers, body: JSON.stringify(body) });
+        if (!res.ok) throw new Error('Summarize failed');
+        const data = await res.json();
+        const content = data.choices[0].message.content;
+        if (content) {
+            p.files['memory.md'] = content;
+            saveProjects();
+            renderFiles();
+            toast('Memory saved to memory.md!');
+        }
+    } catch(e) {
+        console.error(e);
+        toast('Failed to save memory. Starting new chat anyway.');
+    }
+}
+
 // --- MODEL RESOLUTION & MAPPING ---
 function resolveModelName(key) {
     if (key === 'auto') return 'agnes-2.0-flash';
@@ -2859,15 +2895,30 @@ function init() {
         // Voice Mode Toggle
         document.getElementById('btn-voice').onclick = toggleVoiceMode;
 
-        // Context Indicator New Chat Button
-        document.getElementById('ci-new-chat').onclick = () => {
+        // Context Indicator New Chat Button with Memory Summarizer
+        document.getElementById('ci-new-chat').onclick = async () => {
             const p = S.projects.find(x => x.id === S.cur); if (!p) return;
             if (S.gen) return toast('Wait for generation to finish.');
-            p.messages = [];
+
+            // 1. Summarize if there's history
+            if (p.messages.length > 2) {
+                const btn = document.getElementById('ci-new-chat');
+                const oldHtml = btn.innerHTML;
+                btn.innerHTML = '<div class="spinner" style="width:12px;height:12px;margin:0;border-color:#000;border-top-color:transparent;"></div>';
+                btn.disabled = true;
+
+                await summarizeChat(p);
+
+                btn.innerHTML = oldHtml;
+                btn.disabled = false;
+            }
+
+            // 2. Clear messages and start new chat
+            p.messages = [{ role: 'user', content: 'I started a new chat. Please read memory.md to remember our project context.' }];
             saveProjects();
             renderChat();
             updateContextIndicator();
-            toast('New chat started. Code & assets retained!');
+            generate();
         };
         
         const closeDropdowns = () => {
